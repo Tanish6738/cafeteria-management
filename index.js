@@ -805,7 +805,6 @@ app.get('/user/profile', ensureAuthenticated, asyncHandler(async (req, res) => {
     res.render('users/profile', { user, currentOrders, previousOrders });
 }));
 
-
 app.get('/user/profile/edit', ensureAuthenticated, asyncHandler(async (req, res) => {
     const user = await Users.findById(req.session.user._id);
     res.render('users/editProfile', { user });
@@ -880,6 +879,9 @@ app.get('/admin/orders/:id/receipt', ensureAdmin, asyncHandler(async (req, res) 
 }));
 
 // Table Reservation
+
+// app.get('/tables/tableHistory', ensureAuthenticated , ensureAdmin 
+
 app.get('/tables', ensureAuthenticated, asyncHandler(async (req, res) => {
     const reservedTables = await Tables.find({ status: 'reserved' }).populate('reservedBy');
     const vacantTables = await Tables.find({ status: 'vacant' });
