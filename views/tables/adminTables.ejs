@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Tables</title>
+
+    <!-- Import TailwindCSS and FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+
+    <style>
+        body {
+            font-family: 'Playfair Display', serif;
+            background: url('https://images.unsplash.com/photo-1526234362653-3b75a0c07438?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center fixed;
+            background-size: cover;
+            color: #ECDFCC;
+        }
+
+        .table-section {
+            background-color: rgba(60, 61, 55, 0.8);
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        }
+
+        .table-section:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-primary {
+            background-color: #697565;
+            border-color: #697565;
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #3C3D37;
+            border-color: #3C3D37;
+        }
+
+        .hover-scale {
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .hover-scale:hover {
+            transform: scale(1.05);
+        }
+
+        .success-message {
+            background-color: rgba(144, 238, 144, 0.8);
+            border: 1px solid green;
+            color: green;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        .error-message {
+            background-color: rgba(255, 99, 71, 0.8);
+            border: 1px solid red;
+            color: rgb(255, 255, 255);
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .table-section table {
+            transition: all 0.3s ease-in-out;
+        }
+
+        .table-section table tr:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .table-section table th,
+        .table-section table td {
+            transition: all 0.3s ease-in-out;
+        }
+
+        .table-section table th:hover,
+        .table-section table td:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100">
+    <%- include('../partials/navbar') %>
+
+    <div class="container mx-auto mt-10 fade-in">
+        <h2 class="text-5xl font-bold mb-10 text-center text-[#4b3a36]">Admin Table Management</h2>
+
+        <!-- Flash Messages -->
+        <% if (flashMessages.success_msg) { %>
+            <div class="success-message">
+                <strong>Success!</strong> <%= flashMessages.success_msg %>
+            </div>
+        <% } %>
+        <% if (flashMessages.error_msg) { %>
+            <div class="error-message">
+                <strong>Error!</strong> <%= flashMessages.error_msg %>
+            </div>
+        <% } %>
+
+        <!-- Button to add new table -->
+        <div class="flex justify-end mb-4">
+            <a href="/tables/new" class="btn-primary hover-scale py-2 px-4 rounded">Add New Table</a>
+        </div>
+
+        <div class="table-section">
+            <h3 class="text-3xl font-bold mb-6">Reserved Tables</h3>
+            <% if (reservedTables.length > 0) { %>
+                <table class="min-w-full bg-transparent text-light">
+                    <thead>
+                        <tr>
+                            <th class="py-4 px-6 border-b text-left">Table Number</th>
+                            <th class="py-4 px-6 border-b text-left">Seats</th>
+                            <th class="py-4 px-6 border-b text-left">Reserved By</th>
+                            <th class="py-4 px-6 border-b text-left">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% reservedTables.forEach(table => { %>
+                            <tr>
+                                <td class="py-2 px-6 border-b"><%= table.tableNumber %></td>
+                                <td class="py-2 px-6 border-b"><%= table.capacity %></td>
+                                <td class="py-2 px-6 border-b"><%= table.reservedBy ? table.reservedBy.username : 'Unknown' %></td>
+                                <td class="py-2 px-6 border-b">
+                                    <a href="/tables/<%= table._id %>/edit" class="btn-primary hover-scale py-1 px-3 rounded">Edit</a>
+                                    <a href="/tables/<%= table._id %>/delete" class="btn-primary hover-scale py-1 px-3 rounded">Delete</a>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            <% } else { %>
+                <p class="text-gray-500">No reserved tables at the moment.</p>
+            <% } %>
+        </div>
+
+        <div class="table-section mt-12">
+            <h3 class="text-3xl font-bold mb-6">Vacant Tables</h3>
+            <% if (vacantTables.length > 0) { %>
+                <table class="min-w-full bg-transparent text-light">
+                    <thead>
+                        <tr>
+                            <th class="py-4 px-6 border-b text-left">Table Number</th>
+                            <th class="py-4 px-6 border-b text-left">Seats</th>
+                            <th class="py-4 px-6 border-b text-left">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% vacantTables.forEach(table => { %>
+                            <tr>
+                                <td class="py-2 px-6 border-b"><%= table.tableNumber %></td>
+                                <td class="py-2 px-6 border-b"><%= table.capacity %></td>
+                                <td class="py-2 px-6 border-b">
+                                    <a href="/tables/<%= table._id %>/edit" class="btn-primary hover-scale py-1 px-3 rounded">Edit</a>
+                                    <a href="/tables/<%= table._id %>/delete" class="btn-primary hover-scale py-1 px-3 rounded">Delete</a>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            <% } else { %>
+                <p class="text-gray-500">No vacant tables at the moment.</p>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
+    <script>
+        
+            // Burger menus
+            document.addEventListener('DOMContentLoaded', function () {
+                // open
+                const burger = document.querySelectorAll('.navbar-burger');
+                const menu = document.querySelectorAll('.navbar-menu');
+
+                if (burger.length && menu.length) {
+                    for (var i = 0; i < burger.length; i++) {
+                        burger[i].addEventListener('click', function () {
+                            for (var j = 0; j < menu.length; j++) {
+                                menu[j].classList.toggle('hidden');
+                            }
+                        });
+                    }
+                }
+
+                // close
+                const close = document.querySelectorAll('.navbar-close');
+                const backdrop = document.querySelectorAll('.navbar-backdrop');
+
+                if (close.length) {
+                    for (var i = 0; i < close.length; i++) {
+                        close[i].addEventListener('click', function () {
+                            for (var j = 0; j < menu.length; j++) {
+                                menu[j].classList.toggle('hidden');
+                            }
+                        });
+                    }
+                }
+
+                if (backdrop.length) {
+                    for (var i = 0; i < backdrop.length; i++) {
+                        backdrop[i].addEventListener('click', function () {
+                            for (var j = 0; j < menu.length; j++) {
+                                menu[j].classList.toggle('hidden');
+                            }
+                        });
+                    }
+                }
+            });
+        // GSAP Animations
+        gsap.from('.table-section', {
+            duration: 1,
+            y: 50,
+            opacity: 0,
+            stagger: 0.2
+        });
+    </script>
+</body>
+
+</html>

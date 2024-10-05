@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Menu Item</title>
+    
+    <!-- Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+
+    <style>
+        body {
+            font-family: 'Playfair Display', serif;
+            background: url('https://images.unsplash.com/photo-1526234362653-3b75a0c07438?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center fixed;
+            background-size: cover;
+            color: #ECDFCC;
+        }
+
+        .form-container {
+            background-color: rgba(60, 61, 55, 0.85);
+            border-radius: 15px;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+            padding: 50px 20px;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .form-container:hover {
+            transform: translateY(-10px);
+        }
+
+        .btn-primary {
+            background-color: #697565;
+            border-color: #697565;
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #3C3D37;
+            border-color: #3C3D37;
+        }
+
+        .success-message {
+            background-color: rgba(144, 238, 144, 0.8);
+            border: 1px solid green;
+            color: green;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        .error-message {
+            background-color: rgba(255, 99, 71, 0.8);
+            border: 1px solid red;
+            color: rgb(255, 255, 255);
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <%- include('../partials/navbar') %>
+
+    <div class="container mx-auto flex justify-center items-center min-h-screen">
+        <div class="form-container w-full max-w-md p-8">
+            <h2 class="text-3xl font-bold mb-6 text-center">Edit Menu Item</h2>
+
+            <!-- Flash Messages -->
+            <% if (flashMessages.success_msg) { %>
+                <div class="success-message">
+                    <strong>Success!</strong> <%= flashMessages.success_msg %>
+                </div>
+            <% } %>
+            <% if (flashMessages.error_msg) { %>
+                <div class="error-message">
+                    <strong>Error!</strong> <%= flashMessages.error_msg %>
+                </div>
+            <% } %>
+
+            <form action="/admin/menu/<%= menuItem._id %>/edit" method="POST" enctype="multipart/form-data">
+                <div class="mb-4">
+                    <label for="name" class="block text-sm font-medium mb-2">Name</label>
+                    <input type="text" name="name" id="name" class="w-full p-3 rounded bg-gray-700 text-white" value="<%= menuItem.name %>" required>
+                </div>
+                <div class="mb-4">
+                    <label for="price" class="block text-sm font-medium mb-2">Price</label>
+                    <input type="number" name="price" id="price" class="w-full p-3 rounded bg-gray-700 text-white" value="<%= menuItem.price %>" required>
+                </div>
+                <div class="mb-4">
+                    <label for="description" class="block text-sm font-medium mb-2">Description</label>
+                    <textarea name="description" id="description" class="w-full p-3 rounded bg-gray-700 text-white" required><%= menuItem.description %></textarea>
+                </div>
+                <div class="mb-4">
+                    <label for="category" class="block text-sm font-medium mb-2">Category</label>
+                    <input type="text" name="category" id="category" class="w-full p-3 rounded bg-gray-700 text-white" value="<%= menuItem.category %>" required>
+                </div>
+                <div class="mb-4">
+                    <label for="available" class="block text-sm font-medium mb-2">Available</label>
+                    <select name="available" id="available" class="w-full p-3 rounded bg-gray-700 text-white" required>
+                        <option value="true" <%= menuItem.available ? 'selected' : '' %>>Yes</option>
+                        <option value="false" <%= !menuItem.available ? 'selected' : '' %>>No</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="stock" class="block text-sm font-medium mb-2">Stock</label>
+                    <input type="number" name="stock" id="stock" class="w-full p-3 rounded bg-gray-700 text-white" value="<%= menuItem.stock %>" required>
+                </div>
+                <div class="mb-4">
+                    <label for="image" class="block text-sm font-medium mb-2">Image</label>
+                    <input type="file" name="image" id="image" class="w-full p-3 rounded bg-gray-700 text-white">
+                </div>
+                <button type="submit" class="btn-primary w-full py-3 rounded">Update Item</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
+    <script>
+        
+            // Burger menus
+            document.addEventListener('DOMContentLoaded', function () {
+                // open
+                const burger = document.querySelectorAll('.navbar-burger');
+                const menu = document.querySelectorAll('.navbar-menu');
+
+                if (burger.length && menu.length) {
+                    for (var i = 0; i < burger.length; i++) {
+                        burger[i].addEventListener('click', function () {
+                            for (var j = 0; j < menu.length; j++) {
+                                menu[j].classList.toggle('hidden');
+                            }
+                        });
+                    }
+                }
+
+                // close
+                const close = document.querySelectorAll('.navbar-close');
+                const backdrop = document.querySelectorAll('.navbar-backdrop');
+
+                if (close.length) {
+                    for (var i = 0; i < close.length; i++) {
+                        close[i].addEventListener('click', function () {
+                            for (var j = 0; j < menu.length; j++) {
+                                menu[j].classList.toggle('hidden');
+                            }
+                        });
+                    }
+                }
+
+                if (backdrop.length) {
+                    for (var i = 0; i < backdrop.length; i++) {
+                        backdrop[i].addEventListener('click', function () {
+                            for (var j = 0; j < menu.length; j++) {
+                                menu[j].classList.toggle('hidden');
+                            }
+                        });
+                    }
+                }
+            });
+        // GSAP Animations
+        gsap.from('.form-container', {
+            duration: 1,
+            y: 50,
+            opacity: 0,
+            ease: 'power3.out'
+        });
+    </script>
+</body>
+
+</html>

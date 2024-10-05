@@ -1,0 +1,86 @@
+<div class="container mx-auto px-4 py-4 flex justify-between items-center bg-[#4b3a36] text-[#e8d5b7] rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+  <a class="text-3xl font-bold leading-none hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="/">Restaurantly</a>
+
+  <!-- Mobile Menu Button -->
+  <div class="lg:hidden">
+    <button class="navbar-burger flex items-center text-[#e8d5b7] p-3 hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300">
+      <svg class="block h-4 w-4 fill-current" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+        <title>Mobile menu</title>
+        <path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z"></path>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Desktop Menu -->
+  <ul class="hidden lg:flex lg:items-center lg:w-auto lg:space-x-6">
+    <% if (user) { %>
+      <% if (isAdmin) { %>
+        <li><a class="text-[#e8d5b7] hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="/admin/menu">Inventory</a></li>
+        <li><a class="text-[#e8d5b7] hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="/admin/orders">Order Management</a></li>
+        <li><a class="text-[#e8d5b7] hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="/admin/users">Users Management</a></li>
+        <li><a class="text-[#e8d5b7] hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="/tables">Tables Management</a></li>
+        <li><a class="text-[#e8d5b7] hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="/admin/orders/history">Order History</a></li>
+        <% } else { %>
+          <li><a class="text-[#e8d5b7] hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="/customer/menu">Menu</a></li>
+          <li><a class="text-[#e8d5b7] hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="/cart/view">Cart</a></li>
+          <li><a class="text-[#e8d5b7] hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="/customer/orders">Orders</a></li>
+          <li><a class="text-[#e8d5b7] hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="/tables">Tables</a></li>
+          <% } %>
+
+            <li><a class="text-[#e8d5b7] hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="/user/profile">Profile</a></li>
+            <li><a class="text-[#e8d5b7] hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="/logout">Logout</a></li>
+        <% } else { %>
+              <li><a class="text-[#e8d5b7] hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="/login">Login</a></li>
+              <li><a class="text-[#e8d5b7] hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="/register">Register</a></li>
+        <% } %>
+                <li><a class="text-[#e8d5b7] hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="#contact">Contact</a></li>
+  </ul>
+</div>
+
+<!-- Mobile Menu -->
+<div class="navbar-menu relative z-50 hidden">
+  <div class="navbar-backdrop fixed inset-0 "></div>
+  <nav class="fixed top-0 left-0 bottom-0 flex flex-col w-5/6 max-w-sm py-6 px-6 bg-[#4b3a36] border-r overflow-y-auto bg-gray-800 ">
+    <div class="flex items-center mb-8">
+      <a class="mr-auto text-3xl font-bold leading-none hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="index.html">Restaurantly</a>
+      <button class="navbar-close">
+        <svg class="h-6 w-6 text-[#e8d5b7] cursor-pointer hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+    <div>
+      <ul>
+        <% if (user) { %>
+          <% if (isAdmin) { %>
+            <li class="mb-1"><a class="block p-4 text-sm font-semibold text-[#e8d5b7] hover:bg-green-600 hover:text-white hover:scale-105 rounded transition-transform transition-colors duration-300" href="/admin/menu">Inventory</a></li>
+            <li class="mb-1"><a class="block p-4 text-sm font-semibold text-[#e8d5b7] hover:bg-green-600 hover:text-white hover:scale-105 rounded transition-transform transition-colors duration-300" href="/admin/orders">Order Management</a></li>
+            <li class="mb-1"><a class="block p-4 text-sm font-semibold text-[#e8d5b7] hover:bg-green-600 hover:text-white hover:scale-105 rounded transition-transform transition-colors duration-300" href="/admin/users">Users Management</a></li>
+            <li class="mb-1"><a class="block p-4 text-sm font-semibold text-[#e8d5b7] hover:bg-green-600 hover:text-white hover:scale-105 rounded transition-transform transition-colors duration-300" href="/tables">Tables Management</a></li>
+            <li class="mb-1"><a class="block p-4 text-sm font-semibold text-[#e8d5b7] hover:bg-green-600 hover:text-white hover:scale-105 rounded transition-transform transition-colors duration-300" href="/admin/orders/history">Order History</a></li>
+          <% } else { %>
+              <li class="mb-1"><a class="block p-4 text-sm font-semibold text-[#e8d5b7] hover:bg-green-600 hover:text-white hover:scale-105 rounded transition-transform transition-colors duration-300" href="/customer/menu">Menu</a></li>
+              <li class="mb-1"><a class="block p-4 text-sm font-semibold text-[#e8d5b7] hover:bg-green-600 hover:text-white hover:scale-105 rounded transition-transform transition-colors duration-300" href="/cart/view">Cart</a></li>
+              <li class="mb-1"><a class="block p-4 text-sm font-semibold text-[#e8d5b7] hover:bg-green-600 hover:text-white hover:scale-105 rounded transition-transform transition-colors duration-300" href="/customer/orders">Orders</a></li>
+              <li class="mb-1"><a class="block p-4 text-sm font-semibold text-[#e8d5b7] hover:bg-green-600 hover:text-white hover:scale-105 rounded transition-transform transition-colors duration-300" href="/tables">Tables</a></li>
+          <% } %>
+              <li class="mb-1"><a class="block p-4 text-sm font-semibold text-[#e8d5b7] hover:bg-green-600 hover:text-white hover:scale-105 rounded transition-transform transition-colors duration-300" href="/user/profile">Profile</a></li>
+              <li class="mb-1"><a class="block p-4 text-sm font-semibold text-[#e8d5b7] hover:bg-green-600 hover:text-white hover:scale-105 rounded transition-transform transition-colors duration-300" href="/logout">Logout</a></li>
+        <% } else { %>
+                  <li class="mb-1"><a class="block p-4 text-sm font-semibold text-[#e8d5b7] hover:bg-green-600 hover:text-white hover:scale-105 rounded transition-transform transition-colors duration-300" href="/login">Login</a></li>
+                  <li class="mb-1"><a class="block p-4 text-sm font-semibold text-[#e8d5b7] hover:bg-green-600 hover:text-white hover:scale-105 rounded transition-transform transition-colors duration-300" href="/register">Register</a></li>
+        <% } %>
+                    <li class="mb-1"><a class="block p-4 text-sm font-semibold text-[#e8d5b7] hover:bg-green-600 hover:text-white hover:scale-105 rounded transition-transform transition-colors duration-300" href="#contact">Contact</a></li>
+      </ul>
+    </div>
+    <div class="mt-auto">
+      <div class="pt-6">
+        <a class="block px-4 py-3 mb-3 leading-loose text-xs text-center font-semibold leading-none bg-[#3c3d37] hover:bg-gray-100 hover:scale-105 rounded-xl transition-transform transition-colors duration-300" href="#">Sign in</a>
+        <a class="block px-4 py-3 mb-2 leading-loose text-xs text-center text-white font-semibold bg-green-600 hover:bg-green-700 hover:scale-105 rounded-xl transition-transform transition-colors duration-300" href="#">Sign Up</a>
+      </div>
+      <p class="my-4 text-xs text-center text-[#e8d5b7]">
+        <span>Copyright © 2021</span>
+      </p>
+    </div>
+  </nav>
+</div>

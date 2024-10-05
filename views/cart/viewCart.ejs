@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Cart</title>
+    
+    <!-- Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+
+    <style>
+        body {
+            font-family: 'Playfair Display', serif;
+            background: url('https://images.unsplash.com/photo-1526234362653-3b75a0c07438?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center fixed;
+            background-size: cover;
+            color: #ECDFCC;
+        }
+
+        .cart-container {
+            background-color: rgba(60, 61, 55, 0.85);
+            border-radius: 15px;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        }
+
+        .cart-container:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-primary {
+            background-color: #697565;
+            border-color: #697565;
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #3C3D37;
+            border-color: #3C3D37;
+        }
+
+        .hover-scale {
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .hover-scale:hover {
+            transform: scale(1.05);
+        }
+
+        .inputModel {
+            background-color: #3c3d37;
+            border: 1px solid #888;
+            color: #ECDFCC;
+            font-size: 25px;
+        }
+
+        .success-message {
+            background-color: rgba(144, 238, 144, 0.8);
+            border: 1px solid green;
+            color: green;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        .error-message {
+            background-color: rgba(255, 99, 71, 0.8);
+            border: 1px solid red;
+            color: rgb(255, 255, 255);
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .cart-container table {
+            transition: all 0.3s ease-in-out;
+        }
+
+        .cart-container table tr:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .cart-container table th, .cart-container table td {
+            transition: all 0.3s ease-in-out;
+        }
+
+        .cart-container table th:hover, .cart-container table td:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100">
+    <!-- Navbar -->
+    <%- include('../partials/navbar') %>
+
+    <div class="container mx-auto mt-10 fade-in">
+        <h2 class="text-5xl font-bold mb-10 text-center text-[#4b3a36]">Your Cart</h2>
+
+        <!-- Flash Messages -->
+        <% if (flashMessages.success_msg) { %>
+            <div class="success-message">
+                <strong>Success!</strong> <%= flashMessages.success_msg %>
+            </div>
+        <% } %>
+        <% if (flashMessages.error_msg) { %>
+            <div class="error-message">
+                <strong>Error!</strong> <%= flashMessages.error_msg %>
+            </div>
+        <% } %>
+
+        <div class="cart-container">
+            <% if (cartItems.length > 0) { %>
+                <form action="/orders/place" method="POST">
+                    <table class="min-w-full bg-transparent text-light">
+                        <thead>
+                            <tr>
+                                <th class="py-4 px-6 border-b text-left">Item</th>
+                                <th class="py-4 px-6 border-b text-left">Quantity</th>
+                                <th class="py-4 px-6 border-b text-left">Price</th>
+                                <th class="py-4 px-6 border-b text-left">Total</th>
+                                <th class="py-4 px-6 border-b text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% cartItems.forEach(item => { %>
+                                <% if (item.menuItem) { %>
+                                    <tr>
+                                        <td class="py-2 px-6 border-b"><%= item.menuItem.name %></td>
+                                        <td class="py-2 px-6 border-b"><%= item.quantity %></td>
+                                        <td class="py-2 px-6 border-b">₹<%= item.menuItem.price %></td>
+                                        <td class="py-2 px-6 border-b">₹<%= item.menuItem.price * item.quantity %></td>
+                                        <td class="py-2 px-6 border-b flex items-center space-x-2">
+                                            <a href="/cart/increment/<%= item.menuItem._id %>" class="text-white bg-green-500 hover:bg-green-700 py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">+</a>
+                                            <a href="/cart/decrement/<%= item.menuItem._id %>" class="text-white bg-yellow-500 hover:bg-yellow-700 py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">-</a>
+                                            <a href="/cart/remove/<%= item.menuItem._id %>" class="text-white bg-red-500 hover:bg-red-700 py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">x</a>
+                                        </td>
+                                    </tr>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="5" class="py-4 px-6 border-b text-center text-red-500">Item not found</td>
+                                    </tr>
+                                <% } %>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                    <div class="mt-6">
+                        <label for="tableNumber" class="block mb-2 text-light">Table Number:</label>
+                        <input type="text" id="tableNumber" name="tableNumber" class="inputModel border p-3 w-full rounded bg-[#3C3D37] text-[#e8d5b7]" value="<%= tableNumber %>" required>
+                    </div>
+                    <div class="mt-6">
+                        <label for="total" class="block mb-2 text-light">Total:</label>
+                        <input type="number" id="total" name="total" class="inputModel border p-3 w-full rounded bg-[#3C3D37] text-[#e8d5b7]" value="<%= totalPrice %>" required readonly>
+                    </div>
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white p-3 rounded mt-2 w-full transition duration-300 ease-in-out transform hover:scale-105">Place Order</button>
+                </form>
+                <a href="/cart/clear" class="bg-gradient-to-r from-red-500 to-red-700 hover:from-red-700 hover:to-red-900 text-white p-3 rounded mt-2 w-full transition duration-300 ease-in-out transform hover:scale-105 shadow-lg hover:shadow-xl block text-center">Clear Cart</a>
+            <% } else { %>
+                <p class="text-center text-light">Your cart is empty.</p>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
+    <script>
+        
+            // Burger menus
+            document.addEventListener('DOMContentLoaded', function () {
+                // open
+                const burger = document.querySelectorAll('.navbar-burger');
+                const menu = document.querySelectorAll('.navbar-menu');
+
+                if (burger.length && menu.length) {
+                    for (var i = 0; i < burger.length; i++) {
+                        burger[i].addEventListener('click', function () {
+                            for (var j = 0; j < menu.length; j++) {
+                                menu[j].classList.toggle('hidden');
+                            }
+                        });
+                    }
+                }
+
+                // close
+                const close = document.querySelectorAll('.navbar-close');
+                const backdrop = document.querySelectorAll('.navbar-backdrop');
+
+                if (close.length) {
+                    for (var i = 0; i < close.length; i++) {
+                        close[i].addEventListener('click', function () {
+                            for (var j = 0; j < menu.length; j++) {
+                                menu[j].classList.toggle('hidden');
+                            }
+                        });
+                    }
+                }
+
+                if (backdrop.length) {
+                    for (var i = 0; i < backdrop.length; i++) {
+                        backdrop[i].addEventListener('click', function () {
+                            for (var j = 0; j < menu.length; j++) {
+                                menu[j].classList.toggle('hidden');
+                            }
+                        });
+                    }
+                }
+            });
+        // GSAP Animations
+        gsap.from('.cart-container', {
+            duration: 1,
+            y: 50,
+            opacity: 0,
+            stagger: 0.2
+        });
+    </script>
+</body>
+
+</html>

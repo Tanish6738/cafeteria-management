@@ -1,0 +1,572 @@
+const express = require('express');
+const app = express();
+const path = require('path');
+const mongoose = require('mongoose');
+const session = require('express-session');
+const flash = require('connect-flash');
+const bcrypt = require('bcrypt');
+const qrcode = require('qrcode');
+const io = require('socket.io')();
+
+const multer = require('multer');
+const fs = require('fs');
+const { promisify } = require('util');
+const unlinkAsync = promisify(fs.unlink);
+const jwt = require('jsonwebtoken');
+
+// Models
+const Users = require('./models/Users');
+const Menu = require('./models/Menu');
+const Orders = require('./models/Orders');
+const Tables = require('./models/Tables');
+
+// Connect to MongoDB with retry mechanism
+const connectWithRetry = async () => {
+    await mongoose.connect('mongodb://localhost:27017/Cafe')
+        .then(() => console.log('Connected to MongoDB'))
+        .catch(err => {
+            console.error('Error connecting to MongoDB', err);
+            // Retry after 5 seconds
+            setTimeout(connectWithRetry, 5000);
+        });
+};
+connectWithRetry();
+
+// Ensure uploads directory exists
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir);
+}
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'uploads')));
+app.use(session({
+    secret: 'defaultSecretKey',  // Local secret key
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+        secure: false,  // Since this is local, no need for secure cookies
+        httpOnly: true,
+        maxAge: 1000 * 60 * 60 // 1 hour
+    }
+}));
+app.use(flash());
+
+// Set view engine
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+// Flash messages middleware
+app.use((req, res, next) => {
+    res.locals.flashMessages = req.flash();
+    res.locals.isAdmin = req.session.user && req.session.user.role === 'admin';
+    res.locals.user = req.session.user; // Add this line to set the user variable
+    next();
+});
+
+// Default Admin 
+const createDefaultAdmin = async () => {
+    try {
+        const existingAdmin = await Users.findOne({ role: 'admin' });
+
+        if (existingAdmin) {
+            console.log('An admin already exists.');
+            return;
+        }
+
+        const hashedPassword = await bcrypt.hash('123456', 10);
+
+        const adminUser = new Users({
+            username: 'Tanishq',
+            email: 'admin@default.com',
+            password: hashedPassword,
+            role: 'admin',
+            mobile: process.env.DEFAULT_ADMIN_MOBILE || '9999999999',
+        });
+
+        await adminUser.save();
+        console.log('Default admin "Tanishq" created successfully.');
+    } catch (err) {
+        console.error('Error creating default admin:', err);
+    }
+};
+
+// Call the function to create the default admin
+await createDefaultAdmin();
+
+// Middleware to check if the user has a reserved table
+const ensureTableReserved = async (req, res, next) => {
+    if (!req.session.user) {
+        req.flash('error_msg', 'Please log in to view that resource');
+        return res.redirect('/login');
+    }
+    const reservedTable = await Tables.findOne({ reservedBy: req.session.user._id, status: 'reserved' });
+    if (reservedTable) {
+        return next();
+    }
+    req.flash('error_msg', 'Please reserve a table before placing an order');
+    return res.redirect('/tables');
+};
+
+// Authentication middleware
+const ensureAuthenticated = (req, res, next) => {
+    if (req.session.user) {
+        return next();
+    }
+    req.flash('error_msg', 'Please log in to view that resource');
+    return res.redirect('/login');
+};
+
+const ensureAdmin = (req, res, next) => {
+    if (req.session.user && req.session.user.role === 'admin') {
+        return next();
+    }
+    req.flash('error_msg', 'Admin access only');
+    return res.redirect('/login');
+};
+
+const asyncHandler = fn => (req, res, next) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+};
+
+const setFlash = (req, type, msg) => {
+    req.flash(type, msg);
+};
+
+// Multer setup for file uploads
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/');
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + '-' + file.originalname);
+    }
+});
+
+const upload = multer({
+    storage,
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'];
+        if (!allowedTypes.includes(file.mimetype)) {
+            return cb(null, false, new Error('Only images are allowed'));
+        }
+        cb(null, true);
+    },
+    limits: { fileSize: 10 * 1024 * 1024 }
+});
+
+// Integrate Socket.io
+const server = require('http').createServer(app);
+io.attach(server);
+
+io.on('connection', socket => {
+    socket.on('tableStatusChanged', data => {
+        io.emit('updateTableStatus', data);
+    });
+
+    socket.on('orderStatusChanged', data => {
+        io.emit('updateOrderStatus', data);
+    });
+
+    socket.on('orderUpdate', data => {
+        io.emit('notifyOrderUpdate', data);
+    });
+
+    socket.on('error', (err) => {
+        console.error('Socket.io error:', err);
+    });
+});
+
+// Home Route
+app.get('/', (req, res) => {
+    const { user } = req.session;
+    if (user && user.role === 'admin') {
+        res.render('home', { user, isAdmin: true });
+    } else {
+        res.render('home', { user, isAdmin: false });
+    }
+});
+
+// Authentication
+app.get('/login', (req, res) => {
+    res.render('auth/login');
+});
+
+app.get('/logout', (req, res) => {
+    req.session.destroy();
+    res.redirect('/login');
+});
+
+app.get('/register', (req, res) => {
+    res.render('auth/register');
+});
+
+app.post('/login', asyncHandler(async (req, res) => {
+    const { email, password } = req.body;
+    const user = await Users.findOne({ email });
+    if (user && await bcrypt.compare(password, user.password)) {
+        req.session.user = user;
+        req.flash('success_msg', 'You are now logged in');
+        return res.redirect('/');
+    } else {
+        req.flash('error_msg', 'Invalid email or password');
+        return res.redirect('/login');
+    }
+}));
+
+app.post('/register', asyncHandler(async (req, res) => {
+    const { username, email, password, mobile } = req.body;
+    console.log('Registering user:', username, email, mobile);
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new Users({ username, email, password: hashedPassword, mobile });
+    await newUser.save();
+    req.flash('success_msg', 'You are now registered and can log in');
+    return res.redirect('/login');
+}));
+
+// Admin Routes and Features
+
+// Admin Menu Management
+app.get('/admin/menu', ensureAuthenticated, asyncHandler(async (req, res) => {
+    const menuItems = await Menu.find();
+    res.render('menu/adminMenu', { menuItems });
+}));
+
+app.get('/addNewItems', ensureAdmin, (req, res) => {
+    res.render('menu/addMenuItem');
+});
+
+app.post('/addNewItems', ensureAdmin, upload.single('image'), asyncHandler(async (req, res) => {
+    const { name, price, description, category, available, stock } = req.body;
+    const image = req.file ? req.file.path : '';
+    const newMenuItem = new Menu({ name, price, description, image, category, available, stock });
+    await newMenuItem.save();
+    req.flash('success_msg', 'Menu item added successfully');
+    return res.redirect('/admin/menu');
+}));
+
+app.get('/menu/:id/edit', ensureAdmin, asyncHandler(async (req, res) => {
+    const menuItem = await Menu.findById(req.params.id);
+    if (!menuItem) {
+        req.flash('error_msg', 'Menu item not found');
+        return res.redirect('/menu');
+    }
+    res.render('menu/editMenuItem', { menuItem });
+}));
+
+app.post('/menu/:id/edit', ensureAdmin, upload.single('image'), asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const menuItem = await Menu.findById(id);
+    if (!menuItem) {
+        req.flash('error_msg', 'Menu item not found');
+        return res.redirect('/menu');
+    }
+    const { name, price, description, category, available, stock } = req.body;
+    const image = req.file ? req.file.path : menuItem.image;
+    if (req.file && menuItem.image && fs.existsSync(menuItem.image)) {
+        await unlinkAsync(menuItem.image); // Delete old image
+    }
+    await Menu.findByIdAndUpdate(id, { name, price, description, image, category, available, stock });
+    req.flash('success_msg', 'Menu item updated successfully');
+    return res.redirect('/menu');
+}));
+
+app.get('/menu/:id/delete', ensureAdmin, asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const menuItem = await Menu.findById(id);
+    if (!menuItem) {
+        req.flash('error_msg', 'Menu item not found');
+        return res.redirect('/menu');
+    }
+    if (menuItem.image) {
+        await unlinkAsync(menuItem.image); // Delete image
+    }
+    await Menu.findByIdAndDelete(id);
+    req.flash('success_msg', 'Menu item deleted successfully');
+    return res.redirect('/menu');
+}));
+
+app.post('/admin/menu/:id/toggle-availability', ensureAdmin, asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const menuItem = await Menu.findById(id);
+    if (!menuItem) {
+        req.flash('error_msg', 'Menu item not found');
+        return res.redirect('/admin/menu');
+    }
+    menuItem.available = !menuItem.available;
+    await menuItem.save();
+    req.flash('success_msg', 'Menu item availability toggled successfully');
+    return res.redirect('/admin/menu');
+}));
+
+// Admin Orders Management
+app.get("/admin/orders", ensureAdmin, asyncHandler(async (req, res) => {
+    const orders = await Orders.find().populate('items.menuItem').populate('customer');
+    res.render('orders/adminOrders', { orders });
+}));
+
+app.get('/admin/orders/:id', ensureAdmin, asyncHandler(async (req, res) => {
+    const order = await Orders.findById(req.params.id).populate('items.menuItem').populate('customer');
+    if (!order) {
+        req.flash('error_msg', 'Order not found');
+        return res.redirect('/orders');
+    }
+    res.render('orders/orderDetails', { order });
+}));
+
+app.post('/orders/:id/update-status', ensureAdmin, asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const validStatuses = ['pending', 'preparing', 'ready', 'served', 'completed', 'canceled']; // Example status values
+    if (!validStatuses.includes(status)) {
+        req.flash('error_msg', 'Invalid order status');
+        return res.redirect('/admin/orders');
+    }
+
+    const order = await Orders.findById(id);
+    if (!order) {
+        req.flash('error_msg', 'Order not found');
+        return res.redirect('/admin/orders');
+    }
+
+    order.status = status;
+    await order.save();
+
+    req.flash('success_msg', 'Order status updated successfully');
+    return res.redirect('/admin/orders');
+}));
+
+app.get('/admin/orders/:id/delete', ensureAdmin, asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const order = await Orders.findById(id);
+    if (!order) {
+        req.flash('error_msg', 'Order not found');
+        return res.redirect('/orders');
+    }
+    await Orders.findByIdAndDelete(id);
+    req.flash('success_msg', 'Order deleted successfully');
+    return res.redirect('/admin/orders');
+}));
+
+app.get('/admin/orders/history', ensureAdmin, asyncHandler(async (req, res) => {
+    const orders = await Orders.find({ status: 'completed' }).populate('items.menuItem').populate('customer');
+    res.render('orders/adminOrderHistory', { orders });
+}));
+
+app.post('/admin/orders/:id/mark-as-served', ensureAdmin, asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const order = await Orders.findById(id);
+    if (!order) {
+        req.flash('error_msg', 'Order not found');
+        return res.redirect('/admin/orders');
+    }
+    order.status = 'served';
+    await order.save();
+    req.flash('success_msg', 'Order marked as served');
+    return res.redirect('/admin/orders');
+}));
+
+// Admin User Management
+app.get('/admin/users', ensureAdmin, asyncHandler(async (req, res) => {
+    const users = await Users.find();
+    res.render('admin/adminUsers', { users });
+}));
+
+app.get('/admin/users/:id', ensureAdmin, asyncHandler(async (req, res) => {
+    const user = await Users.findById(req.params.id);
+    if (!user) {
+        req.flash('error_msg', 'User not found');
+        return res.redirect('/admin/users');
+    }
+    res.render('admin/adminUserDetails', { user });
+}));
+
+app.get('/admin/users/:id/delete', ensureAdmin, asyncHandler(async (req, res) => {
+    await Users.findByIdAndDelete(req.params.id);
+    req.flash('success_msg', 'User deleted successfully');
+    return res.redirect('/admin/users');
+}));
+
+// Admin Table Management
+app.get('/tables/add', ensureAdmin, (req, res) => {
+    res.render('tables/addTable');
+});
+
+app.post('/tables', ensureAdmin, asyncHandler(async (req, res) => {
+    const { tableNumber, capacity, status } = req.body;
+    if (!tableNumber || !capacity || !status) {
+        req.flash('error_msg', 'All fields are required');
+        return res.redirect('/tables/add');
+    }
+
+    const existingTable = await Tables.findOne({ tableNumber });
+    if (existingTable) {
+        req.flash('error_msg', 'Table number already exists');
+        return res.redirect('/tables/add');
+    }
+
+    const newTable = new Tables({ tableNumber, capacity, status });
+    await newTable.save();
+    req.flash('success_msg', 'Table added successfully');
+    return res.redirect('/tables');
+}));
+
+app.get('/tables/:id/edit', ensureAdmin, asyncHandler(async (req, res) => {
+    const table = await Tables.findById(req.params.id);
+    if (!table) {
+        req.flash('error_msg', 'Table not found');
+        return res.redirect('/tables');
+    }
+    res.render('tables/editTable', { table });
+}));
+
+app.post('/tables/:id/edit', ensureAdmin, asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { tableNumber, capacity, status } = req.body;
+
+    if (!tableNumber || !capacity || !status) {
+        req.flash('error_msg', 'All fields are required');
+        return res.redirect(`/tables/${id}/edit`);
+    }
+
+    await Tables.findByIdAndUpdate(id, { tableNumber, capacity, status });
+    req.flash('success_msg', 'Table updated successfully');
+    return res.redirect('/tables');
+}));
+
+app.get('/tables/:id/delete', ensureAdmin, asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const table = await Tables.findById(id);
+    if (!table) {
+        req.flash('error_msg', 'Table not found');
+        return res.redirect('/tables');
+    }
+    await Tables.findByIdAndDelete(id);
+    req.flash('success_msg', 'Table deleted successfully');
+    return res.redirect('/tables');
+}));
+
+// Customer Routes and Features
+
+// Menu Browsing
+app.get('/customer/menu', ensureAuthenticated, asyncHandler(async (req, res) => {
+    const menuItems = await Menu.find({ available: true });
+    res.render('menu/customerMenu', { menuItems });
+}));
+
+// Table Reservation
+app.post('/customer/tables/reserve', ensureAuthenticated, asyncHandler(async (req, res) => {
+    const { tableNumber } = req.body;
+    if (!tableNumber) {
+        req.flash('error_msg', 'Table number is required');
+        return res.redirect('/tables');
+    }
+
+    const table = await Tables.findOne({ tableNumber });
+    if (!table) {
+        req.flash('error_msg', 'Table not found');
+        return res.redirect('/tables');
+    }
+
+    if (table.status !== 'vacant') {
+        req.flash('error_msg', 'Table is not available');
+        return res.redirect('/tables');
+    }
+
+    const userHasReservation = await Tables.findOne({ reservedBy: req.session.user._id, status: 'reserved' });
+    if (userHasReservation) {
+        req.flash('error_msg', 'You already have a reserved table');
+        return res.redirect('/tables');
+    }
+
+    table.status = 'reserved';
+    table.reservedBy = req.session.user._id;
+    await table.save();
+
+    req.flash('success_msg', 'Table reserved successfully');
+    return res.redirect('/tables');
+}));
+
+// Cart Management
+app.post('/cart/add', ensureAuthenticated, asyncHandler(async (req, res) => {
+    const { menuItemId, quantity } = req.body;
+    if (!menuItemId || !quantity) {
+        req.flash('error_msg', 'Menu item and quantity are required');
+        return res.redirect('/customer/menu');
+    }
+
+    const menuItem = await Menu.findById(menuItemId);
+    if (!menuItem) {
+        req.flash('error_msg', 'Menu item not found');
+        return res.redirect('/customer/menu');
+    }
+
+    if (!req.session.cart) {
+        req.session.cart = [];
+    }
+
+    const cartItem = req.session.cart.find(item => item.menuItemId === menuItemId);
+    if (cartItem) {
+        cartItem.quantity += quantity;
+    } else {
+        req.session.cart.push({ menuItemId, quantity });
+    }
+
+    req.flash('success_msg', 'Item added to cart');
+    return res.redirect('/customer/menu');
+}));
+
+app.get('/cart/view', ensureAuthenticated, (req, res) => {
+    res.render('cart/viewCart', { cart: req.session.cart || [] });
+});
+
+app.post('/cart/remove', ensureAuthenticated, (req, res) => {
+    const { menuItemId } = req.body;
+    if (!menuItemId) {
+        req.flash('error_msg', 'Menu item is required');
+        return res.redirect('/cart/view');
+    }
+
+    req.session.cart = req.session.cart.filter(item => item.menuItemId !== menuItemId);
+    req.flash('success_msg', 'Item removed from cart');
+    return res.redirect('/cart/view');
+});
+
+// Order Placement
+app.post('/orders/place', ensureAuthenticated, ensureTableReserved, asyncHandler(async (req, res) => {
+    if (!req.session.cart || req.session.cart.length === 0) {
+        req.flash('error_msg', 'Your cart is empty');
+        return res.redirect('/cart/view');
+    }
+
+    const newOrder = new Orders({
+        customer: req.session.user._id,
+        items: req.session.cart.map(item => ({
+            menuItem: item.menuItemId,
+            quantity: item.quantity
+        })),
+        status: 'pending'
+    });
+
+    try {
+        await newOrder.save();
+        req.session.cart = []; // Clear the cart
+        req.flash('success_msg', 'Order placed successfully');
+        return res.redirect('/customer/orders');
+    } catch (err) {
+        console.error('Error saving new order:', err);
+        req.flash('error_msg', 'Failed to place order');
+        return res.redirect('/cart/view');
+    }
+}));
+
+app.get('/customer/orders', ensureAuthenticated, asyncHandler(async (req, res) => {
+    const orders = await Orders.find({ customer: req.session.user._id }).populate('items.menuItem');
+    res.render('orders/customerOrders', { orders });
+}));
+
+// Starting the server
+server.listen(3000, () => console.log('Server is running on port 3000'));

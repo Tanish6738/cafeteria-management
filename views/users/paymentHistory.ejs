@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment History</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        
+    </style>
+</head>
+<body class="bg-gray-100">
+    <%- include('../partials/navbar') %>
+    <div class="container mx-auto mt-10 fade-in">
+        <h2 class="text-2xl font-bold mb-6">Payment History</h2>
+        <div class="bg-white p-6 rounded shadow">
+            <% if (payments.length > 0) { %>
+                <table class="min-w-full bg-white">
+                    <thead>
+                        <tr>
+                            <th class="py-2 px-4 border-b">Date</th>
+                            <th class="py-2 px-4 border-b">Amount</th>
+                            <th class="py-2 px-4 border-b">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% payments.forEach(payment => { %>
+                            <tr>
+                                <td class="py-2 px-4 border-b"><%= payment.date %></td>
+                                <td class="py-2 px-4 border-b">$<%= payment.amount %></td>
+                                <td class="py-2 px-4 border-b"><%= payment.status %></td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            <% } else { %>
+                <p>No payment history available.</p>
+            <% } %>
+        </div>
+    </div>
+    <script>
+        
+            // Burger menus
+            document.addEventListener('DOMContentLoaded', function () {
+                // open
+                const burger = document.querySelectorAll('.navbar-burger');
+                const menu = document.querySelectorAll('.navbar-menu');
+
+                if (burger.length && menu.length) {
+                    for (var i = 0; i < burger.length; i++) {
+                        burger[i].addEventListener('click', function () {
+                            for (var j = 0; j < menu.length; j++) {
+                                menu[j].classList.toggle('hidden');
+                            }
+                        });
+                    }
+                }
+
+                // close
+                const close = document.querySelectorAll('.navbar-close');
+                const backdrop = document.querySelectorAll('.navbar-backdrop');
+
+                if (close.length) {
+                    for (var i = 0; i < close.length; i++) {
+                        close[i].addEventListener('click', function () {
+                            for (var j = 0; j < menu.length; j++) {
+                                menu[j].classList.toggle('hidden');
+                            }
+                        });
+                    }
+                }
+
+                if (backdrop.length) {
+                    for (var i = 0; i < backdrop.length; i++) {
+                        backdrop[i].addEventListener('click', function () {
+                            for (var j = 0; j < menu.length; j++) {
+                                menu[j].classList.toggle('hidden');
+                            }
+                        });
+                    }
+                }
+            });
+    </script>
+</body>
+</html>
