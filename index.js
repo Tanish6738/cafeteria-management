@@ -880,7 +880,10 @@ app.get('/admin/orders/:id/receipt', ensureAdmin, asyncHandler(async (req, res) 
 
 // Table Reservation
 
-// app.get('/tables/tableHistory', ensureAuthenticated , ensureAdmin 
+app.get('/admin/tables/tableHistory', ensureAuthenticated , ensureAdmin , asyncHandler(async (req, res) => {
+    const tableHistory = await Tables.find();
+    res.render('tables/tableHistory', { tableHistory });
+}));
 
 app.get('/tables', ensureAuthenticated, asyncHandler(async (req, res) => {
     const reservedTables = await Tables.find({ status: 'reserved' }).populate('reservedBy');
