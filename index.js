@@ -586,98 +586,6 @@ app.get('/menu/:id', ensureAuthenticated, asyncHandler(async (req, res) => {
     res.render('menu/menuItem', { menuItem });
 }));
 
-// Table Reservation
-app.get('/tables', ensureAuthenticated, asyncHandler(async (req, res) => {
-    const reservedTables = await Tables.find({ status: 'reserved' }).populate('reservedBy');
-    const vacantTables = await Tables.find({ status: 'vacant' });
-
-    // Ensure reservedBy is not null before accessing its properties
-    const reservedTablesWithUsers = reservedTables.map(table => ({
-        ...table.toObject(),
-        reservedBy: table.reservedBy || { name: 'Unknown', _id: 'Unknown' }
-    }));
-
-    res.render(res.locals.isAdmin ? 'tables/adminTables' : 'tables/customerTables', {
-        reservedTables: reservedTablesWithUsers,
-        vacantTables
-    });
-}));
-
-app.post('/customer/tables/reserve', ensureAuthenticated, asyncHandler(async (req, res) => {
-    const { tableNumber } = req.body;
-
-    if (!tableNumber) {
-        setFlash(req, 'error_msg', 'Table number is required');
-        return res.redirect('/tables');
-    }
-
-    try {
-        const table = await Tables.findOne({ tableNumber });
-        if (!table) {
-            setFlash(req, 'error_msg', 'Table not found');
-            return res.redirect('/tables');
-        }
-        if (table.status !== 'vacant') {
-            setFlash(req, 'error_msg', 'Table is not available');
-            return res.redirect('/tables');
-        }
-
-        // Check if the user already has a reserved table
-        const userHasReservation = await Tables.findOne({ reservedBy: req.session.user._id, status: 'reserved' });
-        if (userHasReservation) {
-            setFlash(req, 'error_msg', 'You already have a reserved table');
-            return res.redirect('/tables');
-        }
-
-        // Reserve the table
-        table.status = 'reserved';
-        table.reservedBy = req.session.user._id;
-        await table.save();
-        io.emit('tableStatusChanged', { tableNumber: table.tableNumber, status: table.status });
-
-        setFlash(req, 'success_msg', 'Table reserved successfully');
-    } catch (err) {
-        console.error('Error reserving table:', err);
-        setFlash(req, 'error_msg', 'An error occurred while reserving the table');
-    }
-
-    return res.redirect('/tables');
-}));
-
-app.post('/customer/tables/cancel', ensureAuthenticated, asyncHandler(async (req, res) => {
-    const { tableNumber } = req.body;
-
-    if (!tableNumber) {
-        setFlash(req, 'error_msg', 'Table number is required');
-        return res.redirect('/tables');
-    }
-
-    try {
-        const table = await Tables.findOne({ tableNumber, reservedBy: req.session.user._id, status: 'reserved' });
-        if (!table) {
-            setFlash(req, 'error_msg', 'Table not found or not reserved by you');
-            return res.redirect('/tables');
-        }
-
-        // Cancel the reservation
-        table.status = 'vacant';
-        table.reservedBy = null;
-        await table.save();
-        io.emit('tableStatusChanged', { tableNumber: table.tableNumber, status: table.status });
-
-        setFlash(req, 'success_msg', 'Table reservation canceled successfully');
-    } catch (err) {
-        console.error('Error canceling table reservation:', err);
-        setFlash(req, 'error_msg', 'An error occurred while canceling the table reservation');
-    }
-
-    return res.redirect('/tables');
-}));
-
-app.get('/tables/availability', ensureAuthenticated, asyncHandler(async (req, res) => {
-    const tables = await Tables.find();
-    res.json(tables);
-}));
 
 // Order Placement and Management
 app.post('/cart/new', ensureAuthenticated, asyncHandler(async (req, res) => {
@@ -969,6 +877,99 @@ app.get('/admin/orders/:id/receipt', ensureAdmin, asyncHandler(async (req, res) 
     order.total = total;
 
     res.render('orders/receipt', { order });
+}));
+
+// Table Reservation
+app.get('/tables', ensureAuthenticated, asyncHandler(async (req, res) => {
+    const reservedTables = await Tables.find({ status: 'reserved' }).populate('reservedBy');
+    const vacantTables = await Tables.find({ status: 'vacant' });
+
+    // Ensure reservedBy is not null before accessing its properties
+    const reservedTablesWithUsers = reservedTables.map(table => ({
+        ...table.toObject(),
+        reservedBy: table.reservedBy || { name: 'Unknown', _id: 'Unknown' }
+    }));
+
+    res.render(res.locals.isAdmin ? 'tables/adminTables' : 'tables/customerTables', {
+        reservedTables: reservedTablesWithUsers,
+        vacantTables
+    });
+}));
+
+app.post('/customer/tables/reserve', ensureAuthenticated, asyncHandler(async (req, res) => {
+    const { tableNumber } = req.body;
+
+    if (!tableNumber) {
+        setFlash(req, 'error_msg', 'Table number is required');
+        return res.redirect('/tables');
+    }
+
+    try {
+        const table = await Tables.findOne({ tableNumber });
+        if (!table) {
+            setFlash(req, 'error_msg', 'Table not found');
+            return res.redirect('/tables');
+        }
+        if (table.status !== 'vacant') {
+            setFlash(req, 'error_msg', 'Table is not available');
+            return res.redirect('/tables');
+        }
+
+        // Check if the user already has a reserved table
+        const userHasReservation = await Tables.findOne({ reservedBy: req.session.user._id, status: 'reserved' });
+        if (userHasReservation) {
+            setFlash(req, 'error_msg', 'You already have a reserved table');
+            return res.redirect('/tables');
+        }
+
+        // Reserve the table
+        table.status = 'reserved';
+        table.reservedBy = req.session.user._id;
+        await table.save();
+        io.emit('tableStatusChanged', { tableNumber: table.tableNumber, status: table.status });
+
+        setFlash(req, 'success_msg', 'Table reserved successfully');
+    } catch (err) {
+        console.error('Error reserving table:', err);
+        setFlash(req, 'error_msg', 'An error occurred while reserving the table');
+    }
+
+    return res.redirect('/tables');
+}));
+
+app.post('/customer/tables/cancel', ensureAuthenticated, asyncHandler(async (req, res) => {
+    const { tableNumber } = req.body;
+
+    if (!tableNumber) {
+        setFlash(req, 'error_msg', 'Table number is required');
+        return res.redirect('/tables');
+    }
+
+    try {
+        const table = await Tables.findOne({ tableNumber, reservedBy: req.session.user._id, status: 'reserved' });
+        if (!table) {
+            setFlash(req, 'error_msg', 'Table not found or not reserved by you');
+            return res.redirect('/tables');
+        }
+
+        // Cancel the reservation
+        table.status = 'vacant';
+        table.reservedBy = null;
+        await table.save();
+        io.emit('tableStatusChanged', { tableNumber: table.tableNumber, status: table.status });
+
+        setFlash(req, 'success_msg', 'Table reservation canceled successfully');
+    } catch (err) {
+        console.error('Error canceling table reservation:', err);
+        setFlash(req, 'error_msg', 'An error occurred while canceling the table reservation');
+    }
+
+    return res.redirect('/tables');
+}));
+
+app.get('/tables/availability', ensureAuthenticated, asyncHandler(async (req, res) => {
+    const tables = await Tables.find();
+    res.json(tables);
 }));
 
 // Global error-handling middleware
