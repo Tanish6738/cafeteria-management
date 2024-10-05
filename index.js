@@ -12,6 +12,10 @@ const { promisify } = require('util');
 const unlinkAsync = promisify(fs.unlink);
 const jwt = require('jsonwebtoken');
 
+const publishableKey = "pk_test_51Q3z7BC43VQjRgwcUBGg4jE6p8fIgV2bPm3UaIcToGtD0iv63X1E8C6DWdopnBreXLzYRyOgGA2OmuPK3TD5kDKq00OnPi8IFb"
+const SceretKey = "sk_test_51Q3z7BC43VQjRgwcAs49iBHc2K9TjsknC1c82sHQrIcuDBiSlsrqX1hVhrJxrKwpSwwkqt9RzqX15xRnrPlbMMA100lrBmFDXs"
+const stripe = require('stripe')(SceretKey);
+
 // Models
 const Users = require('./models/Users');
 const Menu = require('./models/Menu');
@@ -880,15 +884,25 @@ app.get('/admin/orders/:id/receipt', ensureAdmin, asyncHandler(async (req, res) 
 
 // Table Reservation
 
-app.get('/admin/tables/tableHistory', ensureAuthenticated , ensureAdmin , asyncHandler(async (req, res) => {
-    const tableHistory = await Tables.find();
-    res.render('tables/tableHistory', { tableHistory });
+app.get('/admin/tables/tableHistory', ensureAuthenticated, ensureAdmin, asyncHandler(async (req, res) => {
+    try {
+        // Fetch table history with populated reservedBy field
+        const tableHistory = await Tables.find({}).populate('reservedBy', 'username'); // Populate only the username field
+
+        // Render the table history page with the fetched data
+        res.render('tables/tableHistory', { tableHistory });
+    } catch (error) {
+        console.error('Error fetching table history:', error);
+        req.flash('error_msg', 'Failed to load table history.');
+        res.redirect('/admin');
+    }
 }));
 
 app.get('/tables', ensureAuthenticated, asyncHandler(async (req, res) => {
     const reservedTables = await Tables.find({ status: 'reserved' }).populate('reservedBy');
     const vacantTables = await Tables.find({ status: 'vacant' });
-
+    
+    console.log('Reserved tables:', reservedTables);
     // Ensure reservedBy is not null before accessing its properties
     const reservedTablesWithUsers = reservedTables.map(table => ({
         ...table.toObject(),
@@ -899,47 +913,6 @@ app.get('/tables', ensureAuthenticated, asyncHandler(async (req, res) => {
         reservedTables: reservedTablesWithUsers,
         vacantTables
     });
-}));
-
-app.post('/customer/tables/reserve', ensureAuthenticated, asyncHandler(async (req, res) => {
-    const { tableNumber } = req.body;
-
-    if (!tableNumber) {
-        setFlash(req, 'error_msg', 'Table number is required');
-        return res.redirect('/tables');
-    }
-
-    try {
-        const table = await Tables.findOne({ tableNumber });
-        if (!table) {
-            setFlash(req, 'error_msg', 'Table not found');
-            return res.redirect('/tables');
-        }
-        if (table.status !== 'vacant') {
-            setFlash(req, 'error_msg', 'Table is not available');
-            return res.redirect('/tables');
-        }
-
-        // Check if the user already has a reserved table
-        const userHasReservation = await Tables.findOne({ reservedBy: req.session.user._id, status: 'reserved' });
-        if (userHasReservation) {
-            setFlash(req, 'error_msg', 'You already have a reserved table');
-            return res.redirect('/tables');
-        }
-
-        // Reserve the table
-        table.status = 'reserved';
-        table.reservedBy = req.session.user._id;
-        await table.save();
-        io.emit('tableStatusChanged', { tableNumber: table.tableNumber, status: table.status });
-
-        setFlash(req, 'success_msg', 'Table reserved successfully');
-    } catch (err) {
-        console.error('Error reserving table:', err);
-        setFlash(req, 'error_msg', 'An error occurred while reserving the table');
-    }
-
-    return res.redirect('/tables');
 }));
 
 app.post('/customer/tables/cancel', ensureAuthenticated, asyncHandler(async (req, res) => {
@@ -972,10 +945,129 @@ app.post('/customer/tables/cancel', ensureAuthenticated, asyncHandler(async (req
     return res.redirect('/tables');
 }));
 
-app.get('/tables/availability', ensureAuthenticated, asyncHandler(async (req, res) => {
-    const tables = await Tables.find();
-    res.json(tables);
-}));
+// Route to display the reservation form
+app.get('/reserve', ensureAuthenticated, async (req, res) => {
+    try {
+        const vacantTables = await Tables.find({ status: 'vacant' });
+
+        // Check if there are any vacant tables
+        if (!vacantTables.length) {
+            setFlash(req, 'error_msg', 'No tables available for reservation at the moment.');
+            return res.redirect('/tables');
+        }
+
+        // Render the table reservation page
+        res.render('tables/reserveTable', {
+            vacantTables,
+            stripePublishableKey: publishableKey  // Ensure the correct key is passed here
+        });
+    } catch (error) {
+        console.error('Error fetching vacant tables:', error.message);
+        setFlash(req, 'error_msg', 'An error occurred while fetching available tables. Please try again.');
+        return res.redirect('/tables');
+    }
+});
+
+// Route to handle Stripe payment and table reservation
+app.post('/reserve/pay', ensureAuthenticated, async (req, res) => {
+    const { tableNumber } = req.body;
+
+    // Validate that a table number is provided
+    if (!tableNumber) {
+        setFlash(req, 'error_msg', 'Please select a valid table for reservation.');
+        return res.redirect('/reserve');
+    }
+
+    try {
+        // Fetch the table based on the provided number
+        const table = await Tables.findOne({ tableNumber });
+
+        // Check if the table exists and is available for reservation
+        if (!table) {
+            setFlash(req, 'error_msg', 'Selected table does not exist.');
+            return res.redirect('/reserve');
+        }
+
+        if (table.status !== 'vacant') {
+            setFlash(req, 'error_msg', `Table #${tableNumber} is currently unavailable. Please select a different table.`);
+            return res.redirect('/reserve');
+        }
+
+        // Create a Stripe Checkout Session
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            line_items: [{
+                price_data: {
+                    currency: 'inr',
+                    product_data: {
+                        name: `Table Reservation - Table #${tableNumber}`,
+                        images: ['https://source.unsplash.com/featured/?restaurant']
+                    },
+                    unit_amount: 5000 // INR 50.00
+                },
+                quantity: 1
+            }],
+            mode: 'payment',
+            success_url: `${req.protocol}://${req.get('host')}/tables/confirm-reservation/${tableNumber}?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${req.protocol}://${req.get('host')}/reserve`
+        });
+
+        // Redirect to the Stripe checkout page
+        res.redirect(303, session.url);
+    } catch (error) {
+        // Handle any errors from Stripe or database interaction
+        console.error('Error creating checkout session:', error.message);
+        setFlash(req, 'error_msg', 'An error occurred while processing your payment. Please try again.');
+        return res.redirect('/reserve');
+    }
+});
+
+// Route to confirm table reservation after successful payment
+app.get('/tables/confirm-reservation/:tableNumber', ensureAuthenticated, async (req, res) => {
+    const { tableNumber } = req.params;
+    const sessionId = req.query.session_id;
+
+    if (!sessionId) {
+        setFlash(req, 'error_msg', 'Payment session not found. Please contact support.');
+        return res.redirect('/tables');
+    }
+
+    try {
+        // Retrieve the Stripe Checkout Session
+        const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+        // Ensure the payment was successful
+        if (session.payment_status !== 'paid') {
+            setFlash(req, 'error_msg', 'Payment not completed. Please try again.');
+            return res.redirect('/tables');
+        }
+
+        // Fetch the table by table number
+        const table = await Tables.findOne({ tableNumber });
+
+        // Check if the table is still vacant
+        if (!table || table.status !== 'vacant') {
+            setFlash(req, 'error_msg', `Table #${tableNumber} is no longer available.`);
+            return res.redirect('/tables');
+        }
+
+        // Update the table status and reserve it for the current user
+        table.status = 'reserved';
+        table.reservedBy = req.session.user._id;
+        await table.save();
+
+        // Emit an event for real-time updates if using websockets (optional)
+        io.emit('tableStatusChanged', { tableNumber: table.tableNumber, status: table.status });
+
+        // Confirm reservation and redirect user
+        setFlash(req, 'success_msg', `Table #${tableNumber} has been successfully reserved!`);
+        res.redirect('/tables');
+    } catch (error) {
+        console.error('Error confirming reservation:', error.message);
+        setFlash(req, 'error_msg', 'An error occurred while confirming the reservation. Please contact support.');
+        return res.redirect('/tables');
+    }
+});
 
 // Global error-handling middleware
 app.use((err, req, res, next) => {

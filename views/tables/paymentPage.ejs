@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payment for Table Reservation</title>
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+    <h2>Complete your payment to reserve table #<%= tableNumber %></h2>
+
+    <!-- Stripe Elements will be injected here -->
+    <form id="payment-form">
+        <div id="card-element"><!-- Stripe's Card Element will be injected here --></div>
+        <button type="submit" id="submit-button">Pay $50.00</button>
+    </form>
+
+    <div id="payment-result"></div>
+
+    <script>
+        const stripe = Stripe('<%= stripePublishableKey %>');
+        const elements = stripe.elements();
+        const card = elements.create('card');
+        card.mount('#card-element');
+
+        const form = document.getElementById('payment-form');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { error, paymentIntent } = await stripe.confirmCardPayment('<%= clientSecret %>', {
+                payment_method: {
+                    card: card,
+                    billing_details: {
+                        email: '<%= user.email %>' // Dynamically populate with user email
+                    }
+                }
+            });
+
+            if (error) {
+                document.getElementById('payment-result').innerText = error.message;
+            } else {
+                document.getElementById('payment-result').innerText = 'Payment successful!';
+                window.location.href = `/tables/confirm-reservation/${paymentIntent.metadata.tableNumber}`;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -111,7 +111,7 @@
                                 <tr class="border-t">
                                     <td class="py-2 px-6 border-b"><%= table.tableNumber %></td>
                                     <td class="py-2 px-6 border-b capitalize"><%= table.status %></td>
-                                    <td class="py-2 px-6 border-b"><%= table.reservedBy ? table.reservedBy.username : 'N/A' %></td>
+                                    <td class="py-2 px-6 border-b"><%= table.reservedBy ? table.reservedBy.username : 'Unknown'%></td>
                                     <td class="py-2 px-6 border-b"><%= table.capacity %></td>
                                     <td class="py-2 px-6 border-b">
                                         <% if (table.reservationStartTime && !isNaN(new Date(table.reservationStartTime))) { %>
