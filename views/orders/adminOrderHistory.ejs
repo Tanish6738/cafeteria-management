@@ -74,10 +74,9 @@
 <body>
     <!-- Navbar -->
     <%- include('../partials/navbar') %>
-
     <div class="container mx-auto mt-10 fade-in">
         <h2 class="text-5xl font-bold mb-10 text-center text-[#4b3a36]">Order History</h2>
-
+    
         <!-- Flash Messages -->
         <% if (flashMessages && flashMessages.success_msg) { %>
             <div class="success-message">
@@ -89,7 +88,7 @@
                 <strong>Error!</strong> <%= flashMessages.error_msg %>
             </div>
         <% } %>
-
+    
         <!-- Order History Table -->
         <div class="table-container">
             <div class="overflow-x-auto">
@@ -142,7 +141,8 @@
                                     </td>
                                     <td class="py-2 px-6 border-b">₹<%= order.total.toFixed(2) %></td>
                                     <td class="py-2 px-6 border-b">
-                                        <a href="/admin/orders/<%= order._id %>/" class="btn-primary hover-scale py-2 px-4 rounded">View</a>
+                                        <a href="/admin/orders/<%= order._id %>" class="btn-primary hover-scale py-2 px-4 rounded" aria-label="View Order Details">View</a>
+                                        <a href="/customer/orders/<%= order._id %>/receipt" class="btn-primary hover-scale py-2 px-4 rounded" aria-label="View Receipt">Receipt</a>
                                     </td>
                                 </tr>
                             <% }) %>
@@ -155,8 +155,14 @@
                 </table>
             </div>
         </div>
+        
+        <!-- Pagination -->
+        <div class="mt-4 flex justify-center">
+            <button class="btn-primary hover-scale py-2 px-4 rounded-l" onclick="prevPage()" aria-label="Previous Page">Previous</button>
+            <button class="btn-primary hover-scale py-2 px-4 rounded-r" onclick="nextPage()" aria-label="Next Page">Next</button>
+        </div>
     </div>
-
+    
     <!-- JavaScript Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
     <script>
@@ -165,7 +171,7 @@
             // Open
             const burger = document.querySelectorAll('.navbar-burger');
             const menu = document.querySelectorAll('.navbar-menu');
-
+    
             if (burger.length && menu.length) {
                 for (let i = 0; i < burger.length; i++) {
                     burger[i].addEventListener('click', function () {
@@ -175,11 +181,11 @@
                     });
                 }
             }
-
+    
             // Close
             const close = document.querySelectorAll('.navbar-close');
             const backdrop = document.querySelectorAll('.navbar-backdrop');
-
+    
             if (close.length) {
                 for (let i = 0; i < close.length; i++) {
                     close[i].addEventListener('click', function () {
@@ -189,7 +195,7 @@
                     });
                 }
             }
-
+    
             if (backdrop.length) {
                 for (let i = 0; i < backdrop.length; i++) {
                     backdrop[i].addEventListener('click', function () {
@@ -200,7 +206,7 @@
                 }
             }
         });
-
+    
         // GSAP Animations
         gsap.from('.table-container', {
             duration: 1,
@@ -208,7 +214,26 @@
             opacity: 0,
             stagger: 0.2
         });
+
+        // Pagination logic (basic example)
+        let currentPage = 1;
+        const ordersPerPage = 10;
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                window.location.href = `/admin/orders?page=${currentPage}`;
+            }
+        }
+
+        function nextPage() {
+            currentPage++;
+            window.location.href = `/admin/orders?page=${currentPage}`;
+        }
+        
+
     </script>
+    
 </body>
 
 </html>

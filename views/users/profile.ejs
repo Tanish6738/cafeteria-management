@@ -59,6 +59,18 @@
     <%- include('../partials/navbar') %>
 
     <div class="container mx-auto mt-16 fade-in px-4">
+        <!-- Flash Messages -->
+        <% if (flashMessages && flashMessages.success_msg) { %>
+            <div class="success-message">
+                <strong>Success!</strong> <%= flashMessages.success_msg %>
+            </div>
+        <% } %>
+        <% if (flashMessages && flashMessages.error_msg) { %>
+            <div class="error-message">
+                <strong>Error!</strong> <%= flashMessages.error_msg %>
+            </div>
+        <% } %>
+
         <div class="container-custom pb-8">
             <div class="flex flex-col items-center mt-2">
                 <div class="flex items-center space-x-2 mt-2">
@@ -79,7 +91,7 @@
                 <% currentOrders.forEach(order => { %>
                     <div class="mb-4 p-4 bg-gray-800 rounded">
                         <h4 class="text-xl font-bold mb-2">Order ID: <%= order._id %></h4>
-                        <p class="mb-2"><strong>Date:</strong> <%= order.createdAt.toDateString() %></p>
+                        <p class="mb-2"><strong>Date:</strong> <%= new Date(order.createdAt).toDateString() %></p>
                         <p class="mb-2"><strong>Status:</strong> <%= order.status %></p>
                         <h5 class="text-lg font-bold mt-2">Items:</h5>
                         <ul class="list-disc list-inside">
@@ -87,7 +99,7 @@
                                 <li><%= item.menuItem.name %> - <%= item.quantity %> x ₹<%= item.menuItem.price %></li>
                             <% }) %>
                         </ul>
-                        <a href="/customer/orders/<%= order._id %>/receipt" class="mt-2 inline-block bg-green-500 hover:bg-green-700 text-white p-2 rounded">View Receipt</a>
+                        <a href="/customer/orders/<%= order.tableNumber %>/receipt" class="mt-2 inline-block bg-green-500 hover:bg-green-700 text-white p-2 rounded">View Receipt</a>
                     </div>
                 <% }) %>
             <% } else { %>
@@ -102,7 +114,7 @@
                 <% previousOrders.forEach(order => { %>
                     <div class="mb-4 p-4 bg-gray-800 rounded">
                         <h4 class="text-xl font-bold mb-2">Order ID: <%= order._id %></h4>
-                        <p class="mb-2"><strong>Date:</strong> <%= order.createdAt.toDateString() %></p>
+                        <p class="mb-2"><strong>Date:</strong> <%= new Date(order.createdAt).toDateString() %></p>
                         <p class="mb-2"><strong>Status:</strong> <%= order.status %></p>
                         <h5 class="text-lg font-bold mt-2">Items:</h5>
                         <ul class="list-disc list-inside">
@@ -110,7 +122,7 @@
                                 <li><%= item.menuItem.name %> - <%= item.quantity %> x ₹<%= item.menuItem.price %></li>
                             <% }) %>
                         </ul>
-                        <a href="/customer/orders/<%= order._id %>/receipt" class="mt-2 inline-block bg-green-500 hover:bg-green-700 text-white p-2 rounded">View Receipt</a>
+                        <a href="/customer/orders/<%= order.tableNumber %>/receipt" class="mt-2 inline-block bg-green-500 hover:bg-green-700 text-white p-2 rounded">View Receipt</a>
                     </div>
                 <% }) %>
             <% } else { %>
@@ -127,7 +139,7 @@
                         <h4 class="text-xl font-bold mb-2">Payment ID: <%= payment._id %></h4>
                         <p class="mb-2"><strong>Order ID:</strong> <%= payment.orderId._id %></p>
                         <p class="mb-2"><strong>Amount:</strong> ₹<%= payment.amount %></p>
-                        <p class="mb-2"><strong>Date:</strong> <%= payment.date.toDateString() %></p>
+                        <p class="mb-2"><strong>Date:</strong> <%= new Date(payment.date).toDateString() %></p>
                     </div>
                 <% }) %>
             <% } else { %>

@@ -136,10 +136,9 @@
 <body class="bg-gray-100">
     <!-- Navbar -->
     <%- include('../partials/navbar') %>
-
-    <div class="container mx-auto mt-10 fade-in">
+    <div class="container mx-auto mt-10">
         <h2 class="text-5xl font-bold mb-10 text-center text-[#4b3a36]">Admin Orders Management</h2>
-
+    
         <!-- Flash Messages -->
         <% if (flashMessages.success_msg) { %>
             <div class="success-message">
@@ -151,12 +150,12 @@
                 <strong>Error!</strong> <%= flashMessages.error_msg %>
             </div>
         <% } %>
-
+    
         <!-- Search and Filter -->
         <div class="mb-4">
             <input type="text" id="search" placeholder="Search by Order ID or Customer" class="w-full p-2 border border-gray-300 rounded">
         </div>
-
+    
         <!-- Orders Table -->
         <div class="table-section overflow-x-auto shadow-lg">
             <table class="min-w-full bg-transparent text-light">
@@ -177,7 +176,7 @@
                             <td class="py-2 px-6 border-b flex items-center space-x-2">
                                 <button onclick="viewOrderDetails('<%= order._id %>')" class="btn-primary hover-scale py-1 px-3 rounded">View</button>
                                 <a href="/admin/orders/<%= order._id %>/delete" class="btn-primary hover-scale py-1 px-3 rounded">Delete</a>
-                                <form action="/orders/<%= order._id %>/update-status" method="POST" class=" flex gap-2 inline">
+                                <form action="/orders/<%= order._id %>/update-status" method="POST" class="flex gap-2 inline">
                                     <select name="status" class="custom-select">
                                         <option value="pending" <%= order.status === 'pending' ? 'selected' : '' %>>Pending</option>
                                         <option value="preparing" <%= order.status === 'preparing' ? 'selected' : '' %>>Preparing</option>
@@ -195,14 +194,14 @@
                 </tbody>
             </table>
         </div>
-
+    
         <!-- Pagination -->
         <div class="mt-4 flex justify-center">
             <button class="btn-primary hover-scale py-2 px-4 rounded-l" onclick="prevPage()">Previous</button>
             <button class="btn-primary hover-scale py-2 px-4 rounded-r" onclick="nextPage()">Next</button>
         </div>
     </div>
-
+    
     <!-- Order Details Modal -->
     <div id="orderDetailsModal" class="fixed z-10 inset-0 overflow-y-auto hidden">
         <div class="flex items-center justify-center min-h-screen">
@@ -213,49 +212,8 @@
             </div>
         </div>
     </div>
-
+    
     <script>
-        
-            // Burger menus
-            document.addEventListener('DOMContentLoaded', function () {
-                // open
-                const burger = document.querySelectorAll('.navbar-burger');
-                const menu = document.querySelectorAll('.navbar-menu');
-
-                if (burger.length && menu.length) {
-                    for (var i = 0; i < burger.length; i++) {
-                        burger[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
-                }
-
-                // close
-                const close = document.querySelectorAll('.navbar-close');
-                const backdrop = document.querySelectorAll('.navbar-backdrop');
-
-                if (close.length) {
-                    for (var i = 0; i < close.length; i++) {
-                        close[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
-                }
-
-                if (backdrop.length) {
-                    for (var i = 0; i < backdrop.length; i++) {
-                        backdrop[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
-                }
-            });
         // Search functionality
         document.getElementById('search').addEventListener('input', function() {
             const searchValue = this.value.toLowerCase();
@@ -270,7 +228,7 @@
                 }
             });
         });
-
+    
         // Pagination functionality
         let currentPage = 1;
         const rowsPerPage = 20;
@@ -293,7 +251,7 @@
             }
         }
         showPage(currentPage);
-
+    
         // Order details modal functionality
         function viewOrderDetails(orderId) {
             fetch(`/admin/orders/${orderId}`)
@@ -317,11 +275,12 @@
                 })
                 .catch(err => console.error('Error fetching order details:', err));
         }
-        
+    
         function closeModal() {
             document.getElementById('orderDetailsModal').classList.add('hidden');
         }
     </script>
+    
 </body>
 
 </html>

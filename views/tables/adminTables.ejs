@@ -126,7 +126,7 @@
 
         <!-- Button to add new table -->
         <div class="flex justify-end mb-4">
-            <a href="/tables/new" class="btn-primary hover-scale py-2 px-4 rounded">Add New Table</a>
+            <a href="/tables/new" class="btn-primary hover-scale py-2 px-4 rounded" aria-label="Add New Table">Add New Table</a>
         </div>
 
         <div class="table-section">
@@ -148,12 +148,12 @@
                                 <td class="py-2 px-6 border-b"><%= table.capacity %></td>
                                 <td class="py-2 px-6 border-b"><%= table.reservedBy ? table.reservedBy.username : 'Unknown' %></td>
                                 <td class="py-2 px-6 border-b">
-                                    <a href="/tables/<%= table._id %>/edit" class="btn-primary hover-scale py-1 px-3 rounded">Edit</a>
-                                    <a href="/tables/<%= table._id %>/delete" class="btn-primary hover-scale py-1 px-3 rounded">Delete</a>
+                                    <a href="/tables/<%= table._id %>/edit" class="btn-primary hover-scale py-1 px-3 rounded" aria-label="Edit Table">Edit</a>
+                                    <a href="/tables/<%= table._id %>/delete" class="btn-primary hover-scale py-1 px-3 rounded" aria-label="Delete Table">Delete</a>
                                 </td>
                             </tr>
                         <% }) %>
-                    </tbody> 
+                    </tbody>
                 </table>
             <% } else { %>
                 <p class="text-gray-500">No reserved tables at the moment.</p>
@@ -177,8 +177,8 @@
                                 <td class="py-2 px-6 border-b"><%= table.tableNumber %></td>
                                 <td class="py-2 px-6 border-b"><%= table.capacity %></td>
                                 <td class="py-2 px-6 border-b">
-                                    <a href="/tables/<%= table._id %>/edit" class="btn-primary hover-scale py-1 px-3 rounded">Edit</a>
-                                    <a href="/tables/<%= table._id %>/delete" class="btn-primary hover-scale py-1 px-3 rounded">Delete</a>
+                                    <a href="/tables/<%= table._id %>/edit" class="btn-primary hover-scale py-1 px-3 rounded" aria-label="Edit Table">Edit</a>
+                                    <a href="/tables/<%= table._id %>/delete" class="btn-primary hover-scale py-1 px-3 rounded" aria-label="Delete Table">Delete</a>
                                 </td>
                             </tr>
                         <% }) %>
@@ -193,47 +193,47 @@
     <!-- JavaScript Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
     <script>
-        
-            // Burger menus
-            document.addEventListener('DOMContentLoaded', function () {
-                // open
-                const burger = document.querySelectorAll('.navbar-burger');
-                const menu = document.querySelectorAll('.navbar-menu');
+        // Burger menus
+        document.addEventListener('DOMContentLoaded', function () {
+            // open
+            const burger = document.querySelectorAll('.navbar-burger');
+            const menu = document.querySelectorAll('.navbar-menu');
 
-                if (burger.length && menu.length) {
-                    for (var i = 0; i < burger.length; i++) {
-                        burger[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
+            if (burger.length && menu.length) {
+                for (let i = 0; i < burger.length; i++) {
+                    burger[i].addEventListener('click', function () {
+                        for (let j = 0; j < menu.length; j++) {
+                            menu[j].classList.toggle('hidden');
+                        }
+                    });
                 }
+            }
 
-                // close
-                const close = document.querySelectorAll('.navbar-close');
-                const backdrop = document.querySelectorAll('.navbar-backdrop');
+            // close
+            const close = document.querySelectorAll('.navbar-close');
+            const backdrop = document.querySelectorAll('.navbar-backdrop');
 
-                if (close.length) {
-                    for (var i = 0; i < close.length; i++) {
-                        close[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
+            if (close.length) {
+                for (let i = 0; i < close.length; i++) {
+                    close[i].addEventListener('click', function () {
+                        for (let j = 0; j < menu.length; j++) {
+                            menu[j].classList.toggle('hidden');
+                        }
+                    });
                 }
+            }
 
-                if (backdrop.length) {
-                    for (var i = 0; i < backdrop.length; i++) {
-                        backdrop[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
+            if (backdrop.length) {
+                for (let i = 0; i < backdrop.length; i++) {
+                    backdrop[i].addEventListener('click', function () {
+                        for (let j = 0; j < menu.length; j++) {
+                            menu[j].classList.toggle('hidden');
+                        }
+                    });
                 }
-            });
+            }
+        });
+
         // GSAP Animations
         gsap.from('.table-section', {
             duration: 1,

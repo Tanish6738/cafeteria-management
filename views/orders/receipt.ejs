@@ -29,6 +29,12 @@
             box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
             padding: 50px 20px;
             margin-bottom: 20px;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        }
+
+        .receipt-container:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
 
         .btn-primary {
@@ -43,30 +49,35 @@
             border-color: #3C3D37;
         }
 
-        .hover-scale {
-            transition: transform 0.3s ease-in-out;
-        }
-
-        .hover-scale:hover {
-            transform: scale(1.05);
+        .success-message, .error-message {
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            animation: fadeIn 1s ease-in-out;
         }
 
         .success-message {
             background-color: rgba(144, 238, 144, 0.8);
             border: 1px solid green;
             color: green;
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 8px;
         }
 
         .error-message {
             background-color: rgba(255, 99, 71, 0.8);
             border: 1px solid red;
             color: rgb(255, 255, 255);
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 8px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
@@ -75,7 +86,7 @@
     <!-- Navbar -->
     <%- include('../partials/navbar') %>
 
-    <div class="container mx-auto mt-10 fade-in">
+    <div class="container mx-auto mt-10">
         <h1 class="text-5xl font-bold text-center text-[#4b3a36] mb-10">Order Receipt</h1>
 
         <!-- Flash Messages -->
@@ -91,7 +102,7 @@
         <% } %>
 
         <!-- Order Summary Section -->
-        <div class="receipt-container w-full max-w-4xl mx-auto p-8">
+        <div class="receipt-container">
             <h2 class="text-3xl font-bold mb-6">Order Summary</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -108,7 +119,7 @@
         </div>
 
         <!-- Items Table -->
-        <div class="receipt-container w-full max-w-4xl mx-auto p-8">
+        <div class="receipt-container">
             <h2 class="text-3xl font-bold mb-6">Ordered Items</h2>
             <div class="overflow-x-auto">
                 <table class="min-w-full bg-transparent text-light">
@@ -125,32 +136,32 @@
                             <tr class="border-t">
                                 <td class="py-2 px-6 border-b"><%= item.menuItem.name %></td>
                                 <td class="py-2 px-6 border-b"><%= item.quantity %></td>
-                                <td class="py-2 px-6 border-b">₹<%= item.menuItem.price.toFixed(2) %></td>
-                                <td class="py-2 px-6 border-b">₹<%= (item.menuItem.price * item.quantity).toFixed(2) %></td>
+                                <td class="py-2 px-6 border-b">₹<%= item.menuItem.price ? item.menuItem.price.toFixed(2) : 'N/A' %></td>
+                                <td class="py-2 px-6 border-b">₹<%= (item.menuItem.price && item.quantity) ? (item.menuItem.price * item.quantity).toFixed(2) : 'N/A' %></td>
                             </tr>
                         <% }) %>
-                    </tbody>
+                    </tbody>                    
                 </table>
             </div>
         </div>
 
         <!-- Order Breakdown -->
-        <div class="receipt-container w-full max-w-4xl mx-auto p-8">
+        <div class="receipt-container">
             <h2 class="text-3xl font-bold mb-6">Order Breakdown</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <p class="text-xl"><strong>Subtotal:</strong> ₹<%= order.subtotal.toFixed(2) %></p>
-                    <p class="text-xl"><strong>Tax:</strong> ₹<%= order.tax.toFixed(2) %></p>
-                    <p class="text-xl"><strong>Service Charge:</strong> ₹<%= order.serviceCharge.toFixed(2) %></p>
-                    <p class="text-xl font-bold"><strong>Total:</strong> ₹<%= order.total.toFixed(2) %></p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">  
+                <div>       
+                    <p class="text-xl"><strong>Subtotal:</strong> ₹<%= order.subtotal !== undefined ? order.subtotal.toFixed(2) : 'N/A' %></p>
+                    <p class="text-xl"><strong>Tax:</strong> ₹<%= order.tax !== undefined ? order.tax.toFixed(2) : 'N/A' %></p>
+                    <p class="text-xl"><strong>Service Charge:</strong> ₹<%= order.serviceCharge !== undefined ? order.serviceCharge.toFixed(2) : 'N/A' %></p>
+                    <p class="text-xl font-bold"><strong>Total:</strong> ₹<%= order.total !== undefined ? order.total.toFixed(2) : 'N/A' %></p>
                 </div>
-            </div>
+            </div>            
         </div>
 
         <% if (isAdmin) { %>
             <div class="flex justify-between items-center mt-6">
                 <form action="/admin/orders/<%= order._id %>/approve-payment" method="POST">
-                    <button type="submit" class="btn-primary hover-scale py-2 px-4 rounded">
+                    <button type="submit" class="btn-primary hover:scale-105 py-2 px-4 rounded">
                         Approve Payment
                     </button>
                 </form>
@@ -161,47 +172,6 @@
     <!-- JavaScript Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
     <script>
-        
-            // Burger menus
-            document.addEventListener('DOMContentLoaded', function () {
-                // open
-                const burger = document.querySelectorAll('.navbar-burger');
-                const menu = document.querySelectorAll('.navbar-menu');
-
-                if (burger.length && menu.length) {
-                    for (var i = 0; i < burger.length; i++) {
-                        burger[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
-                }
-
-                // close
-                const close = document.querySelectorAll('.navbar-close');
-                const backdrop = document.querySelectorAll('.navbar-backdrop');
-
-                if (close.length) {
-                    for (var i = 0; i < close.length; i++) {
-                        close[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
-                }
-
-                if (backdrop.length) {
-                    for (var i = 0; i < backdrop.length; i++) {
-                        backdrop[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
-                }
-            });
         // GSAP Animations
         gsap.from('.receipt-container', {
             duration: 1,

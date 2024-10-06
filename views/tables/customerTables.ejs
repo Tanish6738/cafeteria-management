@@ -144,13 +144,18 @@
                                 <tr>
                                     <td class="py-2 px-6 border-b"><%= table.tableNumber %></td>
                                     <td class="py-2 px-6 border-b"><%= table.capacity %></td>
-                                    <td class="py-2 px-6 border-b"><%= table.reservedBy.name %></td>
+                                    <td class="py-2 px-6 border-b"><%= table.reservedBy.username %></td>
                                     <td class="py-2 px-6 border-b">
                                         <% if (table.reservedBy._id.toString() === user._id.toString()) { %>
-                                            <form action="/customer/tables/cancel" method="POST" class="inline">
-                                                <input type="hidden" name="tableNumber" value="<%= table.tableNumber %>">
-                                                <button type="submit" class="text-white bg-red-500 hover:bg-red-700 py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">Cancel</button>
-                                            </form>
+                                            <% if (!orders.some(order => order.tableNumber === table.tableNumber)) { %>
+                                                <!-- Allow cancellation if no orders are placed -->
+                                                <form action="/customer/tables/cancel" method="POST" class="inline">
+                                                    <input type="hidden" name="tableNumber" value="<%= table.tableNumber %>">
+                                                    <button type="submit" class="text-white bg-red-500 hover:bg-red-700 py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">Cancel</button>
+                                                </form>
+                                            <% } else { %>
+                                                <span class="text-gray-500">Cannot Cancel (Orders Placed)</span>
+                                            <% } %>
                                         <% } else { %>
                                             <span class="text-gray-500">Not Available</span>
                                         <% } %>

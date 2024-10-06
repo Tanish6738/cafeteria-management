@@ -29,6 +29,12 @@
             box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
             padding: 50px 20px;
             margin-bottom: 20px;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        }
+
+        .order-details-container:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
 
         .btn-primary {
@@ -58,6 +64,7 @@
             padding: 10px;
             margin-bottom: 20px;
             border-radius: 8px;
+            animation: fadeIn 1s ease-in-out;
         }
 
         .error-message {
@@ -67,6 +74,19 @@
             padding: 10px;
             margin-bottom: 20px;
             border-radius: 8px;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
@@ -104,12 +124,11 @@
             <div class="mt-6">
                 <% if (isAdmin) { %>
                     <a href="/admin/orders" class="btn-primary hover-scale py-2 px-4 rounded">Back to Orders</a>
-                    <a href="/admin/orders/<%= order._id %>/receipt" class="btn-primary hover-scale py-2 px-4 rounded ml-4">View Receipt</a>
+                    <a href="/admin/orders/<%= order.tableNumber %>/receipt" class="btn-primary hover-scale py-2 px-4 rounded ml-4">View Receipt</a>
                 <% } else { %>
                     <a href="/customer/orders" class="btn-primary hover-scale py-2 px-4 rounded">Back to Orders</a>
-                    <a href="/customer/orders/<%= order._id %>/receipt" class="btn-primary hover-scale py-2 px-4 rounded ml-4">View Receipt</a>
+                    <a href="/customer/orders/<%= order.tableNumber %>/receipt" class="btn-primary hover-scale py-2 px-4 rounded ml-4">View Receipt</a>
                 <% } %>
-                
             </div>
         </div>
     </div>
@@ -117,47 +136,47 @@
     <!-- JavaScript Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
     <script>
-        
-            // Burger menus
-            document.addEventListener('DOMContentLoaded', function () {
-                // open
-                const burger = document.querySelectorAll('.navbar-burger');
-                const menu = document.querySelectorAll('.navbar-menu');
+        // Burger menus
+        document.addEventListener('DOMContentLoaded', function () {
+            // open
+            const burger = document.querySelectorAll('.navbar-burger');
+            const menu = document.querySelectorAll('.navbar-menu');
 
-                if (burger.length && menu.length) {
-                    for (var i = 0; i < burger.length; i++) {
-                        burger[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
+            if (burger.length && menu.length) {
+                for (var i = 0; i < burger.length; i++) {
+                    burger[i].addEventListener('click', function () {
+                        for (var j = 0; j < menu.length; j++) {
+                            menu[j].classList.toggle('hidden');
+                        }
+                    });
                 }
+            }
 
-                // close
-                const close = document.querySelectorAll('.navbar-close');
-                const backdrop = document.querySelectorAll('.navbar-backdrop');
+            // close
+            const close = document.querySelectorAll('.navbar-close');
+            const backdrop = document.querySelectorAll('.navbar-backdrop');
 
-                if (close.length) {
-                    for (var i = 0; i < close.length; i++) {
-                        close[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
+            if (close.length) {
+                for (var i = 0; i < close.length; i++) {
+                    close[i].addEventListener('click', function () {
+                        for (var j = 0; j < menu.length; j++) {
+                            menu[j].classList.toggle('hidden');
+                        }
+                    });
                 }
+            }
 
-                if (backdrop.length) {
-                    for (var i = 0; i < backdrop.length; i++) {
-                        backdrop[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
+            if (backdrop.length) {
+                for (var i = 0; i < backdrop.length; i++) {
+                    backdrop[i].addEventListener('click', function () {
+                        for (var j = 0; j < menu.length; j++) {
+                            menu[j].classList.toggle('hidden');
+                        }
+                    });
                 }
-            });
+            }
+        });
+
         // GSAP Animations
         gsap.from('.order-details-container', {
             duration: 1,

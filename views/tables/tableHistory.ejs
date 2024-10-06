@@ -111,7 +111,7 @@
                                 <tr class="border-t">
                                     <td class="py-2 px-6 border-b"><%= table.tableNumber %></td>
                                     <td class="py-2 px-6 border-b capitalize"><%= table.status %></td>
-                                    <td class="py-2 px-6 border-b"><%= table.reservedBy ? table.reservedBy.username : 'Unknown'%></td>
+                                    <td class="py-2 px-6 border-b"><%= table.reservedBy ? table.reservedBy.username : 'N/A' %></td>
                                     <td class="py-2 px-6 border-b"><%= table.capacity %></td>
                                     <td class="py-2 px-6 border-b">
                                         <% if (table.reservationStartTime && !isNaN(new Date(table.reservationStartTime))) { %>
@@ -128,7 +128,7 @@
                                         <% } %>
                                     </td>
                                     <td class="py-2 px-6 border-b">
-                                        <a href="/tables/<%= table._id %>/" class="btn-primary hover-scale py-2 px-4 rounded">View</a>
+                                        <a href="/tables/<%= table._id %>/" class="btn-primary hover-scale py-2 px-4 rounded" aria-label="View Table Details">View</a>
                                     </td>
                                 </tr>
                             <% }) %>
@@ -148,28 +148,28 @@
     <script>
         // Burger menus
         document.addEventListener('DOMContentLoaded', function () {
-            // Open
+            // open
             const burger = document.querySelectorAll('.navbar-burger');
             const menu = document.querySelectorAll('.navbar-menu');
 
             if (burger.length && menu.length) {
-                for (let i = 0; i < burger.length; i++) {
+                for (var i = 0; i < burger.length; i++) {
                     burger[i].addEventListener('click', function () {
-                        for (let j = 0; j < menu.length; j++) {
+                        for (var j = 0; j < menu.length; j++) {
                             menu[j].classList.toggle('hidden');
                         }
                     });
                 }
             }
 
-            // Close
+            // close
             const close = document.querySelectorAll('.navbar-close');
             const backdrop = document.querySelectorAll('.navbar-backdrop');
 
             if (close.length) {
-                for (let i = 0; i < close.length; i++) {
+                for (var i = 0; i < close.length; i++) {
                     close[i].addEventListener('click', function () {
-                        for (let j = 0; j < menu.length; j++) {
+                        for (var j = 0; j < menu.length; j++) {
                             menu[j].classList.toggle('hidden');
                         }
                     });
@@ -177,16 +177,16 @@
             }
 
             if (backdrop.length) {
-                for (let i = 0; i < backdrop.length; i++) {
+                for (var i = 0; i < backdrop.length; i++) {
                     backdrop[i].addEventListener('click', function () {
-                        for (let j = 0; j < menu.length; j++) {
+                        for (var j = 0; j < menu.length; j++) {
                             menu[j].classList.toggle('hidden');
                         }
                     });
                 }
             }
         });
-
+        
         // GSAP Animations
         gsap.from('.table-container', {
             duration: 1,

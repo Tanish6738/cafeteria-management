@@ -155,6 +155,50 @@ io.on('connection', socket => {
     });
 });
 
+async function consolidateOrdersForReservation(tableNumber) {
+    try {
+        // Find all pending, preparing, or served orders for the table
+        const orders = await Orders.find({ 
+            tableNumber, 
+            status: { $in: ['pending', 'preparing', 'served'] } // Ensuring we only fetch relevant orders
+        }).populate('items.menuItem'); // Ensure we populate the menu items
+
+        if (!orders.length) {
+            console.error(`No orders found for table number: ${tableNumber}`);
+            return null; // Or handle this case as needed
+        }
+
+        const consolidatedOrder = {
+            items: [],
+            total: 0,
+            tableNumber: tableNumber,
+            customer: orders[0].customer, // Assuming all orders are from the same customer
+        };
+
+        // Combine all items from each order and sum up the total cost
+        orders.forEach(order => {
+            order.items.forEach(item => {
+                consolidatedOrder.items.push({
+                    menuItem: item.menuItem, // Ensure the item has a valid menuItem reference
+                    quantity: item.quantity,
+                });
+
+                // Calculate total for each item
+                if (item.menuItem && item.menuItem.price) {
+                    consolidatedOrder.total += item.menuItem.price * item.quantity;
+                } else {
+                    console.error(`Invalid menu item or price for order item: ${item._id}`);
+                }
+            });
+        });
+
+        return consolidatedOrder;
+    } catch (error) {
+        console.error(`Error consolidating orders for table ${tableNumber}:`, error);
+        throw error; // Optionally, rethrow the error to handle it in the calling function
+    }
+}
+
 // Home Route
 app.get('/', async (req, res) => {
     const { user } = req.session;
@@ -340,8 +384,35 @@ app.get('/admin/orders/history', ensureAdmin, asyncHandler(async (req, res) => {
     }
 }));
 
+app.get('/admin/orders/:id/receipt', ensureAdmin, asyncHandler(async (req, res) => {
+    
+    const order = await OrderHistory.findById(req.params.id)
+        .populate('items.menuItem')
+        .populate('customer')
+        .lean();
 
-app.get('/admin/orders/:id', ensureAuthenticated, asyncHandler(async (req, res) => {
+    if (!order) {
+        setFlash(req, 'error_msg', 'Order not found');
+        return res.redirect('/admin/orders/history');
+    }
+
+    // Calculate breakdowns
+    const taxRate = 0.1; // 10% tax
+    const serviceChargeRate = 0.05; // 5% service charge
+    const subtotal = order.items.reduce((sum, item) => sum + item.menuItem.price * item.quantity, 0);
+    const tax = subtotal * taxRate;
+    const serviceCharge = subtotal * serviceChargeRate;
+    const total = subtotal + tax + serviceCharge;
+    
+    order.subtotal = subtotal;
+    order.tax = tax;
+    order.serviceCharge = serviceCharge;
+    order.total = total;
+
+    res.render('orders/receipt', { order });
+}));
+
+app.get('/admin/orders/:id', ensureAuthenticated,ensureAdmin, asyncHandler(async (req, res) => {
     try {
         const order = await OrderHistory.findById(req.params.id)
             .populate('items.menuItem')
@@ -510,6 +581,20 @@ app.get('/admin/users/:id/delete', ensureAdmin, asyncHandler(async (req, res) =>
 }));
 
 // Admin Table Management
+app.get('/admin/tables/tableHistory', ensureAuthenticated, ensureAdmin, asyncHandler(async (req, res) => {
+    try {
+        // Fetch table history with populated reservedBy field
+        const tableHistory = await Tables.find({}).populate('reservedBy', 'username'); // Populate only the username field
+
+        // Render the table history page with the fetched data
+        res.render('tables/tableHistory', { tableHistory });
+    } catch (error) {
+        console.error('Error fetching table history:', error);
+        req.flash('error_msg', 'Failed to load table history.');
+        res.redirect('/admin');
+    }
+}));
+
 app.get('/tables/new', ensureAdmin, (req, res) => {
     res.render('tables/addTable');
 });
@@ -580,16 +665,6 @@ app.get('/customer/menu', ensureAuthenticated, asyncHandler(async (req, res) => 
     const reservedTable = await Tables.findOne({ reservedBy: req.session.user._id, status: 'reserved' });
     res.render('menu/customerMenu', { menuItems, reservedTable });
 }));
-
-app.get('/menu/:id', ensureAuthenticated, asyncHandler(async (req, res) => {
-    const menuItem = await Menu.findById(req.params.id);
-    if (!menuItem) {
-        setFlash(req, 'error_msg', 'Menu item not found');
-        return res.redirect('/menu');
-    }
-    res.render('menu/menuItem', { menuItem });
-}));
-
 
 // Order Placement and Management
 app.post('/cart/new', ensureAuthenticated, asyncHandler(async (req, res) => {
@@ -713,15 +788,18 @@ app.get('/cart/clear', ensureAuthenticated, asyncHandler(async (req, res) => {
     return res.redirect('/cart/view');
 }));
 
+// Customer Order Placement and Management
+
 app.post('/orders/place', ensureAuthenticated, ensureTableReserved, asyncHandler(async (req, res) => {
     const { tableNumber, total } = req.body;
     const cart = req.session.cart || [];
 
     console.log('Placing order:', { tableNumber, total, cart });
 
+    // Validate fields
     if (!cart.length || !tableNumber || !total) {
         console.log('Validation failed: All fields are required');
-        setFlash(req, 'error_msg', 'All fields are required');
+        req.flash('error_msg', 'All fields are required');
         return res.redirect('/cart/view');
     }
 
@@ -732,58 +810,256 @@ app.post('/orders/place', ensureAuthenticated, ensureTableReserved, asyncHandler
 
     console.log('Order items:', items);
 
-    const newOrder = new Orders({ items, tableNumber, total, customer: req.session.user._id });
     try {
+        const newOrder = new Orders({ items, tableNumber, total, customer: req.session.user._id });
         await newOrder.save();
+        console.log('New Order ID:', newOrder._id); // Log the order ID after saving
+       
+        
+        // Update user with the new order
         await Users.findByIdAndUpdate(req.session.user._id, { $push: { orders: newOrder._id } });
-        req.session.cart = []; // Clear the cart after placing the order
+        
+        // Clear the cart after placing the order
+        req.session.cart = [];
         console.log('Order placed successfully:', newOrder);
-        setFlash(req, 'success_msg', 'Order placed successfully');
+
+        req.flash('success_msg', 'Order placed successfully');
         return res.redirect('/customer/orders/' + newOrder._id);
     } catch (err) {
         console.error('Error saving new order:', err);
-        setFlash(req, 'error_msg', 'Failed to place the order');
+        req.flash('error_msg', 'Failed to place the order');
         return res.redirect('/cart/view');
     }
 }));
 
+// Route to cancel an order
 app.post('/orders/cancel/:id', ensureAuthenticated, ensureTableReserved, asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const order = await Orders.findById(id);
 
-    if (!order) {
-        setFlash(req, 'error_msg', 'Order not found');
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        req.flash('error_msg', 'Invalid order ID.');
         return res.redirect('/customer/orders');
     }
 
-    if (['ready', 'served'].includes(order.status)) {
-        setFlash(req, 'error_msg', 'Orders that are ready or served cannot be canceled');
+    try {
+        const order = await Orders.findById(id);
+
+        if (!order) {
+            req.flash('error_msg', 'Order not found');
+            return res.redirect('/customer/orders');
+        }
+
+        if (['ready', 'served'].includes(order.status)) {
+            req.flash('error_msg', 'Orders that are ready or served cannot be canceled');
+            return res.redirect('/customer/orders');
+        }
+
+        order.status = 'canceled';
+        await order.save();
+        req.flash('success_msg', 'Order canceled successfully');
+        return res.redirect('/customer/orders');
+    } catch (err) {
+        console.error('Error canceling order:', err);
+        req.flash('error_msg', 'Failed to cancel the order');
         return res.redirect('/customer/orders');
     }
-
-    if (order.status !== 'pending') {
-        setFlash(req, 'error_msg', 'Only pending orders can be canceled');
-        return res.redirect('/customer/orders');
-    }
-
-    order.status = 'canceled';
-    await order.save();
-    setFlash(req, 'success_msg', 'Order canceled successfully');
-    return res.redirect('/customer/orders');
 }));
 
+// Route to get customer orders
 app.get('/customer/orders', ensureAuthenticated, ensureTableReserved, asyncHandler(async (req, res) => {
-    const orders = await Orders.find({ customer: req.session.user._id }).populate('items.menuItem').populate('customer');
-    res.render('orders/customerOrders', { orders });
+    try {
+        const userId = req.session.user._id;
+
+        const orders = await Orders.find({ customer: userId })
+            .populate('items.menuItem')
+            .populate('customer');
+
+        if (!orders || orders.length === 0) {
+            req.flash('info_msg', 'You have no orders at the moment.');
+            return res.redirect('/menu');
+        }
+
+        const reservedTable = await Tables.findOne({ reservedBy: userId, status: 'reserved' });
+
+        if (!reservedTable) {
+            req.flash('error_msg', 'No reserved table found.');
+            return res.redirect('/tables');
+        }
+
+        res.render('orders/customerOrders', {
+            orders,
+            tableNumber: reservedTable.tableNumber
+        });
+    } catch (error) {
+        console.error('Error fetching customer orders:', error);
+        req.flash('error_msg', 'An error occurred while fetching your orders.');
+        return res.redirect('/');
+    }
 }));
 
-app.get('/customer/orders/:id', ensureAuthenticated, ensureTableReserved, asyncHandler(async (req, res) => {
-    const order = await Orders.findById(req.params.id).populate('items.menuItem').populate('customer');
-    if (!order) {
-        setFlash(req, 'error_msg', 'Order not found');
+// Route to get receipt for a table
+app.get('/customer/orders/:tableNumber/receipt', ensureAuthenticated, asyncHandler(async (req, res) => {
+    const { tableNumber } = req.params;
+
+    try {
+        // Check if the user has any existing paid orders associated with the tableNumber
+        const existingOrder = await findExistingPaidOrderForTable(tableNumber, req.user.id);
+
+        // If no existing paid order found, fetch consolidated orders for the reservation
+        if (!existingOrder) {
+            const consolidatedOrder = await consolidateOrdersForReservation(tableNumber);
+
+            if (!consolidatedOrder || !consolidatedOrder.items || consolidatedOrder.items.length === 0) {
+                req.flash('error_msg', 'No valid orders found for this reservation.');
+                return res.redirect('/customer/orders');
+            }
+
+            // Calculate total if consolidated order is found
+            consolidatedOrder.total = consolidatedOrder.items.reduce((total, item) => {
+                return total + (item.menuItem.price * item.quantity);
+            }, 0);
+
+            // Render the receipt for the new order
+            res.render('orders/receipt', { order: consolidatedOrder });
+        } else {
+            // If there's an existing paid order, render the receipt for that order
+            res.render('orders/receipt', { order: existingOrder });
+        }
+    } catch (error) {
+        console.error('Error fetching receipt:', error);
+        req.flash('error_msg', 'An error occurred while fetching the receipt.');
         return res.redirect('/customer/orders');
     }
-    res.render('orders/orderDetails', { order });
+}));
+
+// Function to find existing paid orders for a given table number and user
+async function findExistingPaidOrderForTable(tableNumber, userId) {
+    // Replace with actual logic to query your database
+    return await Order.findOne({
+        tableNumber: tableNumber,
+        userId: userId,
+        status: 'paid' // assuming 'paid' indicates the order is completed and paid for
+    });
+}
+
+// Route to handle payment
+app.post('/customer/orders/:tableNumber/pay', ensureAuthenticated, asyncHandler(async (req, res) => {
+    try {
+        const { tableNumber } = req.params;
+
+        // Consolidate orders for the given table number
+        const consolidatedOrder = await consolidateOrdersForReservation(tableNumber);
+
+        if (!consolidatedOrder || !consolidatedOrder.items || consolidatedOrder.items.length === 0) {
+            req.flash('error_msg', 'No valid orders found for this reservation.');
+            return res.redirect('/customer/orders');
+        }
+
+        // Create a checkout session
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            line_items: consolidatedOrder.items.map(item => ({
+                price_data: {
+                    currency: 'inr',
+                    product_data: {
+                        name: item.menuItem.name,
+                    },
+                    unit_amount: item.menuItem.price * 100,
+                },
+                quantity: item.quantity,
+            })),
+            mode: 'payment',
+            success_url: `${req.protocol}://${req.get('host')}/customer/orders/succeed?session_id={CHECKOUT_SESSION_ID}&tableNumber=${tableNumber}`,
+            cancel_url: `${req.protocol}://${req.get('host')}/customer/orders`,
+        });
+
+        // Redirect to Stripe checkout
+        return res.redirect(303, session.url);
+    } catch (error) {
+        console.error('Error processing payment:', error);
+        req.flash('error_msg', 'An error occurred while processing your payment. Please try again.');
+        return res.redirect('/customer/orders');
+    }
+}));
+
+// Route to handle payment success
+app.get('/customer/orders/succeed', ensureAuthenticated, asyncHandler(async (req, res) => {
+    const { session_id: sessionId, tableNumber } = req.query;
+
+    if (!sessionId || !tableNumber) {
+        console.error('Invalid payment session or table number:', { sessionId, tableNumber });
+        req.flash('error_msg', 'Invalid payment session or table number.');
+        return res.redirect('/customer/orders');
+    }
+
+    try {
+        const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+        if (session.payment_status === 'paid') {
+            const orders = await Orders.find({ tableNumber });
+            if (!orders || orders.length === 0) {
+                console.error('No orders found for table:', tableNumber);
+                req.flash('error_msg', 'No orders found for this table.');
+                return res.redirect('/customer/orders');
+            }
+
+            await Orders.updateMany({ tableNumber }, { paymentStatus: 'paid', status: 'completed' });
+
+            const table = await Tables.findOne({ tableNumber });
+            if (table) {
+                table.status = 'vacant';
+                table.reservedBy = null;
+                await table.save();
+            }
+
+            req.flash('success_msg', 'Payment successful! Orders cleared and table marked as vacant.');
+            return res.redirect('/customer/orders');
+        } else if (session.payment_status === 'unpaid' || session.payment_status === 'pending') {
+            console.error('Payment is either unpaid or still pending:', session.payment_status);
+            req.flash('error_msg', 'Payment is either unpaid or still pending. Please check your payment status.');
+            return res.redirect('/customer/orders');
+        } else {
+            console.error('Payment failed or incomplete:', session.payment_status);
+            req.flash('error_msg', 'Payment failed or incomplete.');
+            return res.redirect('/customer/orders');
+        }
+    } catch (error) {
+        console.error('Error processing payment success:', error);
+        req.flash('error_msg', 'An error occurred while verifying the payment. Please try again.');
+        return res.redirect('/customer/orders');
+    }
+}));
+
+// Route to get specific order details
+app.get('/customer/orders/:id', ensureAuthenticated, asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    console.log(`Fetching order details for order ID: ${id}`);
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        console.log('Invalid order ID:', id);
+        req.flash('error_msg', 'Invalid order ID.');
+        return res.redirect('/customer/orders');
+    }
+
+    try {
+        const order = await Orders.findOne({ _id: id, customer: req.session.user._id })
+            .populate('items.menuItem')
+            .populate('customer');
+
+        if (!order) {
+            console.log('Order not found for ID:', id);
+            req.flash('error_msg', 'Order not found.');
+            return res.redirect('/customer/orders');
+        }
+
+        console.log('Order details fetched successfully for ID:', id);
+        res.render('orders/orderDetails', { order });
+    } catch (error) {
+        console.error('Error fetching order details for ID:', id, error);
+        req.flash('error_msg', 'An error occurred while fetching order details.');
+        return res.redirect('/customer/orders');
+    }
 }));
 
 // Profile Management
@@ -833,86 +1109,36 @@ app.get('/user/payment-history', ensureAuthenticated, asyncHandler(async (req, r
     res.render('user/paymentHistory', { paymentHistory: user.paymentHistory });
 }));
 
-// route for generating the receipt
-app.get('/customer/orders/:id/receipt', ensureAuthenticated, asyncHandler(async (req, res) => {
-    const order = await Orders.findById(req.params.id).populate('items.menuItem').populate('customer');
-
-    if (!order) {
-        setFlash(req, 'error_msg', 'Order not found');
-        return res.redirect('/customer/orders');
-    }
-
-    // Calculate breakdowns
-    const taxRate = 0.1; // 10% tax
-    const serviceChargeRate = 0.05; // 5% service charge
-    const subtotal = order.items.reduce((sum, item) => sum + item.menuItem.price * item.quantity, 0);
-    const tax = subtotal * taxRate;
-    const serviceCharge = subtotal * serviceChargeRate;
-    const total = subtotal + tax + serviceCharge;
-
-    order.subtotal = subtotal;
-    order.tax = tax;
-    order.serviceCharge = serviceCharge;
-    order.total = total;
-
-    res.render('orders/receipt', { order });
-}));
-
-app.get('/admin/orders/:id/receipt', ensureAdmin, asyncHandler(async (req, res) => {
-    const order = await Orders.findById(req.params.id).populate('items.menuItem').populate('customer');
-
-    if (!order) {
-        setFlash(req, 'error_msg', 'Order not found');
-        return res.redirect('/customer/orders');
-    }
-
-    // Calculate breakdowns
-    const taxRate = 0.1; // 10% tax
-    const serviceChargeRate = 0.05; // 5% service charge
-    const subtotal = order.items.reduce((sum, item) => sum + item.menuItem.price * item.quantity, 0);
-    const tax = subtotal * taxRate;
-    const serviceCharge = subtotal * serviceChargeRate;
-    const total = subtotal + tax + serviceCharge;
-
-    order.subtotal = subtotal;
-    order.tax = tax;
-    order.serviceCharge = serviceCharge;
-    order.total = total;
-
-    res.render('orders/receipt', { order });
-}));
-
 // Table Reservation
 
-app.get('/admin/tables/tableHistory', ensureAuthenticated, ensureAdmin, asyncHandler(async (req, res) => {
-    try {
-        // Fetch table history with populated reservedBy field
-        const tableHistory = await Tables.find({}).populate('reservedBy', 'username'); // Populate only the username field
-
-        // Render the table history page with the fetched data
-        res.render('tables/tableHistory', { tableHistory });
-    } catch (error) {
-        console.error('Error fetching table history:', error);
-        req.flash('error_msg', 'Failed to load table history.');
-        res.redirect('/admin');
-    }
-}));
-
 app.get('/tables', ensureAuthenticated, asyncHandler(async (req, res) => {
-    const reservedTables = await Tables.find({ status: 'reserved' }).populate('reservedBy');
-    const vacantTables = await Tables.find({ status: 'vacant' });
-    
-    console.log('Reserved tables:', reservedTables);
-    // Ensure reservedBy is not null before accessing its properties
-    const reservedTablesWithUsers = reservedTables.map(table => ({
-        ...table.toObject(),
-        reservedBy: table.reservedBy || { name: 'Unknown', _id: 'Unknown' }
-    }));
+    try {
+        // Fetch reserved and vacant tables
+        const reservedTables = await Tables.find({ status: 'reserved' }).populate('reservedBy');
+        const vacantTables = await Tables.find({ status: 'vacant' });
 
-    res.render(res.locals.isAdmin ? 'tables/adminTables' : 'tables/customerTables', {
-        reservedTables: reservedTablesWithUsers,
-        vacantTables
-    });
+        // Fetch the orders for the current user to check if any orders are placed for their reserved table
+        const userOrders = await Orders.find({ customer: req.session.user._id });
+
+        console.log('Reserved tables:', reservedTables);
+
+        // Ensure reservedBy is not null before accessing its properties
+        const reservedTablesWithUsers = reservedTables.map(table => ({
+            ...table.toObject(),
+            reservedBy: table.reservedBy || { name: 'Unknown', _id: 'Unknown' }
+        }));
+
+        // Pass reserved tables, vacant tables, and user orders to the view
+        res.render(res.locals.isAdmin ? 'tables/adminTables' : 'tables/customerTables', {
+            reservedTables: reservedTablesWithUsers,
+            vacantTables,
+            orders: userOrders // Pass user's orders for order cancellation logic
+        });
+    } catch (error) {
+        console.error('Error fetching tables:', error);
+        req.flash('error_msg', 'An error occurred while fetching tables');
+        res.redirect('/');
+    }
 }));
 
 app.post('/customer/tables/cancel', ensureAuthenticated, asyncHandler(async (req, res) => {
@@ -930,7 +1156,20 @@ app.post('/customer/tables/cancel', ensureAuthenticated, asyncHandler(async (req
             return res.redirect('/tables');
         }
 
-        // Cancel the reservation
+        // Check if there are orders associated with this table
+        const orders = await Orders.find({ tableNumber, status: { $in: ['pending', 'preparing', 'served'] } });
+
+        // If there are orders, charge a cancellation fee
+        if (orders.length > 0) {
+            // Assume a fixed cancellation fee (e.g., $10)
+            const cancellationFee = 10;
+            // Add logic to charge the cancellation fee using Stripe or another payment gateway
+            // Charge customer cancellation fee
+            req.flash('error_msg', `You cannot cancel the reservation as you have ordered food. You will be charged a cancellation fee of $${cancellationFee}.`);
+            return res.redirect('/tables');
+        }
+
+        // If no orders exist, allow table cancellation
         table.status = 'vacant';
         table.reservedBy = null;
         await table.save();
