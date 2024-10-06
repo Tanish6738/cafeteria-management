@@ -15,7 +15,7 @@ const ReceiptSchema = new Schema({
     serviceCharge: { type: Number, default: 0 }, // Service charge (if applicable)
     paymentMethod: { type: String, enum: ['card', 'cash'], required: true },
     receiptDate: { type: Date, default: Date.now }, // Date when the receipt was generated
-    receiptURL: { type: String, required: true }, // URL or path for the digital receipt (PDF or other format)
+    // receiptURL: { type: String, required: true }, // URL or path for the digital receipt (PDF or other format)
 }, {
     timestamps: true
 });

@@ -11,7 +11,9 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
 
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;700&display=swap"
+        rel="stylesheet" />
 
     <style>
         body {
@@ -111,91 +113,108 @@
     <!-- Navbar -->
     <%- include('../partials/navbar') %>
 
-    <div class="container mx-auto mt-10 fade-in">
-        <h2 class="text-5xl font-bold mb-10 text-center text-[#4b3a36]">Your Orders at table # <%= tableNumber %></h2>
+        <div class="container mx-auto mt-10 fade-in">
+            <h2 class="text-5xl font-bold mb-10 text-center text-[#4b3a36]">Your Orders at table # <%= tableNumber %>
+            </h2>
 
-        <!-- Flash Messages -->
-        <% if (flashMessages.success_msg) { %>
-            <div class="success-message">
-                <strong>Success!</strong> <%= flashMessages.success_msg %>
-            </div>
-        <% } %>
-        <% if (flashMessages.error_msg) { %>
-            <div class="error-message">
-                <strong>Error!</strong> <%= flashMessages.error_msg %>
-            </div>
-        <% } %>
-
-        <div class="orders-container">
-            <h3 class="text-3xl font-bold mb-6">Order List</h3>
-            <% if (orders && orders.length > 0) { %>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full bg-transparent text-light">
-                        <thead>
-                            <tr>
-                                <th class="py-4 px-6 border-b text-left">Order ID</th>
-                                <th class="py-4 px-6 border-b text-left">Status</th>
-                                <th class="py-4 px-6 border-b text-left">Payment Status</th>
-                                <th class="py-4 px-6 border-b text-left">Total Price</th>
-                                <th class="py-4 px-6 border-b text-left">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% let totalPrice = 0; %>
-                            <% orders.forEach(order => { %>
-                                <tr>
-                                    <td class="py-2 px-6 border-b"><%= order._id %></td>
-                                    <td class="py-2 px-6 border-b"><%= order.status %></td>
-                                    <td class="py-2 px-6 border-b">
-                                        <% if (order.paymentStatus === 'paid') { %>
-                                            <span class="text-green-500">Paid</span>
-                                        <% } else { %>
-                                            <span class="text-red-500">Unpaid</span>
-                                        <% } %>
-                                    </td>
-                                    <td class="py-2 px-6 border-b">₹<%= order.total %></td>
-                                    <td class="py-2 px-6 border-b flex items-center space-x-2">
-                                        <a href="/customer/orders/<%= order._id %>" class="text-white bg-blue-500 hover:bg-blue-700 py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">View</a>
-                                        <% if (order.status === 'pending') { %>
-                                            <form action="/orders/cancel/<%= order._id %>" method="POST" style="display:inline;">
-                                                <button type="submit" class="text-white bg-red-500 hover:bg-red-700 py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105" onclick="return confirm('Are you sure you want to cancel this order?');">Cancel</button>
-                                            </form>
-                                        <% } else { %>
-                                            <span class="bg-gray-500 text-white py-2 px-4 rounded">Cannot Cancel</span>
-                                        <% } %>
-                                    </td>
-                                </tr>
-                                <% totalPrice += order.total; %>
-                            <% }) %>
-                        </tbody>
-                    </table>
+            <!-- Flash Messages -->
+            <% if (flashMessages.success_msg) { %>
+                <div class="success-message">
+                    <strong>Success!</strong>
+                    <%= flashMessages.success_msg %>
                 </div>
+                <% } %>
+                    <% if (flashMessages.error_msg) { %>
+                        <div class="error-message">
+                            <strong>Error!</strong>
+                            <%= flashMessages.error_msg %>
+                        </div>
+                        <% } %>
+                            <div class="orders-container">
+                                <h3 class="text-3xl font-bold mb-6">Order List</h3>
+                                <% if (orders && orders.length> 0) { %>
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full bg-transparent text-light">
+                                            <thead>
+                                                <tr>
+                                                    <th class="py-4 px-6 border-b text-left">Order ID</th>
+                                                    <th class="py-4 px-6 border-b text-left">Status</th>
+                                                    <th class="py-4 px-6 border-b text-left">Payment Status</th>
+                                                    <th class="py-4 px-6 border-b text-left">Total Price</th>
+                                                    <th class="py-4 px-6 border-b text-left">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% let totalPrice=0; %>
+                                                    <% orders.forEach(order=> { %>
+                                                        <tr>
+                                                            <td class="py-2 px-6 border-b">
+                                                                <%= order._id %>
+                                                            </td>
+                                                            <td class="py-2 px-6 border-b">
+                                                                <%= order.status %>
+                                                            </td>
+                                                            <td class="py-2 px-6 border-b">
+                                                                <% if (order.paymentStatus==='paid' ) { %>
+                                                                    <span class="text-green-500">Paid</span>
+                                                                    <% } else { %>
+                                                                        <span class="text-red-500">Unpaid</span>
+                                                                        <% } %>
+                                                            </td>
+                                                            <td class="py-2 px-6 border-b">₹<%= order.total %>
+                                                            </td>
+                                                            <td class="py-2 px-6 border-b flex items-center space-x-2">
+                                                                <a href="/customer/orders/<%= order._id %>"
+                                                                    class="text-white bg-blue-500 hover:bg-blue-700 py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">View</a>
+                                                                <% if (order.status==='pending' ) { %>
+                                                                    <form action="/orders/cancel/<%= order._id %>"
+                                                                        method="POST" style="display:inline;">
+                                                                        <button type="submit"
+                                                                            class="text-white bg-red-500 hover:bg-red-700 py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105"
+                                                                            onclick="return confirm('Are you sure you want to cancel this order?');">Cancel</button>
+                                                                    </form>
+                                                                    <% } else { %>
+                                                                        <span
+                                                                            class="bg-gray-500 text-white py-2 px-4 rounded">Cannot
+                                                                            Cancel</span>
+                                                                        <% } %>
+                                                            </td>
+                                                        </tr>
+                                                        <% totalPrice +=order.total; %>
+                                                            <% }) %>
+                                            </tbody>
+                                        </table>
+                                    </div>
 
-                <!-- Show Total Price and Payment Option -->
-                <div class="mt-6">
-                    <h3 class="text-2xl font-bold text-white">Total Price for All Orders: ₹<%= totalPrice %></h3>
-                    <form action="/customer/orders/<%= tableNumber %>/pay" method="POST">
-                        <button type="submit" class="text-white bg-green-500 hover:bg-green-700 py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105 mt-4">Done, Go for the Billing</button>
-                    </form>
-                </div>
+                                    <!-- Show Total Price and Payment Option -->
+                                    <div class="mt-6">
+                                        <h3 class="text-2xl font-bold text-white">Total Price for All Orders: ₹<%=
+                                                totalPrice %>
+                                        </h3>
+                                        <form action="/customer/orders/<%= tableNumber %>/pay" method="POST">
+                                            <button type="submit"
+                                                class="text-white bg-green-500 hover:bg-green-700 py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105 mt-4">Done,
+                                                Go for the Billing</button>
+                                        </form>
+                                    </div>
+                                    <% } else { %>
+                                        <p class="text-gray-500">No orders found.</p>
+                                        <% } %>
+                            </div>
 
-            <% } else { %>
-                <p class="text-gray-500">No orders found.</p>
-            <% } %>
         </div>
-    </div>
 
-    <!-- JavaScript Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
-    <script>
-        // GSAP Animations
-        gsap.from('.orders-container', {
-            duration: 1,
-            y: 50,
-            opacity: 0,
-            stagger: 0.2
-        });
-    </script>
+        <!-- JavaScript Libraries -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
+        <script>
+            // GSAP Animations
+            gsap.from('.orders-container', {
+                duration: 1,
+                y: 50,
+                opacity: 0,
+                stagger: 0.2
+            });
+        </script>
 </body>
 
 </html>

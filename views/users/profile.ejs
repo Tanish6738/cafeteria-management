@@ -83,7 +83,7 @@
                 <a href="/user/profile/edit" class="mt-4 inline-block bg-blue-500 hover:bg-blue-700 text-white p-2 rounded transition duration-300 ease-in-out transform hover:scale-105">Edit Profile</a>
             </div>
         </div>
-
+        
         <!-- Current Orders Section -->
         <div class="container-custom p-8 mt-10">
             <h3 class="text-2xl font-bold mb-4">Current Orders</h3>
@@ -99,14 +99,14 @@
                                 <li><%= item.menuItem.name %> - <%= item.quantity %> x ₹<%= item.menuItem.price %></li>
                             <% }) %>
                         </ul>
-                        <a href="/customer/orders/<%= order.tableNumber %>/receipt" class="mt-2 inline-block bg-green-500 hover:bg-green-700 text-white p-2 rounded">View Receipt</a>
+                        <a href="/customer/reciept/<%=  %>" class="mt-2 inline-block bg-green-500 hover:bg-green-700 text-white p-2 rounded">View Receipt</a>
                     </div>
                 <% }) %>
             <% } else { %>
                 <p>No current orders found.</p>
             <% } %>
         </div>
-
+        
         <!-- Previous Orders Section -->
         <div class="container-custom p-8 mt-10">
             <h3 class="text-2xl font-bold mb-4">Previous Orders</h3>
@@ -122,14 +122,14 @@
                                 <li><%= item.menuItem.name %> - <%= item.quantity %> x ₹<%= item.menuItem.price %></li>
                             <% }) %>
                         </ul>
-                        <a href="/customer/orders/<%= order.tableNumber %>/receipt" class="mt-2 inline-block bg-green-500 hover:bg-green-700 text-white p-2 rounded">View Receipt</a>
+                        <a href="/customer/orders/<%= order._id %>/receipt" class="mt-2 inline-block bg-green-500 hover:bg-green-700 text-white p-2 rounded">View Receipt</a>
                     </div>
                 <% }) %>
             <% } else { %>
                 <p>No previous orders found.</p>
             <% } %>
         </div>
-
+        
         <!-- Payment History Section -->
         <div class="container-custom p-8 mt-10">
             <h3 class="text-2xl font-bold mb-4">Payment History</h3>
@@ -137,7 +137,7 @@
                 <% user.paymentHistory.forEach(payment => { %>
                     <div class="mb-4 p-4 bg-gray-800 rounded">
                         <h4 class="text-xl font-bold mb-2">Payment ID: <%= payment._id %></h4>
-                        <p class="mb-2"><strong>Order ID:</strong> <%= payment.orderId._id %></p>
+                        <p class="mb-2"><strong>Order ID:</strong> <%= payment.orderId ? payment.orderId._id : 'N/A' %></p>
                         <p class="mb-2"><strong>Amount:</strong> ₹<%= payment.amount %></p>
                         <p class="mb-2"><strong>Date:</strong> <%= new Date(payment.date).toDateString() %></p>
                     </div>
@@ -146,6 +146,7 @@
                 <p>No payment history found.</p>
             <% } %>
         </div>
+        
     </div>
 
     <!-- GSAP Animations -->

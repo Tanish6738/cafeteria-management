@@ -124,14 +124,14 @@
             <div class="mt-6">
                 <% if (isAdmin) { %>
                     <a href="/admin/orders" class="btn-primary hover-scale py-2 px-4 rounded">Back to Orders</a>
-                    <a href="/admin/orders/<%= order.tableNumber %>/receipt" class="btn-primary hover-scale py-2 px-4 rounded ml-4">View Receipt</a>
+                    <a href="/admin/orders/<%=  %>/receipt" class="btn-primary hover-scale py-2 px-4 rounded ml-4">View Receipt</a>
                 <% } else { %>
                     <a href="/customer/orders" class="btn-primary hover-scale py-2 px-4 rounded">Back to Orders</a>
                     <a href="/customer/orders/<%= order.tableNumber %>/receipt" class="btn-primary hover-scale py-2 px-4 rounded ml-4">View Receipt</a>
                 <% } %>
             </div>
         </div>
-    </div>
+        
 
     <!-- JavaScript Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
