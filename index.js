@@ -925,20 +925,41 @@ app.get('/customer/orders', ensureAuthenticated, asyncHandler(async (req, res) =
 //     }
 // }));
 
-app.get('/customer/reciept/:id', ensureAuthenticated, asyncHandler(async (req, res) => {
+// Route to get the receipt details
+app.get('/customer/receipt/:id', ensureAuthenticated, asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const receipt = await Receipt.findById(id)
-        .populate('orders')
-        .populate('customer')
-        .lean();
 
-    if (!receipt) {
-        setFlash(req, 'error_msg', 'Receipt not found');
+    try {
+        // Find the receipt by ID and populate the related fields
+        const receipt = await Receipt.findById(id)
+            .populate({
+                path: 'orders',
+                populate: {
+                    path: 'menuItem', // Ensure menu item details are included
+                    model: 'Menu'     // Change this if your menu item model has a different name
+                }
+            })
+            .populate('customer')
+            .lean();
+
+        // Check if receipt was found
+        if (!receipt) {
+            setFlash(req, 'error_msg', 'Receipt not found');
+            return res.redirect('/customer/orders');
+        }
+
+        // Log receipt for debugging
+        console.log('Receipt found:', receipt);
+
+        // Render the receipt view with the retrieved data
+        res.render('orders/receipt', { receipt });
+    } catch (error) {
+        console.error('Error fetching receipt:', error);
+        setFlash(req, 'error_msg', 'An error occurred while fetching the receipt. Please try again.');
         return res.redirect('/customer/orders');
     }
-
-    res.render('orders/receipt', { receipt });
 }));
+
 
 // Route to handle payment
 app.post('/customer/orders/:tableNumber/pay', ensureAuthenticated, asyncHandler(async (req, res) => {
@@ -994,32 +1015,37 @@ app.post('/customer/orders/:tableNumber/pay', ensureAuthenticated, asyncHandler(
 
 // Route to handle payment success
 app.get('/customer/orders/succeed', ensureAuthenticated, asyncHandler(async (req, res) => {
-
     const { session_id, tableNumber } = req.query;
 
     try {
-
+        // Retrieve Stripe session
         const session = await stripe.checkout.sessions.retrieve(session_id);
 
         if (session.payment_status === 'paid') {
             const orders = await Orders.find({ tableNumber, customer: req.session.user._id });
+
+            // Check if orders exist for this table and customer
             if (!orders || orders.length === 0) {
                 req.flash('error_msg', 'No orders found for this reservation.');
                 return res.redirect('/customer/orders');
             }
 
-            // consolidate orders
+            console.log("Orders found:", orders);
+
+            // Consolidate orders
             const consolidatedOrder = await consolidateOrdersForReservation(tableNumber);
+
             if (!consolidatedOrder || !consolidatedOrder.items || consolidatedOrder.items.length === 0) {
                 req.flash('error_msg', 'No valid orders found for this reservation.');
                 return res.redirect('/customer/orders');
             }
 
-            // Calculate total if consolidated order is found
+            // Calculate total for consolidated order
             consolidatedOrder.total = consolidatedOrder.items.reduce((total, item) => {
                 return total + (item.menuItem.price * item.quantity);
             }, 0);
             const totalAmount = consolidatedOrder.total;
+
             // Create a payment history entry
             const paymentHistory = new Payment({
                 customer: req.session.user._id,
@@ -1031,11 +1057,21 @@ app.get('/customer/orders/succeed', ensureAuthenticated, asyncHandler(async (req
             });
 
             await paymentHistory.save();
+            console.log("Payment history saved:", paymentHistory);
 
-            // Mark all orders as paid
-            await Orders.updateMany({ tableNumber, customer: req.session.user._id }, { isPaid: true });
+            // Update orders: mark as paid, completed, and link receipt
+            await Orders.updateMany(
+                { tableNumber, customer: req.session.user._id },
+                {
+                    isPaid: true,
+                    paymentStatus: 'paid',
+                    paymentId: paymentHistory._id,
+                    status: 'completed'
+                }
+            );
+            console.log("Orders updated as paid and completed.");
 
-            // Find the table and update its status to 'vacant'
+            // Mark the table as vacant
             const table = await Tables.findOne({ tableNumber, status: 'reserved' });
 
             if (table) {
@@ -1043,23 +1079,34 @@ app.get('/customer/orders/succeed', ensureAuthenticated, asyncHandler(async (req
                 table.reservedBy = null;  // Clear the reservation
                 await table.save();
             }
+            console.log("Table marked as vacant.");
 
-            // Generate receipt
+            // Generate and save receipt
             const receipt = new Receipt({
                 customer: req.session.user._id,
                 paymentId: paymentHistory._id,
                 tableNumber,
                 orders: orders.map(order => order._id),
                 totalAmount,
-                taxAmount: totalAmount * 0.1, // Assuming 10% tax
-                serviceCharge: totalAmount * 0.05, // Assuming 5% service charge
+                taxAmount: totalAmount * 0.1,  // Assuming 10% tax
+                serviceCharge: totalAmount * 0.05,  // Assuming 5% service charge
                 paymentMethod: 'card',
-                // receiptURL: `/receipts/${paymentHistory._id}.pdf` // Example URL, adjust as needed
             });
 
             await receipt.save();
+            console.log("Receipt saved:", receipt);
 
-            req.flash('success_msg', 'Payment successful and receipt generated');
+            // Update orders to link the receipt after it's saved
+            await Orders.updateMany(
+                { tableNumber, customer: req.session.user._id },
+                { receipt: receipt._id }
+            );
+            console.log("Orders updated with receipt link.");
+
+            req.flash('success_msg', 'Payment successful and receipt generated.');
+            return res.redirect('/customer/orders');
+        } else {
+            req.flash('error_msg', 'Payment was not successful.');
             return res.redirect('/customer/orders');
         }
     } catch (error) {
@@ -1104,22 +1151,34 @@ app.get('/customer/orders/:id', ensureAuthenticated, asyncHandler(async (req, re
 // Profile Management
 app.get('/user/profile', ensureAuthenticated, asyncHandler(async (req, res) => {
     const user = await Users.findById(req.session.user._id)
-        .populate('orders')
         .populate({
             path: 'orders',
-            populate: { path: 'items.menuItem' }
+            populate: [
+                { path: 'items.menuItem' },
+                { path: 'receipt', model: 'Receipt' }  // Ensure receipt is populated correctly
+            ]
         })
         .populate({
             path: 'paymentHistory',
-            populate: { path: 'orders' }
+            populate: [
+                { path: 'orders', model: 'Orders' },
+                { path: 'receipt', model: 'Receipt' }  // Ensure receipt is populated
+            ]
         });
 
     const currentOrders = user.orders.filter(order => ['pending', 'preparing', 'served'].includes(order.status));
     const previousOrders = user.orders.filter(order => ['completed', 'canceled'].includes(order.status));
 
-    const receipts = await Receipt.find({ customer: req.session.user._id }).populate('orders');
+    const receipts = await Receipt.find({ customer: req.session.user._id })
+        .populate('orders')
+        .populate('paymentId');
 
-    const payments = await Payment.find({ customer: req.session.user._id }).populate('orders');
+    const payments = await Payment.find({ customer: req.session.user._id })
+        .populate('orders')
+        .populate('receipt');
+
+    console.log('Current orders:', currentOrders);
+    console.log('Payments:', payments);
 
     res.render('users/profile', { user, currentOrders, previousOrders, receipts, payments });
 }));
@@ -1144,7 +1203,15 @@ app.get('/user/profile/delete', ensureAuthenticated, asyncHandler(async (req, re
 }));
 
 app.get('/user/payment-history', ensureAuthenticated, asyncHandler(async (req, res) => {
-    const user = await Users.findById(req.session.user._id).populate('paymentHistory.orderId');
+    const user = await Users.findById(req.session.user._id)
+        .populate({
+            path: 'paymentHistory.orderId',
+            populate: [
+                { path: 'orders' }, // Populate orders for each payment history entry
+                { path: 'receipt' } // Populate receipt for each payment history entry
+            ]
+        });
+
     res.render('user/paymentHistory', { paymentHistory: user.paymentHistory });
 }));
 

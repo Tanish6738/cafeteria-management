@@ -1,6 +1,7 @@
-const mongoose = require('mongoose'); 
+const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
+// Order Schema
 const OrderSchema = new Schema({
     items: [
         {
@@ -8,12 +9,12 @@ const OrderSchema = new Schema({
             quantity: { type: Number, required: true },
         }
     ],
-    tableNumber: { type: Number, required: true }, 
+    tableNumber: { type: Number, required: true },
     total: { type: Number, required: true },
-    status: { 
-        type: String, 
-        enum: ['pending', 'preparing', 'ready', 'served', 'completed', 'canceled'], 
-        default: 'pending' 
+    status: {
+        type: String,
+        enum: ['pending', 'preparing', 'ready', 'served', 'completed', 'canceled'],
+        default: 'pending'
     },
     paymentStatus: {
         type: String,
@@ -21,12 +22,14 @@ const OrderSchema = new Schema({
         default: 'unpaid'
     },
     customer: { type: mongoose.Schema.Types.ObjectId, ref: 'Users', required: true },
+    receipt: { type: mongoose.Schema.Types.ObjectId, ref: 'Receipt' }, // Reference to Receipt
     placedAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date } 
+    updatedAt: { type: Date }
 }, {
     timestamps: true
 });
 
+// Middleware to update the updatedAt field
 OrderSchema.pre('save', function(next) {
     this.updatedAt = Date.now();
     next();

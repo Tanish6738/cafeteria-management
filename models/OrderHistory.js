@@ -9,7 +9,8 @@ const OrderHistorySchema = new mongoose.Schema({
     total: { type: Number, required: true },
     customer: { type: mongoose.Schema.Types.ObjectId, ref: 'Users', required: true },
     status: { type: String, default: 'completed' },
-    completedAt: { type: Date, default: Date.now }
+    completedAt: { type: Date, default: Date.now },
+    receipt: { type: mongoose.Schema.Types.ObjectId, ref: 'Receipt' } // Reference to Receipt
 });
 
 module.exports = mongoose.model('OrderHistory', OrderHistorySchema);

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Receipt - Order <%= order._id %></title>
+    <title>Receipt - Order <%= receipt._id %></title>
     
     <!-- Tailwind CSS -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
@@ -105,14 +105,14 @@
             <h2 class="text-3xl font-bold mb-6">Order Summary</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <p class="text-xl"><strong>Order ID:</strong> <%= order._id %></p>
-                    <p class="text-xl"><strong>Customer:</strong> <%= order.customer.username %></p>
-                    <p class="text-xl"><strong>Table Number:</strong> <%= order.tableNumber %></p>
-                    <p class="text-xl"><strong>Order Date:</strong> <%= new Date(order.createdAt).toLocaleDateString() %></p>
+                    <p class="text-xl"><strong>Receipt ID:</strong> <%= receipt._id %></p>
+                    <p class="text-xl"><strong>Customer:</strong> <%= receipt.customer.username %></p>
+                    <p class="text-xl"><strong>Table Number:</strong> <%= receipt.tableNumber %></p>
+                    <p class="text-xl"><strong>Receipt Date:</strong> <%= new Date(receipt.receiptDate).toLocaleDateString() %></p>
                 </div>
                 <div>
-                    <p class="text-xl"><strong>Payment Status:</strong> <%= order.isPaid ? "Completed" : "Pending" %></p>
-                    <p class="text-xl"><strong>Total Amount:</strong> ₹<%= order.total.toFixed(2) %></p>
+                    <p class="text-xl"><strong>Payment Method:</strong> <%= receipt.paymentMethod %></p>
+                    <p class="text-xl"><strong>Total Amount:</strong> ₹<%= receipt.totalAmount.toFixed(2) %></p>
                 </div>
             </div>
         </div>
@@ -131,13 +131,15 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <% order.items.forEach(item => { %>
-                            <tr class="border-t">
-                                <td class="py-2 px-6 border-b"><%= item.menuItem.name %></td>
-                                <td class="py-2 px-6 border-b"><%= item.quantity %></td>
-                                <td class="py-2 px-6 border-b">₹<%= item.menuItem.price ? item.menuItem.price.toFixed(2) : 'N/A' %></td>
-                                <td class="py-2 px-6 border-b">₹<%= (item.menuItem.price && item.quantity) ? (item.menuItem.price * item.quantity).toFixed(2) : 'N/A' %></td>
-                            </tr>
+                        <% receipt.orders.forEach(order => { %>
+                            <% order.items.forEach(item => { %>
+                                <tr class="border-t">
+                                    <td class="py-2 px-6 border-b"><%= item.menuItem.name %></td>
+                                    <td class="py-2 px-6 border-b"><%= item.quantity %></td>
+                                    <td class="py-2 px-6 border-b">₹<%= item.menuItem.price.toFixed(2) %></td>
+                                    <td class="py-2 px-6 border-b">₹<%= (item.menuItem.price * item.quantity).toFixed(2) %></td>
+                                </tr>
+                            <% }) %>
                         <% }) %>
                     </tbody>                    
                 </table>
@@ -149,17 +151,17 @@
             <h2 class="text-3xl font-bold mb-6">Order Breakdown</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">  
                 <div>       
-                    <p class="text-xl"><strong>Subtotal:</strong> ₹<%= order.subtotal !== undefined ? order.subtotal.toFixed(2) : 'N/A' %></p>
-                    <p class="text-xl"><strong>Tax:</strong> ₹<%= order.tax !== undefined ? order.tax.toFixed(2) : 'N/A' %></p>
-                    <p class="text-xl"><strong>Service Charge:</strong> ₹<%= order.serviceCharge !== undefined ? order.serviceCharge.toFixed(2) : 'N/A' %></p>
-                    <p class="text-xl font-bold"><strong>Total:</strong> ₹<%= order.total !== undefined ? order.total.toFixed(2) : 'N/A' %></p>
+                    <p class="text-xl"><strong>Subtotal:</strong> ₹<%= (receipt.totalAmount - receipt.taxAmount - receipt.serviceCharge).toFixed(2) %></p>
+                    <p class="text-xl"><strong>Tax:</strong> ₹<%= receipt.taxAmount.toFixed(2) %></p>
+                    <p class="text-xl"><strong>Service Charge:</strong> ₹<%= receipt.serviceCharge.toFixed(2) %></p>
+                    <p class="text-xl font-bold"><strong>Total:</strong> ₹<%= receipt.totalAmount.toFixed(2) %></p>
                 </div>
             </div>            
         </div>
 
         <% if (isAdmin) { %>
             <div class="flex justify-between items-center mt-6">
-                <form action="/admin/orders/<%= order._id %>/approve-payment" method="POST">
+                <form action="/admin/orders/<%= receipt._id %>/approve-payment" method="POST">
                     <button type="submit" class="btn-primary hover:scale-105 py-2 px-4 rounded">
                         Approve Payment
                     </button>
@@ -180,5 +182,4 @@
         });
     </script>
 </body>
-
 </html>

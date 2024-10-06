@@ -19,6 +19,7 @@ const PaymentSchema = new Schema({
     },
     paymentMethod: { type: String, enum: ['card', 'cash'], required: true },
     paymentDate: { type: Date, default: Date.now }, // Date of the payment
+    receipt: { type: mongoose.Schema.Types.ObjectId, ref: 'Receipt' }, // Reference to Receipt
 }, {
     timestamps: true
 });

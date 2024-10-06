@@ -6,7 +6,7 @@
     <title>Payment History</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
-        
+        /* Add any additional styles here */
     </style>
 </head>
 <body class="bg-gray-100">
@@ -14,21 +14,31 @@
     <div class="container mx-auto mt-10 fade-in">
         <h2 class="text-2xl font-bold mb-6">Payment History</h2>
         <div class="bg-white p-6 rounded shadow">
-            <% if (payments.length > 0) { %>
+            <% if (paymentHistory.length > 0) { %>
                 <table class="min-w-full bg-white">
                     <thead>
                         <tr>
                             <th class="py-2 px-4 border-b">Date</th>
                             <th class="py-2 px-4 border-b">Amount</th>
                             <th class="py-2 px-4 border-b">Status</th>
+                            <th class="py-2 px-4 border-b">Order ID</th>
+                            <th class="py-2 px-4 border-b">Receipt</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <% payments.forEach(payment => { %>
+                        <% paymentHistory.forEach(payment => { %>
                             <tr>
-                                <td class="py-2 px-4 border-b"><%= payment.date %></td>
-                                <td class="py-2 px-4 border-b">$<%= payment.amount %></td>
-                                <td class="py-2 px-4 border-b"><%= payment.status %></td>
+                                <td class="py-2 px-4 border-b"><%= new Date(payment.date).toLocaleDateString() %></td>
+                                <td class="py-2 px-4 border-b">₹<%= payment.amount.toFixed(2) %></td>
+                                <td class="py-2 px-4 border-b"><%= payment.orderId && payment.orderId.status %></td>
+                                <td class="py-2 px-4 border-b"><%= payment.orderId ? payment.orderId._id : 'N/A' %></td>
+                                <td class="py-2 px-4 border-b">
+                                    <% if (payment.orderId && payment.orderId.receipt) { %>
+                                        <a href="/customer/reciept/<%= payment.orderId.receipt._id %>" class="text-blue-500 hover:underline">View Receipt</a>
+                                    <% } else { %>
+                                        N/A
+                                    <% } %>
+                                </td>
                             </tr>
                         <% }) %>
                     </tbody>
@@ -39,47 +49,46 @@
         </div>
     </div>
     <script>
-        
-            // Burger menus
-            document.addEventListener('DOMContentLoaded', function () {
-                // open
-                const burger = document.querySelectorAll('.navbar-burger');
-                const menu = document.querySelectorAll('.navbar-menu');
+        // Burger menus
+        document.addEventListener('DOMContentLoaded', function () {
+            // open
+            const burger = document.querySelectorAll('.navbar-burger');
+            const menu = document.querySelectorAll('.navbar-menu');
 
-                if (burger.length && menu.length) {
-                    for (var i = 0; i < burger.length; i++) {
-                        burger[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
+            if (burger.length && menu.length) {
+                for (var i = 0; i < burger.length; i++) {
+                    burger[i].addEventListener('click', function () {
+                        for (var j = 0; j < menu.length; j++) {
+                            menu[j].classList.toggle('hidden');
+                        }
+                    });
                 }
+            }
 
-                // close
-                const close = document.querySelectorAll('.navbar-close');
-                const backdrop = document.querySelectorAll('.navbar-backdrop');
+            // close
+            const close = document.querySelectorAll('.navbar-close');
+            const backdrop = document.querySelectorAll('.navbar-backdrop');
 
-                if (close.length) {
-                    for (var i = 0; i < close.length; i++) {
-                        close[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
+            if (close.length) {
+                for (var i = 0; i < close.length; i++) {
+                    close[i].addEventListener('click', function () {
+                        for (var j = 0; j < menu.length; j++) {
+                            menu[j].classList.toggle('hidden');
+                        }
+                    });
                 }
+            }
 
-                if (backdrop.length) {
-                    for (var i = 0; i < backdrop.length; i++) {
-                        backdrop[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
+            if (backdrop.length) {
+                for (var i = 0; i < backdrop.length; i++) {
+                    backdrop[i].addEventListener('click', function () {
+                        for (var j = 0; j < menu.length; j++) {
+                            menu[j].classList.toggle('hidden');
+                        }
+                    });
                 }
-            });
+            }
+        });
     </script>
 </body>
 </html>
