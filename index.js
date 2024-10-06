@@ -351,34 +351,13 @@ app.get('/admin/orders/history', ensureAdmin, asyncHandler(async (req, res) => {
     try {
         // Fetch all completed orders from OrderHistory
         const ordersHistory = await OrderHistory.find()
-            .populate('items.menuItem')
-            .populate('customer')
+            .populate('items.menuItem')  // Populate menuItem in the items array
+            .populate('customer')  // Populate the customer details
+            .populate('receipt')  // Populate the receipt details
             .lean(); // Use lean() for faster Mongoose queries and to work with plain JavaScript objects
 
-        // Fetch all orders from Orders
-        const orders = await Orders.find()
-            .populate('items.menuItem')
-            .populate('customer')
-            .lean();
-
-        // Create a map of Orders by _id for quick lookup
-        const ordersMap = {};
-        orders.forEach(order => {
-            ordersMap[order._id.toString()] = order;
-        });
-
-        // Merge OrderHistory with corresponding Orders data
-        const mergedOrders = ordersHistory.map(orderHistory => {
-            const correspondingOrder = ordersMap[orderHistory._id.toString()];
-            return {
-                ...orderHistory,
-                placedAt: correspondingOrder ? correspondingOrder.placedAt : null,
-                updatedAt: correspondingOrder ? correspondingOrder.updatedAt : null,
-            };
-        });
-
-        // Render the admin order history page with the merged orders
-        res.render('orders/adminOrderHistory', { orders: mergedOrders });
+        // Render the admin order history page with the fetched ordersHistory
+        res.render('orders/adminOrderHistory', { orders: ordersHistory });
     } catch (error) {
         console.error('Error fetching order history:', error);
         req.flash('error_msg', 'Failed to load order history.');
@@ -872,12 +851,12 @@ app.get('/customer/orders', ensureAuthenticated, asyncHandler(async (req, res) =
     try {
         const userId = req.session.user._id;
 
-        const orders = await Orders.find({ customer: userId })
+        const orders = await Orders.find({ customer: userId, status: { $ne: 'completed' } }) // Fetch only non-completed orders
             .populate('items.menuItem')
             .populate('customer');
 
         if (!orders || orders.length === 0) {
-            req.flash('info_msg', 'You have no orders at the moment.');
+            req.flash('info_msg', 'You have no active orders at the moment.');
             return res.redirect('/customer/menu');
         }
 
@@ -966,7 +945,7 @@ app.post('/customer/orders/:tableNumber/pay', ensureAuthenticated, asyncHandler(
     try {
         const { tableNumber } = req.params;
 
-        const orders = await Orders.find({ tableNumber, customer: req.session.user._id });
+        const orders = await Orders.find({ tableNumber, customer: req.session.user._id, status: { $ne: 'completed' } });
 
         const allServed = orders.every(order => order.status === 'served');
         if (!allServed) {
@@ -1001,7 +980,7 @@ app.post('/customer/orders/:tableNumber/pay', ensureAuthenticated, asyncHandler(
             })),
             mode: 'payment',
             success_url: `${req.protocol}://${req.get('host')}/customer/orders/succeed?session_id={CHECKOUT_SESSION_ID}&tableNumber=${tableNumber}`,
-            cancel_url: `${req.protocol}://${req.get('host')}/customer/orders?tableNumber=${tableNumber}`, // Removed the extra curly brace here
+            cancel_url: `${req.protocol}://${req.get('host')}/customer/orders?tableNumber=${tableNumber}`,
         });
 
         // Redirect to Stripe checkout
@@ -1046,6 +1025,16 @@ app.get('/customer/orders/succeed', ensureAuthenticated, asyncHandler(async (req
             }, 0);
             const totalAmount = consolidatedOrder.total;
 
+            // Update orders: mark as paid, completed, and link receipt
+            await Orders.updateMany(
+                { tableNumber, customer: req.session.user._id },
+                {
+                    isPaid: true,
+                    paymentStatus: 'paid',
+                    status: 'completed'
+                }
+            );
+
             // Create a payment history entry
             const paymentHistory = new Payment({
                 customer: req.session.user._id,
@@ -1059,16 +1048,19 @@ app.get('/customer/orders/succeed', ensureAuthenticated, asyncHandler(async (req
             await paymentHistory.save();
             console.log("Payment history saved:", paymentHistory);
 
-            // Update orders: mark as paid, completed, and link receipt
-            await Orders.updateMany(
-                { tableNumber, customer: req.session.user._id },
-                {
-                    isPaid: true,
-                    paymentStatus: 'paid',
-                    paymentId: paymentHistory._id,
-                    status: 'completed'
-                }
-            );
+            const completedOrders = await Orders.find({ tableNumber, customer: req.session.user._id });
+
+            const orderHistory = new OrderHistory({
+                items: completedOrders.map(order => order.items).flat(),
+                tableNumber,
+                total: totalAmount,
+                customer: req.session.user._id,
+                status: 'completed'
+            });
+
+            await orderHistory.save();
+            console.log("Order history saved:", orderHistory);
+
             console.log("Orders updated as paid and completed.");
 
             // Mark the table as vacant

@@ -24,12 +24,12 @@ const PaymentSchema = new Schema({
     timestamps: true
 });
 
-// Pre-save hook to ensure all orders are 'served' before payment
+// Pre-save hook to ensure all orders are 'completed' before payment
 PaymentSchema.pre('save', async function(next) {
     const orders = await mongoose.model('Orders').find({ _id: { $in: this.orders } });
-    const allServed = orders.every(order => order.status === 'served');
-    if (!allServed) {
-        return next(new Error('All orders must be marked as served before making payment.'));
+    const allCompleted = orders.every(order => order.status === 'completed');
+    if (!allCompleted) {
+        return next(new Error('All orders must be marked as completed before making payment.'));
     }
     next();
 });
