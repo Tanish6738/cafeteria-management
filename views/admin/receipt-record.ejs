@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipt Records</title>
+    <%- include('../partials/links') %>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Playfair Display', serif;
+            background: url('https://images.unsplash.com/photo-1526234362653-3b75a0c07438?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center fixed;
+            background-size: cover;
+            color: #ECDFCC;
+        }
+
+        .records-container {
+            background-color: rgba(60, 61, 55, 0.8);
+            border-radius: 10px;
+            padding: 40px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            color: #ECDFCC;
+        }
+
+        .btn-primary {
+            background-color: #697565;
+            color: #fff;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #3C3D37;
+        }
+
+        .hover-scale {
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .hover-scale:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+
+<body>
+    <%- include('../partials/navbar') %>
+
+    <div class="container mx-auto mt-10 fade-in">
+        <h2 class="text-4xl font-bold mb-6 text-center">Receipt Records</h2>
+        
+        <!-- Search Input -->
+        <div class="mb-4">
+            <input type="text" id="search" placeholder="Search by Receipt ID or Customer Name" class="w-full p-2 border border-gray-300 rounded">
+        </div>
+
+        <div class="records-container">
+            <% if (receipts && receipts.length > 0) { %>
+                <table class="table-auto w-full text-left">
+                    <thead>
+                        <tr>
+                            <th class="px-4 py-2">Receipt ID</th>
+                            <th class="px-4 py-2">Customer Name</th>
+                            <th class="px-4 py-2">Total Amount</th>
+                            <th class="px-4 py-2">Payment Status</th>
+                            <th class="px-4 py-2">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="receiptsTable">
+                        <% receipts.forEach(receipt => { %>
+                            <tr>
+                                <td class="border px-4 py-2"><%= receipt._id %></td>
+                                <td class="border px-4 py-2"><%= receipt.customer.name %></td>
+                                <td class="border px-4 py-2">$<%= receipt.totalAmount %></td>
+                                <td class="border px-4 py-2"><%= receipt.paymentStatus %></td>
+                                <td class="border px-4 py-2">
+                                    <a href="/admin/receipt/<%= receipt._id %>" class="btn-primary hover-scale p-2 rounded">View</a>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            <% } else { %>
+                <p>No receipts found.</p>
+            <% } %>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
+    <script>
+        
+            // Burger menus
+            document.addEventListener('DOMContentLoaded', function () {
+                // open
+                const burger = document.querySelectorAll('.navbar-burger');
+                const menu = document.querySelectorAll('.navbar-menu');
+
+                if (burger.length && menu.length) {
+                    for (var i = 0; i < burger.length; i++) {
+                        burger[i].addEventListener('click', function () {
+                            for (var j = 0; j < menu.length; j++) {
+                                menu[j].classList.toggle('hidden');
+                            }
+                        });
+                    }
+                }
+
+                // close
+                const close = document.querySelectorAll('.navbar-close');
+                const backdrop = document.querySelectorAll('.navbar-backdrop');
+
+                if (close.length) {
+                    for (var i = 0; i < close.length; i++) {
+                        close[i].addEventListener('click', function () {
+                            for (var j = 0; j < menu.length; j++) {
+                                menu[j].classList.toggle('hidden');
+                            }
+                        });
+                    }
+                }
+
+                if (backdrop.length) {
+                    for (var i = 0; i < backdrop.length; i++) {
+                        backdrop[i].addEventListener('click', function () {
+                            for (var j = 0; j < menu.length; j++) {
+                                menu[j].classList.toggle('hidden');
+                            }
+                        });
+                    }
+                }
+            });
+        gsap.from('.records-container', {
+            duration: 1,
+            y: 50,
+            opacity: 0,
+            ease: 'power3.out'
+        });
+
+        // Search functionality
+        document.getElementById('search').addEventListener('input', function() {
+            const searchValue = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#receiptsTable tr');
+            rows.forEach(row => {
+                const receiptId = row.children[0].textContent.toLowerCase();
+                const customerName = row.children[1].textContent.toLowerCase();
+                if (receiptId.includes(searchValue) || customerName.includes(searchValue)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

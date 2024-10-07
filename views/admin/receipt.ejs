@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipt Details</title>
+    <%- include('../partials/links') %>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Playfair Display', serif;
+            background: url('https://images.unsplash.com/photo-1526234362653-3b75a0c07438?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center fixed;
+            background-size: cover;
+            color: #ECDFCC;
+        }
+
+        .receipt-container {
+            background-color: rgba(60, 61, 55, 0.8);
+            border-radius: 10px;
+            padding: 40px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            color: #ECDFCC;
+        }
+
+        .btn-primary {
+            background-color: #697565;
+            color: #fff;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #3C3D37;
+        }
+
+        .hover-scale {
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .hover-scale:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+
+<body>
+    <%- include('../partials/navbar') %>
+
+    <div class="container mx-auto mt-10 fade-in">
+        <h2 class="text-4xl font-bold mb-6 text-center">Receipt Details</h2>
+        <div class="receipt-container">
+            <h3 class="text-2xl font-bold mb-4">Receipt ID: <%= receipt._id %></h3>
+            <p class="mb-2"><strong>Customer Name:</strong> <%= receipt.customer.name %></p>
+            <p class="mb-2"><strong>Customer Email:</strong> <%= receipt.customer.email %></p>
+            <h4 class="text-lg font-bold mt-4">Orders:</h4>
+            <% if (receipt.orders && receipt.orders.length > 0) { %>
+                <ul class="list-disc list-inside">
+                    <% receipt.orders.forEach(order => { %>
+                        <li>
+                            <strong>Menu Item:</strong> <%= order.menuItem.name %> - 
+                            <%= order.quantity %> x $<%= order.menuItem.price %>
+                        </li>
+                    <% }) %>
+                </ul>
+            <% } else { %>
+                <p>No orders found for this receipt.</p>
+            <% } %>
+            <p class="mt-4"><strong>Total Amount:</strong> $<%= receipt.totalAmount %></p>
+            <p class="mt-2"><strong>Payment Status:</strong> <%= receipt.paymentStatus %></p>
+        </div>
+        <a href="/admin/receipt-records" class="btn-primary hover-scale p-2 rounded inline-block">Back to Records</a>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
+    <script>
+        
+            // Burger menus
+            document.addEventListener('DOMContentLoaded', function () {
+                // open
+                const burger = document.querySelectorAll('.navbar-burger');
+                const menu = document.querySelectorAll('.navbar-menu');
+
+                if (burger.length && menu.length) {
+                    for (var i = 0; i < burger.length; i++) {
+                        burger[i].addEventListener('click', function () {
+                            for (var j = 0; j < menu.length; j++) {
+                                menu[j].classList.toggle('hidden');
+                            }
+                        });
+                    }
+                }
+
+                // close
+                const close = document.querySelectorAll('.navbar-close');
+                const backdrop = document.querySelectorAll('.navbar-backdrop');
+
+                if (close.length) {
+                    for (var i = 0; i < close.length; i++) {
+                        close[i].addEventListener('click', function () {
+                            for (var j = 0; j < menu.length; j++) {
+                                menu[j].classList.toggle('hidden');
+                            }
+                        });
+                    }
+                }
+
+                if (backdrop.length) {
+                    for (var i = 0; i < backdrop.length; i++) {
+                        backdrop[i].addEventListener('click', function () {
+                            for (var j = 0; j < menu.length; j++) {
+                                menu[j].classList.toggle('hidden');
+                            }
+                        });
+                    }
+                }
+            });
+        gsap.from('.receipt-container', {
+            duration: 1,
+            y: 50,
+            opacity: 0,
+            ease: 'power3.out'
+        });
+    </script>
+</body>
+
+</html>
