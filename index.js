@@ -516,7 +516,7 @@ app.get('/admin/receipt/:id', ensureAdmin, asyncHandler(async (req, res) => {
             .populate({
                 path: 'orders',
                 populate: {
-                    path: 'menuItem',
+                    path: 'items.menuItem', // Correctly populate the nested menuItem within items
                     model: 'Menu'
                 }
             })
@@ -534,7 +534,7 @@ app.get('/admin/receipt/:id', ensureAdmin, asyncHandler(async (req, res) => {
         setFlash(req, 'error_msg', 'An error occurred while fetching the receipt. Please try again.');
         return res.redirect('/admin/receipt-records');
     }
-}))
+}));
 
 app.get('/admin/receipt-records', ensureAdmin, asyncHandler(async (req, res) => {
     try {
@@ -543,7 +543,7 @@ app.get('/admin/receipt-records', ensureAdmin, asyncHandler(async (req, res) => 
             .populate('customer')
             .lean();
 
-        res.render('orders/receiptRecords', { receipts });
+        res.render('admin/receipt-record', { receipts });
     } catch (error) {
         console.error('Error fetching receipt records:', error);
         setFlash(req, 'error_msg', 'Failed to load receipt records.');

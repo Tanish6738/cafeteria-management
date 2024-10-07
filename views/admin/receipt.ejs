@@ -52,22 +52,24 @@
         <h2 class="text-4xl font-bold mb-6 text-center">Receipt Details</h2>
         <div class="receipt-container">
             <h3 class="text-2xl font-bold mb-4">Receipt ID: <%= receipt._id %></h3>
-            <p class="mb-2"><strong>Customer Name:</strong> <%= receipt.customer.name %></p>
+            <p class="mb-2"><strong>Customer Name:</strong> <%= receipt.customer.username %></p>
             <p class="mb-2"><strong>Customer Email:</strong> <%= receipt.customer.email %></p>
             <h4 class="text-lg font-bold mt-4">Orders:</h4>
             <% if (receipt.orders && receipt.orders.length > 0) { %>
                 <ul class="list-disc list-inside">
                     <% receipt.orders.forEach(order => { %>
-                        <li>
-                            <strong>Menu Item:</strong> <%= order.menuItem.name %> - 
-                            <%= order.quantity %> x $<%= order.menuItem.price %>
-                        </li>
+                        <% order.items.forEach(item => { %>
+                            <li>
+                                <strong>Menu Item:</strong> <%= item.menuItem.name %> - 
+                                <%= item.quantity %> x $<%= item.menuItem.price %>
+                            </li>
+                        <% }) %>
                     <% }) %>
                 </ul>
             <% } else { %>
                 <p>No orders found for this receipt.</p>
             <% } %>
-            <p class="mt-4"><strong>Total Amount:</strong> $<%= receipt.totalAmount %></p>
+            <p class="mt-4"><strong>Total Amount:</strong> $<%= receipt.totalAmount.toFixed(2) %></p>
             <p class="mt-2"><strong>Payment Status:</strong> <%= receipt.paymentStatus %></p>
         </div>
         <a href="/admin/receipt-records" class="btn-primary hover-scale p-2 rounded inline-block">Back to Records</a>
@@ -75,47 +77,47 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
     <script>
-        
-            // Burger menus
-            document.addEventListener('DOMContentLoaded', function () {
-                // open
-                const burger = document.querySelectorAll('.navbar-burger');
-                const menu = document.querySelectorAll('.navbar-menu');
+        // Burger menus
+        document.addEventListener('DOMContentLoaded', function () {
+            // open
+            const burger = document.querySelectorAll('.navbar-burger');
+            const menu = document.querySelectorAll('.navbar-menu');
 
-                if (burger.length && menu.length) {
-                    for (var i = 0; i < burger.length; i++) {
-                        burger[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
+            if (burger.length && menu.length) {
+                for (var i = 0; i < burger.length; i++) {
+                    burger[i].addEventListener('click', function () {
+                        for (var j = 0; j < menu.length; j++) {
+                            menu[j].classList.toggle('hidden');
+                        }
+                    });
                 }
+            }
 
-                // close
-                const close = document.querySelectorAll('.navbar-close');
-                const backdrop = document.querySelectorAll('.navbar-backdrop');
+            // close
+            const close = document.querySelectorAll('.navbar-close');
+            const backdrop = document.querySelectorAll('.navbar-backdrop');
 
-                if (close.length) {
-                    for (var i = 0; i < close.length; i++) {
-                        close[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
+            if (close.length) {
+                for (var i = 0; i < close.length; i++) {
+                    close[i].addEventListener('click', function () {
+                        for (var j = 0; j < menu.length; j++) {
+                            menu[j].classList.toggle('hidden');
+                        }
+                    });
                 }
+            }
 
-                if (backdrop.length) {
-                    for (var i = 0; i < backdrop.length; i++) {
-                        backdrop[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
+            if (backdrop.length) {
+                for (var i = 0; i < backdrop.length; i++) {
+                    backdrop[i].addEventListener('click', function () {
+                        for (var j = 0; j < menu.length; j++) {
+                            menu[j].classList.toggle('hidden');
+                        }
+                    });
                 }
-            });
+            }
+        });
+
         gsap.from('.receipt-container', {
             duration: 1,
             y: 50,
