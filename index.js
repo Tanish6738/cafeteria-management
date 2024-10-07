@@ -510,6 +510,56 @@ app.post('/admin/orders/:id/approve-payment', ensureAdmin, asyncHandler(async (r
     return res.redirect('/admin/orders');
 }));
 
+app.get('/admin/receipt/:id', ensureAdmin ,asyncHandler(async (req ,res)=>{
+    const { id } = req.params;
+
+    try {
+        // Find the receipt by ID and populate the related fields
+        const receipt = await Receipt.findById(id)
+            .populate({
+                path: 'orders',
+                populate: {
+                    path: 'menuItem', // Ensure menu item details are included
+                    model: 'Menu'     // Change this if your menu item model has a different name
+                }
+            })
+            .populate('customer')
+            .lean();
+
+        // Check if receipt was found
+        if (!receipt) {
+            setFlash(req, 'error_msg', 'Receipt not found');
+            return res.redirect('/admin/receipt-records');
+        }
+
+        // Log receipt for debugging
+        console.log('Receipt found:', receipt);
+
+        // Render the receipt view with the retrieved data
+        res.render('admin/receipt', { receipt });
+    } catch (error) {
+        console.error('Error fetching receipt:', error);
+        setFlash(req, 'error_msg', 'An error occurred while fetching the receipt. Please try again.');
+        return res.redirect('/admin/receipt-records');
+    }
+}))
+
+app.get('/admin/receipt-records' , ensureAdmin , asyncHandler(async(req,res)=>{
+    try{
+        const receipts = await Receipt.find().populate(
+            {path:'orders',
+            populate : {
+                path :'menuItem',
+                model : "Menu"
+            }}
+        ).populate('customer')
+        .lean();
+    }catch (err) {
+        console.log("error some occured");
+        console.log(err);
+    }   
+}))
+
 // Admin User Management
 app.get('/admin/users', ensureAdmin, asyncHandler(async (req, res) => {
     const users = await Users.find();
@@ -553,7 +603,6 @@ app.get('/admin/users/:id', ensureAdmin, asyncHandler(async (req, res) => {
 
     res.render('admin/adminUserDetails', { user, orders, orderCount, unpaidOrders });
 }));
-
 
 app.get('/admin/users/:id/delete', ensureAdmin, asyncHandler(async (req, res) => {
     await Users.findByIdAndDelete(req.params.id);
@@ -939,7 +988,6 @@ app.get('/customer/receipt/:id', ensureAuthenticated, asyncHandler(async (req, r
     }
 }));
 
-
 // Route to handle payment
 app.post('/customer/orders/:tableNumber/pay', ensureAuthenticated, asyncHandler(async (req, res) => {
     try {
@@ -970,7 +1018,7 @@ app.post('/customer/orders/:tableNumber/pay', ensureAuthenticated, asyncHandler(
             payment_method_types: ['card'],
             line_items: consolidatedOrder.items.map(item => ({
                 price_data: {
-                    currency: 'usd',
+                    currency: 'inr',
                     product_data: {
                         name: item.menuItem.name,
                     },
