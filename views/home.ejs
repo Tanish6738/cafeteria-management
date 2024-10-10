@@ -5,13 +5,15 @@
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-  <title>Restaurantly</title>
+  <title>Cafe Luxe</title>
   <meta content="" name="description">
   <meta content="" name="keywords">
   <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
 
   <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i"
+    rel="stylesheet">
 
   <!-- Vendor CSS Files -->
   <link href="assets/vendor/animate.css/animate.min.css" rel="stylesheet">
@@ -25,7 +27,9 @@
   <!-- Template Main CSS File -->
   <link href="assets/css/style.css" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/lenis@1.1.13/dist/lenis.css">
-  <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script> 
+  <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
+
+
 
 </head>
 
@@ -38,7 +42,7 @@
       <h1 class="logo me-auto me-lg-0"><a href="index.html">Restaurantly</a></h1>
       <!-- Uncomment below if you prefer to use an image logo -->
       <!-- <a href="index.html" class="logo me-auto me-lg-0"><img src="assets/img/logo.png" alt="" class="img-fluid"></a>-->
-    
+
       <nav id="navbar" class="navbar order-last order-lg-0">
         <ul>
           <% if (user) { %>
@@ -48,48 +52,51 @@
               <li><a class="nav-link scrollto" href="/admin/users">Users Management</a></li>
               <li><a class="nav-link scrollto" href="/tables">Tables Management</a></li>
               <li><a class="nav-link scrollto" href="/admin/orders/history">Order History</a></li>
-            <% } else { %>
-              <li><a class="nav-link scrollto" href="/customer/menu">Menu</a></li>
-              <li><a class="nav-link scrollto" href="/cart/view">Cart</a></li>
-              <li><a class="nav-link scrollto" href="/customer/orders">Orders</a></li>
-              <li><a class="nav-link scrollto" href="/tables">Tables</a></li>
-            <% } %>
-            <li class="dropdown"><a href="#"><span>Account</span> <i class="bi bi-chevron-down"></i></a>
-              <ul>
-                <li><a href="/user/profile">Profile</a></li>
-                <li><a href="/logout">Logout</a></li>
-              </ul>
-            </li>
-          <% } else { %>
-            <li><a class="nav-link scrollto" href="/login">Login</a></li>
-            <li><a class="nav-link scrollto" href="/register">Register</a></li>
-          <% } %>
-          <li><a class="nav-link scrollto" href="#contact">Contact</a></li>
+              <% } else { %>
+                <li><a class="nav-link scrollto" href="/customer/menu">Menu</a></li>
+                <li><a class="nav-link scrollto" href="/cart/view">Cart</a></li>
+                <li><a class="nav-link scrollto" href="/customer/orders">Orders</a></li>
+                <li><a class="nav-link scrollto" href="/tables">Tables</a></li>
+                <% } %>
+                  <li class="dropdown"><a href="#"><span>Account</span> <i class="bi bi-chevron-down"></i></a>
+                    <ul>
+                      <li><a href="/user/profile">Profile</a></li>
+                      <li><a href="/logout">Logout</a></li>
+                    </ul>
+                  </li>
+                  <% } else { %>
+                    <li><a class="nav-link scrollto" href="/login">Login</a></li>
+                    <li><a class="nav-link scrollto" href="/register">Register</a></li>
+                    <% } %>
+                      <li><a class="nav-link scrollto" href="#contact">Contact</a></li>
         </ul>
         <i class="bi bi-list mobile-nav-toggle"></i>
       </nav><!-- .navbar -->
       <!-- <a href="#book-a-table" class="book-a-table-btn scrollto d-none d-lg-flex">Book a table</a> -->
     </div>
-    
+
   </header><!-- End Header -->
 
   <!-- ======= Hero Section ======= -->
   <section id="hero" class="d-flex align-items-center">
-    <div class="container position-relative text-center text-lg-start" data-aos="zoom-in" data-aos-delay="100">
+    <div class="container position-relative text-center text-lg-start">
       <div class="row">
         <div class="col-lg-8">
-          <h1>Welcome to <span>Restaurantly</span></h1>
-          <h2>Delivering great food for more than 18 years!</h2>
+          <h1>Welcome to <span class="highlight">Restaurantly</span></h1>
+          <h2>Crafting Exquisite Culinary Journeys for Over <strong>18 Years</strong></h2>
+          <p class="mt-3">Experience a blend of gourmet flavors, world-class service, and an ambiance that elevates
+            every moment. Join us for a taste of luxury where every dish tells a story.</p>
 
-          <div class="btns">
-            <a href="#menu" class="btn-menu animated fadeInUp scrollto">Our Menu</a>
-            <a href="#book-a-table" class="btn-book animated fadeInUp scrollto">Book a Table</a>
+          <div class="hero-btns mt-4">
+            <a href="#menu" class="btn btn-menu scrollto">Explore Our Menu</a>
+            <a href="#book-a-table" class="btn btn-book scrollto">Reserve Your Table</a>
           </div>
         </div>
-
       </div>
     </div>
-  </section><!-- End Hero -->
+  </section>
+  <!-- End Hero Section -->
+
 
   <main id="main">
 
@@ -100,24 +107,29 @@
         <div class="row">
           <div class="col-lg-6 order-1 order-lg-2" data-aos="zoom-in" data-aos-delay="100">
             <div class="about-img">
-              <img src="assets/img/about.jpg" alt="">
+              <img src="assets/img/about.jpg" alt="Elegant Interior of Our Café" class="img-fluid">
             </div>
           </div>
           <div class="col-lg-6 pt-4 pt-lg-0 order-2 order-lg-1 content">
-            <h3>Voluptatem dignissimos provident quasi corporis voluptates sit assumenda.</h3>
+            <h3>A Haven of Elegance and Culinary Excellence</h3>
             <p class="fst-italic">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-              magna aliqua.
+              Nestled in the heart of the city, our café offers a luxurious escape where elegance meets extraordinary
+              flavors. Designed for the discerning guest, we provide not just a meal, but an experience that indulges
+              all the senses.
             </p>
             <ul>
-              <li><i class="bi bi-check-circle"></i> Ullamco laboris nisi ut aliquip ex ea commodo consequat.</li>
-              <li><i class="bi bi-check-circle"></i> Duis aute irure dolor in reprehenderit in voluptate velit.</li>
-              <li><i class="bi bi-check-circle"></i> Ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate trideta storacalaperda mastiro dolore eu fugiat nulla pariatur.</li>
+              <li><i class="bi bi-check-circle"></i> Handcrafted gourmet dishes using only the finest, locally sourced
+                ingredients.</li>
+              <li><i class="bi bi-check-circle"></i> An exquisite ambiance where modern luxury meets timeless charm.
+              </li>
+              <li><i class="bi bi-check-circle"></i> Impeccable service tailored to create an unforgettable dining
+                experience, every time.</li>
             </ul>
             <p>
-              Ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
-              velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-              culpa qui officia deserunt mollit anim id est laborum
+              At our café, every detail has been thoughtfully curated — from the delicate balance of flavors in each
+              dish to the inviting warmth of our interiors. Whether you're enjoying a quiet afternoon with artisanal
+              coffee or an intimate dinner, we ensure that every visit feels special. Indulge in the art of fine dining,
+              where luxury is not just about what you eat, but how it makes you feel.
             </p>
           </div>
         </div>
@@ -126,37 +138,40 @@
     </section><!-- End About Section -->
 
     <!-- ======= Why Us Section ======= -->
-    <section id="why-us" class="why-us">
+    <section id="why-us" class="why-us section-bg" style="border-bottom: 2px dotted;">
       <div class="container" data-aos="fade-up">
 
         <div class="section-title">
           <h2>Why Us</h2>
-          <p>Why Choose Our Restaurant</p>
+          <p>Discover Why We Stand Out</p>
         </div>
 
         <div class="row">
 
           <div class="col-lg-4">
             <div class="box" data-aos="zoom-in" data-aos-delay="100">
-              <span>01</span>
-              <h4>Lorem Ipsum</h4>
-              <p>Ulamco laboris nisi ut aliquip ex ea commodo consequat. Et consectetur ducimus vero placeat</p>
+              <span class="elegant-number">01</span>
+              <h4>Exquisite Flavors</h4>
+              <p>Our chefs use the finest ingredients and authentic techniques to bring you a culinary experience like
+                no other. Every dish is crafted with passion and precision.</p>
             </div>
           </div>
 
           <div class="col-lg-4 mt-4 mt-lg-0">
             <div class="box" data-aos="zoom-in" data-aos-delay="200">
-              <span>02</span>
-              <h4>Repellat Nihil</h4>
-              <p>Dolorem est fugiat occaecati voluptate velit esse. Dicta veritatis dolor quod et vel dire leno para dest</p>
+              <span class="elegant-number">02</span>
+              <h4>Unmatched Ambiance</h4>
+              <p>Immerse yourself in an atmosphere that perfectly blends traditional elegance with modern luxury. From
+                the decor to the service, every detail has been curated for your comfort.</p>
             </div>
           </div>
 
           <div class="col-lg-4 mt-4 mt-lg-0">
             <div class="box" data-aos="zoom-in" data-aos-delay="300">
-              <span>03</span>
-              <h4> Ad ad velit qui</h4>
-              <p>Molestiae officiis omnis illo asperiores. Aut doloribus vitae sunt debitis quo vel nam quis</p>
+              <span class="elegant-number">03</span>
+              <h4>Exceptional Service</h4>
+              <p>Our staff is dedicated to providing a seamless dining experience, ensuring that every moment you spend
+                with us is memorable and enjoyable.</p>
             </div>
           </div>
 
@@ -171,105 +186,95 @@
 
         <div class="section-title">
           <h2>Menu</h2>
-          <p>Check Our Tasty Menu</p>
+          <p>A World of Flavors Awaits</p>
         </div>
 
         <div class="row menu-container" data-aos="fade-up" data-aos-delay="200">
 
+          <!-- Starter: Italian Bruschetta -->
           <div class="col-lg-6 menu-item filter-starters">
-            <img src="assets/img/menu/lobster-bisque.jpg" class="menu-img" alt="">
+            <img
+              src="https://plus.unsplash.com/premium_photo-1677686707252-16013f466e61?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8QnJ1c2NoZXR0YXxlbnwwfHwwfHx8MA%3D%3D"
+              class="menu-img" alt="Bruschetta">
             <div class="menu-content">
-              <a href="#">Lobster Bisque</a><span>$5.95</span>
+              <a href="#">Bruschetta</a><span>₹120</span>
             </div>
             <div class="menu-ingredients">
-              Lorem, deren, trataro, filede, nerada
+              Crisp toasted bread topped with a blend of fresh tomatoes, garlic, basil, and olive oil.
             </div>
           </div>
 
-          <div class="col-lg-6 menu-item filter-specialty">
-            <img src="assets/img/menu/bread-barrel.jpg" class="menu-img" alt="">
-            <div class="menu-content">
-              <a href="#">Bread Barrel</a><span>$6.95</span>
-            </div>
-            <div class="menu-ingredients">
-              Lorem, deren, trataro, filede, nerada
-            </div>
-          </div>
-
+          <!-- Starter: Japanese Gyoza -->
           <div class="col-lg-6 menu-item filter-starters">
-            <img src="assets/img/menu/cake.jpg" class="menu-img" alt="">
+            <img
+              src="https://plus.unsplash.com/premium_photo-1723669629687-0e618541c49e?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8SmFwYW5lc2UlMjBHeW96YXxlbnwwfHwwfHx8MA%3D%3D"
+              class="menu-img" alt="Gyoza">
             <div class="menu-content">
-              <a href="#">Crab Cake</a><span>$7.95</span>
+              <a href="#">Japanese Gyoza</a><span>₹150</span>
             </div>
             <div class="menu-ingredients">
-              A delicate crab cake served on a toasted roll with lettuce and tartar sauce
+              Pan-fried dumplings filled with seasoned pork and cabbage, served with soy dipping sauce.
             </div>
           </div>
 
-          <div class="col-lg-6 menu-item filter-salads">
-            <img src="assets/img/menu/caesar.jpg" class="menu-img" alt="">
-            <div class="menu-content">
-              <a href="#">Caesar Selections</a><span>$8.95</span>
-            </div>
-            <div class="menu-ingredients">
-              Lorem, deren, trataro, filede, nerada
-            </div>
-          </div>
-
+          <!-- Specialty: Mexican Tacos -->
           <div class="col-lg-6 menu-item filter-specialty">
-            <img src="assets/img/menu/tuscan-grilled.jpg" class="menu-img" alt="">
+            <img
+              src="https://images.unsplash.com/photo-1524412529635-a258ed66c010?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8TWV4aWNhbiUyMFRhY29zfGVufDB8fDB8fHww"
+              class="menu-img" alt="Tacos">
             <div class="menu-content">
-              <a href="#">Tuscan Grilled</a><span>$9.95</span>
+              <a href="#">Mexican Tacos</a><span>₹200</span>
             </div>
             <div class="menu-ingredients">
-              Grilled chicken with provolone, artichoke hearts, and roasted red pesto
+              Soft tortillas filled with grilled chicken, avocado, fresh salsa, and a sprinkle of cheese.
             </div>
           </div>
 
-          <div class="col-lg-6 menu-item filter-starters">
-            <img src="assets/img/menu/mozzarella.jpg" class="menu-img" alt="">
-            <div class="menu-content">
-              <a href="#">Mozzarella Stick</a><span>$4.95</span>
-            </div>
-            <div class="menu-ingredients">
-              Lorem, deren, trataro, filede, nerada
-            </div>
-          </div>
-
-          <div class="col-lg-6 menu-item filter-salads">
-            <img src="assets/img/menu/greek-salad.jpg" class="menu-img" alt="">
-            <div class="menu-content">
-              <a href="#">Greek Salad</a><span>$9.95</span>
-            </div>
-            <div class="menu-ingredients">
-              Fresh spinach, crisp romaine, tomatoes, and Greek olives
-            </div>
-          </div>
-
-          <div class="col-lg-6 menu-item filter-salads">
-            <img src="assets/img/menu/spinach-salad.jpg" class="menu-img" alt="">
-            <div class="menu-content">
-              <a href="#">Spinach Salad</a><span>$9.95</span>
-            </div>
-            <div class="menu-ingredients">
-              Fresh spinach with mushrooms, hard boiled egg, and warm bacon vinaigrette
-            </div>
-          </div>
-
+          <!-- Specialty: Indian Butter Chicken -->
           <div class="col-lg-6 menu-item filter-specialty">
-            <img src="assets/img/menu/lobster-roll.jpg" class="menu-img" alt="">
+            <img
+              src="https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8YnV0dGVyJTIwY2hpY2tlbnxlbnwwfHwwfHx8MA%3D%3D"
+              class="menu-img" alt="Butter Chicken">
             <div class="menu-content">
-              <a href="#">Lobster Roll</a><span>$12.95</span>
+              <a href="#">Butter Chicken</a><span>₹320</span>
             </div>
             <div class="menu-ingredients">
-              Plump lobster meat, mayo and crisp lettuce on a toasted bulky roll
+              Tender chicken cooked in a creamy tomato-based gravy with rich spices, a North Indian favorite.
+            </div>
+          </div>
+
+          <!-- Specialty: Italian Margherita Pizza -->
+          <div class="col-lg-6 menu-item filter-specialty">
+            <img
+              src="https://images.unsplash.com/photo-1667207394004-acb6aaf4790e?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fE1hcmdoZXJpdGElMjBQaXp6YXxlbnwwfHwwfHx8MA%3D%3D"
+              class="menu-img" alt="Margherita Pizza">
+            <div class="menu-content">
+              <a href="#">Margherita Pizza</a><span>₹280</span>
+            </div>
+            <div class="menu-ingredients">
+              Fresh mozzarella, tomatoes, and basil on a crispy, wood-fired pizza crust.
+            </div>
+          </div>
+
+          <!-- Specialty: Thai Pad Thai -->
+          <div class="col-lg-6 menu-item filter-specialty">
+            <img
+              src="https://images.unsplash.com/photo-1565355857989-333dff0b3dc8?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8VGhhaSUyMFBhZCUyMFRoYWl8ZW58MHx8MHx8fDA%3D"
+              class="menu-img" alt="Pad Thai">
+            <div class="menu-content">
+              <a href="#">Thai Pad Thai</a><span>₹240</span>
+            </div>
+            <div class="menu-ingredients">
+              Stir-fried rice noodles with shrimp, tofu, peanuts, and tamarind sauce, served with lime.
             </div>
           </div>
 
         </div>
 
       </div>
-    </section><!-- End Menu Section -->
+    </section>
+    <!-- End Menu Section -->
+
 
     <!-- ======= Specials Section ======= -->
     <section id="specials" class="specials">
@@ -277,91 +282,127 @@
 
         <div class="section-title">
           <h2>Specials</h2>
-          <p>Check Our Specials</p>
+          <p>Discover Our Signature Specials</p>
         </div>
 
         <div class="row" data-aos="fade-up" data-aos-delay="100">
           <div class="col-lg-3">
             <ul class="nav nav-tabs flex-column">
               <li class="nav-item">
-                <a class="nav-link active show" data-bs-toggle="tab" href="#tab-1">Modi sit est</a>
+                <a class="nav-link active show" data-bs-toggle="tab" href="#tab-1">Margherita Pizza</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#tab-2">Unde praesentium sed</a>
+                <a class="nav-link" data-bs-toggle="tab" href="#tab-2">Mediterranean Falafel Platter</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#tab-3">Pariatur explicabo vel</a>
+                <a class="nav-link" data-bs-toggle="tab" href="#tab-3">Thai Green Curry</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#tab-4">Nostrum qui quasi</a>
+                <a class="nav-link" data-bs-toggle="tab" href="#tab-4">Truffle Mushroom Risotto</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#tab-5">Iusto ut expedita aut</a>
+                <a class="nav-link" data-bs-toggle="tab" href="#tab-5">New York Cheesecake</a>
               </li>
             </ul>
           </div>
+
           <div class="col-lg-9 mt-4 mt-lg-0">
             <div class="tab-content">
               <div class="tab-pane active show" id="tab-1">
                 <div class="row">
                   <div class="col-lg-8 details order-2 order-lg-1">
-                    <h3>Architecto ut aperiam autem id</h3>
-                    <p class="fst-italic">Qui laudantium consequatur laborum sit qui ad sapiente dila parde sonata raqer a videna mareta paulona marka</p>
-                    <p>Et nobis maiores eius. Voluptatibus ut enim blanditiis atque harum sint. Laborum eos ipsum ipsa odit magni. Incidunt hic ut molestiae aut qui. Est repellat minima eveniet eius et quis magni nihil. Consequatur dolorem quaerat quos qui similique accusamus nostrum rem vero</p>
+                    <h3>Margherita Pizza</h3>
+                    <p class="fst-italic">Classic Italian pizza with fresh mozzarella, ripe tomatoes, and basil leaves,
+                      baked to perfection.</p>
+                    <p>Our wood-fired Margherita Pizza showcases the simplicity of Italian cuisine, where the freshest
+                      ingredients meet traditional techniques. With a perfectly crisp crust and a balance of savory
+                      flavors, this dish will transport you to the streets of Naples.</p>
                   </div>
                   <div class="col-lg-4 text-center order-1 order-lg-2">
-                    <img src="assets/img/specials-1.png" alt="" class="img-fluid">
+                    <img
+                      src="https://images.unsplash.com/photo-1680405620826-83b0f0f61b28?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8TWFyZ2hlcml0YSUyMFBpenphfGVufDB8fDB8fHww"
+                      alt="Margherita Pizza" class="img-fluid"
+                      style="width: 100%; height: 350px; border-radius: 25px; object-fit: cover;">
                   </div>
                 </div>
               </div>
+
               <div class="tab-pane" id="tab-2">
                 <div class="row">
                   <div class="col-lg-8 details order-2 order-lg-1">
-                    <h3>Et blanditiis nemo veritatis excepturi</h3>
-                    <p class="fst-italic">Qui laudantium consequatur laborum sit qui ad sapiente dila parde sonata raqer a videna mareta paulona marka</p>
-                    <p>Ea ipsum voluptatem consequatur quis est. Illum error ullam omnis quia et reiciendis sunt sunt est. Non aliquid repellendus itaque accusamus eius et velit ipsa voluptates. Optio nesciunt eaque beatae accusamus lerode pakto madirna desera vafle de nideran pal</p>
+                    <h3>Mediterranean Falafel Platter</h3>
+                    <p class="fst-italic">Crispy falafel served with hummus, pita, fresh salads, and a drizzle of
+                      tahini.</p>
+                    <p>This vibrant dish brings the heart of the Mediterranean to your table. Enjoy the crunch of
+                      perfectly spiced falafel alongside creamy hummus, tangy tabbouleh, and warm pita bread, offering a
+                      delightful combination of textures and flavors.</p>
                   </div>
                   <div class="col-lg-4 text-center order-1 order-lg-2">
-                    <img src="assets/img/specials-2.png" alt="" class="img-fluid">
+                    <img
+                      src="https://images.unsplash.com/photo-1542528180-1c2803fa048c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8TWVkaXRlcnJhbmVhbiUyMEZhbGFmZWwlMjBQbGF0dGVyfGVufDB8fDB8fHww"
+                      alt="Falafel Platter" class="img-fluid"
+                      style="width: 100%; height: 350px; border-radius: 25px; object-fit: cover;">
                   </div>
                 </div>
               </div>
+
               <div class="tab-pane" id="tab-3">
                 <div class="row">
                   <div class="col-lg-8 details order-2 order-lg-1">
-                    <h3>Impedit facilis occaecati odio neque aperiam sit</h3>
-                    <p class="fst-italic">Eos voluptatibus quo. Odio similique illum id quidem non enim fuga. Qui natus non sunt dicta dolor et. In asperiores velit quaerat perferendis aut</p>
-                    <p>Iure officiis odit rerum. Harum sequi eum illum corrupti culpa veritatis quisquam. Neque necessitatibus illo rerum eum ut. Commodi ipsam minima molestiae sed laboriosam a iste odio. Earum odit nesciunt fugiat sit ullam. Soluta et harum voluptatem optio quae</p>
+                    <h3>Thai Green Curry</h3>
+                    <p class="fst-italic">A fragrant Thai dish made with coconut milk, green curry paste, and your
+                      choice of chicken or tofu.</p>
+                    <p>This comforting curry offers a perfect balance of creamy coconut milk, zesty lime, and bold
+                      spices. Served with steamed jasmine rice, the dish is a harmonious blend of sweet, spicy, and
+                      savory elements that will leave your palate craving more.</p>
                   </div>
                   <div class="col-lg-4 text-center order-1 order-lg-2">
-                    <img src="assets/img/specials-3.png" alt="" class="img-fluid">
+                    <img
+                      src="https://images.unsplash.com/photo-1668665772043-bdd32e348998?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8VGhhaSUyMEdyZWVuJTIwQ3Vycnl8ZW58MHx8MHx8fDA%3D"
+                      alt="Thai Green Curry" class="img-fluid"
+                      style="width: 100%; height: 350px; border-radius: 25px; object-fit: cover;">
                   </div>
                 </div>
               </div>
+
               <div class="tab-pane" id="tab-4">
                 <div class="row">
                   <div class="col-lg-8 details order-2 order-lg-1">
-                    <h3>Fuga dolores inventore laboriosam ut est accusamus laboriosam dolore</h3>
-                    <p class="fst-italic">Totam aperiam accusamus. Repellat consequuntur iure voluptas iure porro quis delectus</p>
-                    <p>Eaque consequuntur consequuntur libero expedita in voluptas. Nostrum ipsam necessitatibus aliquam fugiat debitis quis velit. Eum ex maxime error in consequatur corporis atque. Eligendi asperiores sed qui veritatis aperiam quia a laborum inventore</p>
+                    <h3>Truffle Mushroom Risotto</h3>
+                    <p class="fst-italic">A creamy, indulgent risotto infused with earthy truffle oil and sautéed
+                      mushrooms.</p>
+                    <p>This dish is a luxurious take on the traditional risotto, combining the richness of Parmesan with
+                      the deep flavors of wild mushrooms and the unmistakable aroma of truffle oil. It’s an elegant,
+                      savory experience perfect for any special occasion.</p>
                   </div>
                   <div class="col-lg-4 text-center order-1 order-lg-2">
-                    <img src="assets/img/specials-4.png" alt="" class="img-fluid">
+                    <img
+                      src="https://images.unsplash.com/photo-1633964913295-ceb43826e7c9?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8VHJ1ZmZsZSUyME11c2hyb29tJTIwUmlzb3R0b3xlbnwwfHwwfHx8MA%3D%3D"
+                      alt="Truffle Mushroom Risotto" class="img-fluid"
+                      style="width: 100%; height: 350px; border-radius: 25px; object-fit: cover;">
                   </div>
                 </div>
               </div>
+
               <div class="tab-pane" id="tab-5">
                 <div class="row">
                   <div class="col-lg-8 details order-2 order-lg-1">
-                    <h3>Est eveniet ipsam sindera pad rone matrelat sando reda</h3>
-                    <p class="fst-italic">Omnis blanditiis saepe eos autem qui sunt debitis porro quia.</p>
-                    <p>Exercitationem nostrum omnis. Ut reiciendis repudiandae minus. Omnis recusandae ut non quam ut quod eius qui. Ipsum quia odit vero atque qui quibusdam amet. Occaecati sed est sint aut vitae molestiae voluptate vel</p>
+                    <h3>New York Cheesecake</h3>
+                    <p class="fst-italic">A rich, creamy dessert with a graham cracker crust and a luscious cream cheese
+                      filling.</p>
+                    <p>Our classic New York Cheesecake offers a smooth and silky texture that melts in your mouth, with
+                      the perfect balance of sweetness and tang. Topped with fresh berries or a drizzle of caramel, it’s
+                      a heavenly end to your meal.</p>
                   </div>
                   <div class="col-lg-4 text-center order-1 order-lg-2">
-                    <img src="assets/img/specials-5.png" alt="" class="img-fluid">
+                    <img
+                      src="https://images.unsplash.com/photo-1578775887804-699de7086ff9?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8TmV3JTIwWW9yayUyMENoZWVzZWNha2V8ZW58MHx8MHx8fDA%3D"
+                      alt="New York Cheesecake" class="img-fluid"
+                      style="width: 100%; height: 350px; border-radius: 25px; object-fit: cover;">
                   </div>
                 </div>
               </div>
+
             </div>
           </div>
         </div>
@@ -381,7 +422,9 @@
       </div>
 
       <div data-aos="fade-up">
-        <iframe style="border:0; width: 100%; height: 350px;" src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d12097.433213460943!2d-74.0062269!3d40.7101282!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0xb89d1fe6bc499443!2sDowntown+Conference+Center!5e0!3m2!1smk!2sbg!4v1539943755621" frameborder="0" allowfullscreen></iframe>
+        <iframe style="border:0; width: 100%; height: 350px;"
+          src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d12097.433213460943!2d-74.0062269!3d40.7101282!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0xb89d1fe6bc499443!2sDowntown+Conference+Center!5e0!3m2!1smk!2sbg!4v1539943755621"
+          frameborder="0" allowfullscreen></iframe>
       </div>
 
       <div class="container" data-aos="fade-up">
@@ -463,7 +506,7 @@
 
           <div class="col-lg-3 col-md-6">
             <div class="footer-info">
-              <h3>Restaurantly</h3>
+              <h3>Cafe Luxe</h3>
               <p>
                 A108 Adam Street <br>
                 NY 535022, USA<br><br>
@@ -480,57 +523,20 @@
             </div>
           </div>
 
-          <div class="col-lg-2 col-md-6 footer-links">
-            <h4>Useful Links</h4>
-            <ul>
-              <li><i class="bx bx-chevron-right"></i> <a href="#">Home</a></li>
-              <li><i class="bx bx-chevron-right"></i> <a href="#">About us</a></li>
-              <li><i class="bx bx-chevron-right"></i> <a href="#">Services</a></li>
-              <li><i class="bx bx-chevron-right"></i> <a href="#">Terms of service</a></li>
-              <li><i class="bx bx-chevron-right"></i> <a href="#">Privacy policy</a></li>
-            </ul>
-          </div>
-
-          <div class="col-lg-3 col-md-6 footer-links">
-            <h4>Our Services</h4>
-            <ul>
-              <li><i class="bx bx-chevron-right"></i> <a href="#">Web Design</a></li>
-              <li><i class="bx bx-chevron-right"></i> <a href="#">Web Development</a></li>
-              <li><i class="bx bx-chevron-right"></i> <a href="#">Product Management</a></li>
-              <li><i class="bx bx-chevron-right"></i> <a href="#">Marketing</a></li>
-              <li><i class="bx bx-chevron-right"></i> <a href="#">Graphic Design</a></li>
-            </ul>
-          </div>
-
-          <div class="col-lg-4 col-md-6 footer-newsletter">
-            <h4>Our Newsletter</h4>
-            <p>Tamen quem nulla quae legam multos aute sint culpa legam noster magna</p>
-            <form action="" method="post">
-              <input type="email" name="email"><input type="submit" value="Subscribe">
-            </form>
-
-          </div>
-
         </div>
       </div>
     </div>
 
     <div class="container">
       <div class="copyright">
-        &copy; Copyright <strong><span>Restaurantly</span></strong>. All Rights Reserved
+        &copy; Copyright <strong><span>Cafe Luxe</span></strong>. All Rights Reserved
       </div>
-      <div class="credits">
-        <!-- All the links in the footer should remain intact. -->
-        <!-- You can delete the links only if you purchased the pro version. -->
-        <!-- Licensing information: https://bootstrapmade.com/license/ -->
-        <!-- Purchase the pro version with working PHP/AJAX contact form: https://bootstrapmade.com/restaurantly-restaurant-template/ -->
-        Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a>
-      </div>
-    </div>
+        </div>
   </footer><!-- End Footer -->
 
   <div id="preloader"></div>
-  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i
+      class="bi bi-arrow-up-short"></i></a>
 
   <!-- Vendor JS Files -->
   <script src="assets/vendor/aos/aos.js"></script>
