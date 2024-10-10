@@ -11,7 +11,9 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
 
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;700&display=swap"
+        rel="stylesheet" />
 
     <style>
         body {
@@ -110,153 +112,175 @@
 <body class="bg-gray-100">
     <%- include('../partials/navbar') %>
 
-    <div class="container mx-auto mt-10 fade-in">
-        <h2 class="text-5xl font-bold mb-10 text-center text-[#4b3a36]">Available Tables</h2>
+        <div class="container mx-auto mt-10 fade-in">
+            <h2 class="text-5xl font-bold mb-10 text-center text-[#4b3a36]">Available Tables</h2>
 
-        <!-- Flash Messages -->
-        <% if (flashMessages.success_msg) { %>
-            <div class="success-message">
-                <strong>Success!</strong> <%= flashMessages.success_msg %>
-            </div>
-        <% } %>
-        <% if (flashMessages.error_msg) { %>
-            <div class="error-message">
-                <strong>Error!</strong> <%= flashMessages.error_msg %>
-            </div>
-        <% } %>
+            <!-- Flash Messages -->
+            <% if (flashMessages.success_msg) { %>
+                <div class="success-message">
+                    <strong>Success!</strong>
+                    <%= flashMessages.success_msg %>
+                </div>
+                <% } %>
+                    <% if (flashMessages.error_msg) { %>
+                        <div class="error-message">
+                            <strong>Error!</strong>
+                            <%= flashMessages.error_msg %>
+                        </div>
+                        <% } %>
 
-        <!-- Reserved Tables Section -->
-        <div class="table-section">
-            <h3 class="text-3xl font-bold mb-6">Reserved Tables</h3>
-            <% if (reservedTables.length > 0) { %>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full bg-transparent text-light">
-                        <thead>
-                            <tr>
-                                <th class="py-4 px-6 border-b text-left">Table Number</th>
-                                <th class="py-4 px-6 border-b text-left">Seats</th>
-                                <th class="py-4 px-6 border-b text-left">Reserved By</th>
-                                <th class="py-4 px-6 border-b text-left">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% reservedTables.forEach(table => { %>
-                                <tr>
-                                    <td class="py-2 px-6 border-b"><%= table.tableNumber %></td>
-                                    <td class="py-2 px-6 border-b"><%= table.capacity %></td>
-                                    <td class="py-2 px-6 border-b"><%= table.reservedBy.username %></td>
-                                    <td class="py-2 px-6 border-b">
-                                        <% if (table.reservedBy._id.toString() === user._id.toString()) { %>
-                                            <% if (!orders.some(order => order.tableNumber === table.tableNumber)) { %>
-                                                <!-- Allow cancellation if no orders are placed -->
-                                                <form action="/customer/tables/cancel" method="POST" class="inline">
-                                                    <input type="hidden" name="tableNumber" value="<%= table.tableNumber %>">
-                                                    <button type="submit" class="text-white bg-red-500 hover:bg-red-700 py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">Cancel</button>
-                                                </form>
-                                            <% } else { %>
-                                                <span class="text-gray-500">Cannot Cancel (Orders Placed)</span>
-                                            <% } %>
-                                        <% } else { %>
-                                            <span class="text-gray-500">Not Available</span>
+                            <!-- Reserved Tables Section -->
+                            <div class="table-section">
+                                <h3 class="text-3xl font-bold mb-6">Reserved Tables</h3>
+                                <% if (reservedTables.length> 0) { %>
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full bg-transparent text-light">
+                                            <thead>
+                                                <tr>
+                                                    <th class="py-4 px-6 border-b text-left">Table Number</th>
+                                                    <th class="py-4 px-6 border-b text-left">Seats</th>
+                                                    <th class="py-4 px-6 border-b text-left">Reserved By</th>
+                                                    <th class="py-4 px-6 border-b text-left">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% reservedTables.forEach(table=> { %>
+                                                    <tr>
+                                                        <td class="py-2 px-6 border-b">
+                                                            <%= table.tableNumber %>
+                                                        </td>
+                                                        <td class="py-2 px-6 border-b">
+                                                            <%= table.capacity %>
+                                                        </td>
+                                                        <td class="py-2 px-6 border-b">
+                                                            <%= table.reservedBy.username %>
+                                                        </td>
+                                                        <td class="py-2 px-6 border-b">
+                                                            <% if
+                                                                (table.reservedBy._id.toString()===user._id.toString())
+                                                                { %>
+                                                                <% if (!table.hasOrders) { %>
+                                                                    <!-- Allow cancellation if no orders are placed -->
+                                                                    <form action="/customer/tables/cancel" method="POST"
+                                                                        class="inline">
+                                                                        <input type="hidden" name="tableNumber"
+                                                                            value="<%= table.tableNumber %>">
+                                                                        <button type="submit"
+                                                                            class="text-white bg-red-500 hover:bg-red-700 py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">Cancel</button>
+                                                                    </form>
+                                                                    <% } else { %>
+                                                                        <span class="text-white bg-red-400 px-4 py-2 ">Cannot Cancel
+                                                                            (Orders Placed)</span>
+                                                                        <% } %>
+                                                                            <% } else { %>
+                                                                                <span class="text-gray-500">Not
+                                                                                    Available</span>
+                                                                                <% } %>
+                                                        </td>
+                                                    </tr>
+                                                    <% }) %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <% } else { %>
+                                        <p class="text-gray-500">No reserved tables at the moment.</p>
                                         <% } %>
-                                    </td>
-                                </tr>
-                            <% }) %>
-                        </tbody>
-                    </table>
-                </div>
-            <% } else { %>
-                <p class="text-gray-500">No reserved tables at the moment.</p>
-            <% } %>
+                            </div>
+
+                            <!-- Vacant Tables Section -->
+                            <div class="table-section mt-12">
+                                <h3 class="text-3xl font-bold mb-6">Vacant Tables</h3>
+                                <% if (vacantTables.length> 0) { %>
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full bg-transparent text-light">
+                                            <thead>
+                                                <tr>
+                                                    <th class="py-4 px-6 border-b text-left">Table Number</th>
+                                                    <th class="py-4 px-6 border-b text-left">Seats</th>
+                                                    <th class="py-4 px-6 border-b text-left">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% vacantTables.forEach(table=> { %>
+                                                    <tr>
+                                                        <td class="py-2 px-6 border-b">
+                                                            <%= table.tableNumber %>
+                                                        </td>
+                                                        <td class="py-2 px-6 border-b">
+                                                            <%= table.capacity %>
+                                                        </td>
+                                                        <td class="py-2 px-6 border-b">
+                                                            <form action="/reserve/pay" method="POST" class="inline">
+                                                                <input type="hidden" name="tableNumber"
+                                                                    value="<%= table.tableNumber %>">
+                                                                <button type="submit"
+                                                                    class="text-white bg-green-500 hover:bg-green-700 py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">Proceed
+                                                                    to Payment</button>
+                                                            </form>
+                                                        </td>
+                                                    </tr>
+                                                    <% }) %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <% } else { %>
+                                        <p class="text-gray-500">No vacant tables at the moment.</p>
+                                        <% } %>
+                            </div>
         </div>
 
-        <!-- Vacant Tables Section -->
-        <div class="table-section mt-12">
-            <h3 class="text-3xl font-bold mb-6">Vacant Tables</h3>
-            <% if (vacantTables.length > 0) { %>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full bg-transparent text-light">
-                        <thead>
-                            <tr>
-                                <th class="py-4 px-6 border-b text-left">Table Number</th>
-                                <th class="py-4 px-6 border-b text-left">Seats</th>
-                                <th class="py-4 px-6 border-b text-left">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% vacantTables.forEach(table => { %>
-                                <tr>
-                                    <td class="py-2 px-6 border-b"><%= table.tableNumber %></td>
-                                    <td class="py-2 px-6 border-b"><%= table.capacity %></td>
-                                    <td class="py-2 px-6 border-b">
-                                        <form action="/reserve/pay" method="POST" class="inline">
-                                            <input type="hidden" name="tableNumber" value="<%= table.tableNumber %>">
-                                            <button type="submit" class="text-white bg-green-500 hover:bg-green-700 py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">Proceed to Payment</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            <% }) %>
-                        </tbody>
-                    </table>
-                </div>
-            <% } else { %>
-                <p class="text-gray-500">No vacant tables at the moment.</p>
-            <% } %>
-        </div>
-    </div>
+        <!-- JavaScript Libraries -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
+        <script>
+            // Burger menus
+            document.addEventListener('DOMContentLoaded', function () {
+                // open
+                const burger = document.querySelectorAll('.navbar-burger');
+                const menu = document.querySelectorAll('.navbar-menu');
 
-    <!-- JavaScript Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
-    <script>
-        // Burger menus
-        document.addEventListener('DOMContentLoaded', function () {
-            // open
-            const burger = document.querySelectorAll('.navbar-burger');
-            const menu = document.querySelectorAll('.navbar-menu');
-
-            if (burger.length && menu.length) {
-                for (var i = 0; i < burger.length; i++) {
-                    burger[i].addEventListener('click', function () {
-                        for (var j = 0; j < menu.length; j++) {
-                            menu[j].classList.toggle('hidden');
-                        }
-                    });
+                if (burger.length && menu.length) {
+                    for (var i = 0; i < burger.length; i++) {
+                        burger[i].addEventListener('click', function () {
+                            for (var j = 0; j < menu.length; j++) {
+                                menu[j].classList.toggle('hidden');
+                            }
+                        });
+                    }
                 }
-            }
 
-            // close
-            const close = document.querySelectorAll('.navbar-close');
-            const backdrop = document.querySelectorAll('.navbar-backdrop');
+                // close
+                const close = document.querySelectorAll('.navbar-close');
+                const backdrop = document.querySelectorAll('.navbar-backdrop');
 
-            if (close.length) {
-                for (var i = 0; i < close.length; i++) {
-                    close[i].addEventListener('click', function () {
-                        for (var j = 0; j < menu.length; j++) {
-                            menu[j].classList.toggle('hidden');
-                        }
-                    });
+                if (close.length) {
+                    for (var i = 0; i < close.length; i++) {
+                        close[i].addEventListener('click', function () {
+                            for (var j = 0; j < menu.length; j++) {
+                                menu[j].classList.toggle('hidden');
+                            }
+                        });
+                    }
                 }
-            }
 
-            if (backdrop.length) {
-                for (var i = 0; i < backdrop.length; i++) {
-                    backdrop[i].addEventListener('click', function () {
-                        for (var j = 0; j < menu.length; j++) {
-                            menu[j].classList.toggle('hidden');
-                        }
-                    });
+                if (backdrop.length) {
+                    for (var i = 0; i < backdrop.length; i++) {
+                        backdrop[i].addEventListener('click', function () {
+                            for (var j = 0; j < menu.length; j++) {
+                                menu[j].classList.toggle('hidden');
+                            }
+                        });
+                    }
                 }
-            }
-        });
+            });
 
-        // GSAP Animations
-        gsap.from('.table-section', {
-            duration: 1,
-            y: 50,
-            opacity: 0,
-            stagger: 0.2
-        });
-    </script>
+            // GSAP Animations
+            gsap.from('.table-section', {
+                duration: 1,
+                y: 50,
+                opacity: 0,
+                stagger: 0.2
+            });
+        </script>
 </body>
 
 </html>

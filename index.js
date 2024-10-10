@@ -247,15 +247,36 @@ app.post('/login', asyncHandler(async (req, res) => {
 }));
 
 app.post('/register', asyncHandler(async (req, res) => {
-    const { username, email, password, mobile } = req.body;
-    console.log('Registering user:', username, email, mobile);
-    const hashedPassword = await bcrypt.hash(password, 15);
-    const newUser = new Users({ username, email, password: hashedPassword, mobile });
-    await newUser.save();
-    setFlash(req, 'success_msg', 'You are now registered and can log in');
-    return res.redirect('/login');
-}));
+    const { username, email, password, confirmPassword, mobile } = req.body;
+    if (!username || !email || !password || !confirmPassword || !mobile) {
+        setFlash(req, 'error_msg', 'All fields are required');
+        return res.redirect('/register');
+    }
+    if (password !== confirmPassword) {
+        setFlash(req, 'error_msg', 'Passwords do not match');
+        return res.redirect('/register');
+    }
+    if (!/^\d{10}$/.test(mobile)) {
+        setFlash(req, 'error_msg', 'Mobile number must be 10 digits');
+        return res.redirect('/register');
+    }
+    try {
+        const hashedPassword = await bcrypt.hash(password, 15);
+        const newUser = new Users({ username, email, password: hashedPassword, mobile });
+        await newUser.save();
 
+        setFlash(req, 'success_msg', 'You are now registered and can log in');
+        return res.redirect('/login');
+    } catch (error) {
+        // Handle errors like duplicate email
+        if (error.code === 11000) {
+            setFlash(req, 'error_msg', 'Email is already registered');
+        } else {
+            setFlash(req, 'error_msg', 'Registration failed');
+        }
+        return res.redirect('/register');
+    }
+}));
 
 // Admin Routes and Features
 
@@ -265,17 +286,65 @@ app.get('/admin/menu', ensureAuthenticated, asyncHandler(async (req, res) => {
     res.render('menu/adminMenu', { menuItems });
 }));
 
-app.get('/admin/menu/addMenuItem', ensureAdmin, (req, res) => {
-    res.render('menu/addMenuItem');
+// GET route to render the Add Menu Item form
+app.get('/admin/menu/addMenuItem', ensureAdmin, (req, res) => { 
+    try {
+        res.render('menu/addMenuItem');
+    } catch (error) {
+        console.error('Error rendering add menu item form:', error);
+        req.flash('error_msg', 'Failed to load add menu item form.');
+        res.redirect('/admin/menu');
+    }
 });
 
 app.post('/admin/menu/addMenuItem', ensureAdmin, upload.single('image'), asyncHandler(async (req, res) => {
-    const { name, price, description, category, available, stock } = req.body;
-    const image = req.file ? path.relative(path.join(__dirname, 'public'), req.file.path) : '';
-    const newMenuItem = new Menu({ name, price, description, image, category, available, stock });
-    await newMenuItem.save();
-    setFlash(req, 'success_msg', 'Menu item added successfully');
-    return res.redirect('/admin/menu');
+        console.log('Received data:', req.body);
+        const { name, price, description, category, available, stock } = req.body;
+
+        // Check if all required fields are present
+        if (!name || !price || !description || !category || !available || !stock) {
+            setFlash(req, 'error_msg', 'All fields are required');
+            return res.redirect('/admin/menu/addMenuItem');
+        }
+
+        // Validate price and stock are numbers
+        if (isNaN(price) || isNaN(stock)) {
+            setFlash(req, 'error_msg', 'Price and Stock must be valid numbers');
+            return res.redirect('/admin/menu/addMenuItem');
+        }
+
+        // Ensure the file upload is an image (optional, but recommended)
+        const allowedFileTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        const image = req.file ? req.file : null;
+        if (image && !allowedFileTypes.includes(req.file.mimetype)) {
+            setFlash(req, 'error_msg', 'Invalid image type. Only JPEG, PNG, and GIF are allowed.');
+            return res.redirect('/admin/menu/addMenuItem');
+        }
+
+        const imagePath = image ? path.relative(path.join(__dirname, 'public'), req.file.path) : '';
+        
+        try {
+            const newMenuItem = new Menu({
+                name,
+                price: parseFloat(price), // convert price to number
+                description,
+                image: imagePath,
+                category,
+                available: available === 'true', // convert to boolean
+                stock: parseInt(stock) // convert stock to integer
+            });
+
+            console.log('New menu item:', newMenuItem);
+
+            await newMenuItem.save();
+
+            setFlash(req, 'success_msg', 'Menu item added successfully');
+            return res.redirect('/admin/menu');
+        } catch (err) {
+            console.error(err);
+            setFlash(req, 'error_msg', 'An error occurred while adding the menu item');
+            return res.redirect('/admin/menu/addMenuItem');
+        }
 }));
 
 app.get('/admin/menu/:id/edit', ensureAdmin, asyncHandler(async (req, res) => {
@@ -891,15 +960,7 @@ app.get('/customer/orders', ensureAuthenticated, asyncHandler(async (req, res) =
     try {
         const userId = req.session.user._id;
 
-        const orders = await Orders.find({ customer: userId, status: { $ne: 'completed' } }) // Fetch only non-completed orders
-            .populate('items.menuItem')
-            .populate('customer');
-
-        if (!orders || orders.length === 0) {
-            req.flash('info_msg', 'You have no active orders at the moment.');
-            return res.redirect('/customer/menu');
-        }
-
+        // Find the reserved table for the customer
         const reservedTable = await Tables.findOne({ reservedBy: userId, status: 'reserved' });
 
         if (!reservedTable) {
@@ -907,9 +968,29 @@ app.get('/customer/orders', ensureAuthenticated, asyncHandler(async (req, res) =
             return res.redirect('/tables');
         }
 
+        console.log('Reserved Table:', reservedTable);
+
+        // Fetch orders placed for this reserved table by the customer
+        const orders = await Orders.find({
+                customer: userId,
+                tableNumber: reservedTable.tableNumber,  // Match table number of the reserved table
+                status: { $ne: 'completed' },  // Fetch only orders that are not completed
+                placedAt: { $gte: reservedTable.reservationStartTime }  // Orders placed after the table was reserved
+            })
+            .populate('items.menuItem')  // Populate menu item details
+            .populate('customer');  // Populate customer details
+
+        console.log('Orders:', orders);
+
+        // if (!orders || orders.length === 0) {
+        //     req.flash('info_msg', 'You have no active orders at the moment.');
+        //     return res.redirect('/customer/menu');
+        // }
+
+        // Render the customer's orders
         res.render('orders/customerOrders', {
             orders,
-            tableNumber: reservedTable.tableNumber
+            tableNumber: reservedTable.tableNumber  // Pass table number for display purposes
         });
     } catch (error) {
         console.error('Error fetching customer orders:', error);
@@ -954,8 +1035,8 @@ app.get('/customer/receipt/:id', ensureAuthenticated, asyncHandler(async (req, r
             .populate({
                 path: 'orders',
                 populate: {
-                    path: 'menuItem', // Ensure menu item details are included
-                    model: 'Menu'     // Change this if your menu item model has a different name
+                    path: 'items.menuItem', // Corrected: populate items array, and within it, populate menuItem
+                    model: 'Menu'           // Ensure this is your menu item model
                 }
             })
             .populate('customer')
@@ -1167,8 +1248,11 @@ app.get('/customer/orders/:id', ensureAuthenticated, asyncHandler(async (req, re
             return res.redirect('/customer/orders');
         }
 
+        const table = await Tables.findOne({ tableNumber: order.tableNumber, status: 'reserved' });
+        const receipt = await Receipt.findOne({ orders: order._id });
+
         console.log('Order details fetched successfully for ID:', id);
-        res.render('orders/orderDetails', { order });
+        res.render('orders/orderDetails', { order , table, receipt });
     } catch (error) {
         console.error('Error fetching order details for ID:', id, error);
         req.flash('error_msg', 'An error occurred while fetching order details.');
@@ -1283,20 +1367,34 @@ app.get('/user/payment-history', ensureAuthenticated, asyncHandler(async (req, r
 
 app.get('/tables', ensureAuthenticated, asyncHandler(async (req, res) => {
     try {
+        const userId = req.session.user._id;
+
         // Fetch reserved and vacant tables
         const reservedTables = await Tables.find({ status: 'reserved' }).populate('reservedBy');
         const vacantTables = await Tables.find({ status: 'vacant' });
 
-        // Fetch the orders for the current user to check if any orders are placed for their reserved table
-        const userOrders = await Orders.find({ customer: req.session.user._id });
+        // Fetch the reserved table for the current user
+        const reservedTable = await Tables.findOne({ reservedBy: userId, status: 'reserved' });
+
+        // If the user has a reserved table, fetch the orders placed for that table
+        const userOrders = reservedTable ? await Orders.find({
+            customer: userId,
+            tableNumber: reservedTable.tableNumber,  // Match the table number of the reserved table
+            status: { $ne: 'completed' },  // Fetch only non-completed orders
+            placedAt: { $gte: reservedTable.reservationStartTime }  // Only fetch orders placed after the reservation start time
+        }) : [];
 
         console.log('Reserved tables:', reservedTables);
 
         // Ensure reservedBy is not null before accessing its properties
-        const reservedTablesWithUsers = reservedTables.map(table => ({
-            ...table.toObject(),
-            reservedBy: table.reservedBy || { name: 'Unknown', _id: 'Unknown' }
-        }));
+        const reservedTablesWithUsers = reservedTables.map(table => {
+            const hasOrders = userOrders.some(order => order.tableNumber === table.tableNumber);
+            return {
+                ...table.toObject(),
+                reservedBy: table.reservedBy || { name: 'Unknown', _id: 'Unknown' },
+                hasOrders // Add a flag indicating whether the current user has placed orders for this table
+            };
+        });
 
         // Pass reserved tables, vacant tables, and user orders to the view
         res.render(res.locals.isAdmin ? 'tables/adminTables' : 'tables/customerTables', {
@@ -1410,7 +1508,6 @@ app.get('/customer/tables/cancel/success', ensureAuthenticated, asyncHandler(asy
         return res.redirect('/tables');
     }
 }));
-
 
 // Route to display the reservation form
 app.get('/reserve', ensureAuthenticated, async (req, res) => {
