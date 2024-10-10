@@ -1536,6 +1536,10 @@ app.get('/tables/confirm-reservation/:tableNumber', ensureAuthenticated, async (
     }
 });
 
+app.get("*", (req, res) => {
+    res.render('404');
+});
+
 // Global error-handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
