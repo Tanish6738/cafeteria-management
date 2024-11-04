@@ -109,8 +109,8 @@
 <body class="bg-gray-100">
     <%- include('../partials/navbar') %>
 
-    <div class="container mx-auto mt-10 fade-in">
-        <h2 class="text-5xl font-bold mb-10 text-center text-[#4b3a36]">Admin User Management</h2>
+    <div class="container mx-auto mt-10 fade-in px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-10 text-center text-[#4b3a36]">Admin User Management</h2>
 
         <!-- Flash Messages -->
         <% if (flashMessages.success_msg) { %>
@@ -129,8 +129,8 @@
             <a href="/admin/users/new" class="btn-primary hover-scale py-2 px-4 rounded">Add New User</a>
         </div>
 
-        <div class="table-section">
-            <h3 class="text-3xl font-extrabold mb-6 underline">Users</h3>
+        <div class="table-section overflow-x-auto">
+            <h3 class="text-2xl sm:text-3xl font-extrabold mb-6 underline">Users</h3>
             <% if (users.length > 0) { %>
                 <table class="min-w-full bg-transparent text-light">
                     <thead>
@@ -147,7 +147,7 @@
                                 <td class="py-2 px-6 border-b"><%= user.username %></td>
                                 <td class="py-2 px-6 border-b"><%= user.email %></td>
                                 <td class="py-2 px-6 border-b"><%= user.role %></td>
-                                <td class="py-2 px-6 border-b flex items-center space-x-2">
+                                <td class="py-2 px-6 border-b flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2">
                                     <a href="/admin/users/<%= user._id %>" class="btn-primary hover-scale py-1 px-3 rounded">View</a>
                                     <a href="/admin/users/<%= user._id %>/edit" class="btn-primary hover-scale py-1 px-3 rounded">Edit</a>
                                     <a href="/admin/users/<%= user._id %>/delete" class="btn-primary hover-scale py-1 px-3 rounded">Delete</a>
@@ -166,47 +166,45 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
     <script>
         // GSAP Animations
-        
-            // Burger menus
-            document.addEventListener('DOMContentLoaded', function () {
-                // open
-                const burger = document.querySelectorAll('.navbar-burger');
-                const menu = document.querySelectorAll('.navbar-menu');
+        document.addEventListener('DOMContentLoaded', function () {
+            // open
+            const burger = document.querySelectorAll('.navbar-burger');
+            const menu = document.querySelectorAll('.navbar-menu');
 
-                if (burger.length && menu.length) {
-                    for (var i = 0; i < burger.length; i++) {
-                        burger[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
+            if (burger.length && menu.length) {
+                for (var i = 0; i < burger.length; i++) {
+                    burger[i].addEventListener('click', function () {
+                        for (var j = 0; j < menu.length; j++) {
+                            menu[j].classList.toggle('hidden');
+                        }
+                    });
                 }
+            }
 
-                // close
-                const close = document.querySelectorAll('.navbar-close');
-                const backdrop = document.querySelectorAll('.navbar-backdrop');
+            // close
+            const close = document.querySelectorAll('.navbar-close');
+            const backdrop = document.querySelectorAll('.navbar-backdrop');
 
-                if (close.length) {
-                    for (var i = 0; i < close.length; i++) {
-                        close[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
+            if (close.length) {
+                for (var i = 0; i < close.length; i++) {
+                    close[i].addEventListener('click', function () {
+                        for (var j = 0; j < menu.length; j++) {
+                            menu[j].classList.toggle('hidden');
+                        }
+                    });
                 }
+            }
 
-                if (backdrop.length) {
-                    for (var i = 0; i < backdrop.length; i++) {
-                        backdrop[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
+            if (backdrop.length) {
+                for (var i = 0; i < backdrop.length; i++) {
+                    backdrop[i].addEventListener('click', function () {
+                        for (var j = 0; j < menu.length; j++) {
+                            menu[j].classList.toggle('hidden');
+                        }
+                    });
                 }
-            });
+            }
+        });
         gsap.from('.table-section', {
             duration: 1,
             y: 50,
