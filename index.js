@@ -1380,7 +1380,7 @@ app.get('/tables', ensureAuthenticated, asyncHandler(async (req, res) => {
         const userOrders = reservedTable ? await Orders.find({
             customer: userId,
             tableNumber: reservedTable.tableNumber,  // Match the table number of the reserved table
-            status: { $ne: 'completed' },  // Fetch only non-completed orders
+            status: { $ne: ['completed' ,'canceled'] },  // Fetch only non-completed orders
             placedAt: { $gte: reservedTable.reservationStartTime }  // Only fetch orders placed after the reservation start time
         }) : [];
 
@@ -1426,7 +1426,7 @@ app.post('/customer/tables/cancel', ensureAuthenticated, asyncHandler(async (req
 
         // Calculate the time difference
         const currentTime = new Date();
-        const reservationTime = table.reservationTime; // Assuming table has a 'reservationTime' field
+        const reservationTime = table.reservationStartTime; // Assuming table has a 'reservationTime' field
         const timeDifference = (currentTime - reservationTime) / (1000 * 60); // difference in minutes
 
         let cancellationFee = 0;
