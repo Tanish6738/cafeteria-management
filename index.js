@@ -999,32 +999,6 @@ app.get('/customer/orders', ensureAuthenticated, asyncHandler(async (req, res) =
     }
 }));
 
-// Route to get receipt for a table
-// app.get('/customer/orders/:tableNumber/receipt', ensureAuthenticated, asyncHandler(async (req, res) => {
-//     const { tableNumber } = req.params;
-
-//     try {
-
-//         const consolidatedOrder = await consolidateOrdersForReservation(tableNumber);
-//         if (!consolidatedOrder || !consolidatedOrder.items || consolidatedOrder.items.length === 0) {
-//             req.flash('error_msg', 'No valid orders found for this reservation.');
-//             return res.redirect('/customer/orders');
-//         }
-
-//         // Calculate total if consolidated order is found
-//         consolidatedOrder.total = consolidatedOrder.items.reduce((total, item) => {
-//             return total + (item.menuItem.price * item.quantity);
-//         }, 0);
-
-//         res.render('orders/receipt', { order: consolidatedOrder });
-
-//     } catch (error) {
-//         console.error('Error fetching receipt:', error);
-//         req.flash('error_msg', 'An error occurred while fetching the receipt.');
-//         return res.redirect('/customer/orders');
-//     }
-// }));
-
 // Route to get the receipt details
 app.get('/customer/receipt/:id', ensureAuthenticated, asyncHandler(async (req, res) => {
     const { id } = req.params;
