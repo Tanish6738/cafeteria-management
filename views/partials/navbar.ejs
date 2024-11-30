@@ -1,91 +1,148 @@
-<div class="container mx-auto px-4 py-4 flex justify-between items-center bg-[#4b3a36] text-[#e8d5b7] rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
-  <a class="text-3xl font-bold leading-none hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="/">Cafe Luxe</a>
+<nav class="bg-[#1a1a1a] border-b border-[#C5A880]/20 backdrop-blur-lg fixed w-full z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+            <div class="flex">
+                <div class="flex-shrink-0 flex items-center">
+                    <a href="<%= locals.currentUser && locals.currentUser.role === 'admin' ? '/admin/dashboard' : '/' %>" 
+                       class="text-[#C5A880] text-xl font-semibold font-['Cormorant_Garamond']">
+                        <%= locals.currentUser && locals.currentUser.role === 'admin' ? 'Luxe Café Admin' : 'Luxe Café' %>
+                    </a>
+                </div>
+                <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                    <% if (locals.currentUser) { %>
+                        <% if (locals.currentUser.role === 'admin') { %>
+                            <!-- Admin Navigation -->
+                            <a href="/admin/dashboard" class="<%= locals.title === 'Admin Dashboard' ? 'border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] hover:border-[#C5A880] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Dashboard</a>
+                            <a href="/admin/users" class="<%= locals.title === 'Admin Users' ? 'border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] hover:border-[#C5A880] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Users</a>
+                            <a href="/admin/menu" class="<%= locals.title === 'Admin Menu' ? 'border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] hover:border-[#C5A880] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Menu</a>
+                            <a href="/admin/orders" class="<%= locals.title === 'Admin Orders' ? 'border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] hover:border-[#C5A880] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Orders</a>
+                            <a href="/tables" class="<%= locals.title === 'Admin Tables' ? 'border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] hover:border-[#C5A880] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Tables</a>
+                        <% } else { %>
+                            <!-- Customer Navigation -->
+                            <a href="/customer/menu" class="<%= locals.title === 'Menu' ? 'border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] hover:border-[#C5A880] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Menu</a>
+                            <a href="/cart/view" class="<%= locals.title === 'Cart' ? 'border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] hover:border-[#C5A880] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Cart</a>
+                            <a href="/customer/orders" class="<%= locals.title === 'My Orders' ? 'border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] hover:border-[#C5A880] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">My Orders</a>
+                            <a href="/tables" class="<%= locals.title === 'Tables' ? 'border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] hover:border-[#C5A880] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Tables</a>
+                        <% } %>
+                    <% } else { %>
+                        <!-- Guest Navigation -->
+                        <a href="/" class="<%= locals.title === 'Home' ? 'border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] hover:border-[#C5A880] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Home</a>
+                        <a href="/menu" class="<%= locals.title === 'Menu' ? 'border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] hover:border-[#C5A880] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Menu</a>
+                        <a href="/about" class="<%= locals.title === 'About' ? 'border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] hover:border-[#C5A880] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">About</a>
+                        <a href="/contact" class="<%= locals.title === 'Contact' ? 'border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] hover:border-[#C5A880] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Contact</a>
+                    <% } %>
+                </div>
+            </div>
+            <div class="flex items-center">
+                <% if (locals.currentUser) { %>
+                    <div class="relative">
+                        <button type="button" 
+                                class="flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#C5A880]" 
+                                id="user-menu-button" 
+                                aria-expanded="false" 
+                                aria-haspopup="true"
+                                onclick="toggleProfileMenu()">
+                            <span class="sr-only">Open user menu</span>
+                            <div class="h-8 w-8 rounded-full bg-[#C5A880] flex items-center justify-center text-[#1a1a1a] font-semibold">
+                                <%= locals.currentUser.firstName ? locals.currentUser.firstName.charAt(0).toUpperCase() : 'U' %>
+                            </div>
+                        </button>
+                        <div id="profile-menu"
+                             class="hidden absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-[#1a1a1a] border border-[#C5A880]/20 backdrop-blur-lg z-50" 
+                             role="menu" 
+                             aria-orientation="vertical" 
+                             aria-labelledby="user-menu-button">
+                            <a href="<%= locals.currentUser.role === 'admin' ? '/admin/profile' : '/user/profile' %>" 
+                               class="block px-4 py-2 text-sm text-[#ECDFCC] hover:bg-[#C5A880]/10" 
+                               role="menuitem">Your Profile</a>
+                            <% if (locals.currentUser.role === 'admin') { %>
+                                <!-- <a href="/admin/settings" 
+                                   class="block px-4 py-2 text-sm text-[#ECDFCC] hover:bg-[#C5A880]/10" 
+                                   role="menuitem">Settings</a>
+                            <% } %> -->
+                            <!-- <form action="/logout" method="POST" class="block">
+                                <button type="submit" 
+                                        class="w-full text-left px-4 py-2 text-sm text-[#ECDFCC] hover:bg-[#C5A880]/10" 
+                                        role="menuitem">Sign out</button> -->
+                                        <a href="/logout" 
+                                           class="block px-4 py-2 text-sm text-[#ECDFCC] hover:bg-[#C5A880]/10" 
+                                           role="menuitem">Sign out</a>
+                            </form>
+                        </div>
+                    </div>
+                <% } else { %>
+                    <a href="/login" class="text-[#ECDFCC] hover:text-[#C5A880] px-3 py-2 rounded-md text-sm font-medium">Login</a>
+                    <a href="/register" class="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-[#1a1a1a] bg-[#C5A880] hover:bg-[#C5A880]/90">Register</a>
+                <% } %>
+            </div>
+        </div>
+    </div>
 
-  <!-- Mobile Menu Button -->
-  <div class="lg:hidden">
-    <button class="navbar-burger flex items-center text-[#e8d5b7] p-3 hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300">
-      <svg class="block h-4 w-4 fill-current" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-        <title>Mobile menu</title>
-        <path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z"></path>
-      </svg>
-    </button>
-  </div>
+    <!-- Mobile menu -->
+    <div class="sm:hidden">
+        <div class="pt-2 pb-3 space-y-1">
+            <% if (locals.currentUser) { %>
+                <% if (locals.currentUser.role === 'admin') { %>
+                    <!-- Admin Mobile Navigation -->
+                    <a href="/admin/dashboard" class="<%= locals.title === 'Admin Dashboard' ? 'bg-[#C5A880]/10 border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Dashboard</a>
+                    <a href="/admin/users" class="<%= locals.title === 'Admin Users' ? 'bg-[#C5A880]/10 border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Users</a>
+                    <a href="/admin/menu" class="<%= locals.title === 'Admin Menu' ? 'bg-[#C5A880]/10 border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Menu</a>
+                    <a href="/admin/orders" class="<%= locals.title === 'Admin Orders' ? 'bg-[#C5A880]/10 border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Orders</a>
+                    <a href="/tables" class="<%= locals.title === 'Admin Tables' ? 'bg-[#C5A880]/10 border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Tables</a>
+                <% } else { %>
+                    <!-- Customer Mobile Navigation -->
+                    <a href="/customer/menu" class="<%= locals.title === 'Menu' ? 'bg-[#C5A880]/10 border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Menu</a>
+                    <a href="/cart/view" class="<%= locals.title === 'Cart' ? 'bg-[#C5A880]/10 border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Cart</a>
+                    <a href="/customer/orders" class="<%= locals.title === 'My Orders' ? 'bg-[#C5A880]/10 border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] block pl-3 pr-4 py-2 border-l-4 text-base font-medium">My Orders</a>
+                    <a href="/tables" class="<%= locals.title === 'Tables' ? 'bg-[#C5A880]/10 border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Tables</a>
+                <% } %>
+            <% } else { %>
+                <!-- Guest Mobile Navigation -->
+                <a href="/" class="<%= locals.title === 'Home' ? 'bg-[#C5A880]/10 border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Home</a>
+                <a href="/menu" class="<%= locals.title === 'Menu' ? 'bg-[#C5A880]/10 border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Menu</a>
+                <a href="/about" class="<%= locals.title === 'About' ? 'bg-[#C5A880]/10 border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] block pl-3 pr-4 py-2 border-l-4 text-base font-medium">About</a>
+                <a href="/contact" class="<%= locals.title === 'Contact' ? 'bg-[#C5A880]/10 border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Contact</a>
+            <% } %>
+        </div>
+    </div>
+</nav>
 
-  <!-- Desktop Menu -->
-  <ul class="hidden lg:flex lg:items-center lg:w-auto lg:space-x-6">
-    <% if (user) { %>
-      <% if (isAdmin) { %>
-        <li><a class="text-[#e8d5b7] hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="/admin/menu">Inventory</a></li>
-        <li><a class="text-[#e8d5b7] hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="/admin/orders">Order Management</a></li>
-        <li><a class="text-[#e8d5b7] hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="/admin/users">Users Management</a></li>
-        <li><a class="text-[#e8d5b7] hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="/tables">Tables Management</a></li>
-        <li><a class="text-[#e8d5b7] hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="/admin/orders/history">Order History</a></li>
-        <li><a class="text-[#e8d5b7] hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="/admin/receipt-records">Receipts</a></li>
+<!-- Spacer to prevent content from hiding under fixed navbar -->
+<div class="h-16"></div>
+
+<script>
+    function toggleProfileMenu() {
+        const menu = document.getElementById('profile-menu');
+        const button = document.getElementById('user-menu-button');
+        const isExpanded = button.getAttribute('aria-expanded') === 'true';
         
-        <% } else { %>
-          <li><a class="text-[#e8d5b7] hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="/customer/menu">Menu</a></li>
-          <li><a class="text-[#e8d5b7] hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="/cart/view">Cart</a></li>
-          <li><a class="text-[#e8d5b7] hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="/customer/orders">Current Orders</a></li>
-          <li><a class="text-[#e8d5b7] hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="/tables">Tables</a></li>
+        // Toggle the menu
+        menu.classList.toggle('hidden');
+        button.setAttribute('aria-expanded', !isExpanded);
 
-          <% } %>
+        // Close menu when clicking outside
+        if (!isExpanded) {
+            const closeMenu = (e) => {
+                if (!menu.contains(e.target) && !button.contains(e.target)) {
+                    menu.classList.add('hidden');
+                    button.setAttribute('aria-expanded', 'false');
+                    document.removeEventListener('click', closeMenu);
+                }
+            };
+            // Add the event listener with a slight delay to avoid immediate trigger
+            setTimeout(() => {
+                document.addEventListener('click', closeMenu);
+            }, 0);
+        }
+    }
 
-            <li><a class="text-[#e8d5b7] hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="/user/profile">Profile</a></li>
-            <li><a class="text-[#e8d5b7] hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="/logout">Logout</a></li>
-        <% } else { %>
-              <li><a class="text-[#e8d5b7] hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="/login">Login</a></li>
-              <li><a class="text-[#e8d5b7] hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="/register">Register</a></li>
-        <% } %>
-                <li><a class="text-[#e8d5b7] hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="#contact">Contact</a></li>
-  </ul>
-</div>
-
-<!-- Mobile Menu -->
-<div class="navbar-menu relative z-50 hidden">
-  <div class="navbar-backdrop fixed inset-0 "></div>
-  <nav class="fixed top-0 left-0 bottom-0 flex flex-col w-5/6 max-w-sm py-6 px-6 bg-[#4b3a36] border-r overflow-y-auto bg-gray-800 ">
-    <div class="flex items-center mb-8">
-      <a class="mr-auto text-3xl font-bold leading-none hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" href="index.html">Cafe Luxe</a>
-      <button class="navbar-close">
-        <svg class="h-6 w-6 text-[#e8d5b7] cursor-pointer hover:text-yellow-400 hover:scale-105 transition-transform transition-colors duration-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-        </svg>
-      </button>
-    </div>
-    <div>
-      <ul>
-        <% if (user) { %>
-          <% if (isAdmin) { %>
-            <li class="mb-1"><a class="block p-4 text-sm font-semibold text-[#e8d5b7] hover:bg-green-600 hover:text-white hover:scale-105 rounded transition-transform transition-colors duration-300" href="/admin/menu">Inventory</a></li>
-            <li class="mb-1"><a class="block p-4 text-sm font-semibold text-[#e8d5b7] hover:bg-green-600 hover:text-white hover:scale-105 rounded transition-transform transition-colors duration-300" href="/admin/orders">Order Management</a></li>
-            <li class="mb-1"><a class="block p-4 text-sm font-semibold text-[#e8d5b7] hover:bg-green-600 hover:text-white hover:scale-105 rounded transition-transform transition-colors duration-300" href="/admin/users">Users Management</a></li>
-            <li class="mb-1"><a class="block p-4 text-sm font-semibold text-[#e8d5b7] hover:bg-green-600 hover:text-white hover:scale-105 rounded transition-transform transition-colors duration-300" href="/tables">Tables Management</a></li>
-            <li class="mb-1"><a class="block p-4 text-sm font-semibold text-[#e8d5b7] hover:bg-green-600 hover:text-white hover:scale-105 rounded transition-transform transition-colors duration-300" href="/admin/orders/history">Order History</a></li>
-            <li class="mb-1"><a class="block p-4 text-sm font-semibold text-[#e8d5b7] hover:bg-green-600 hover:text-white hover:scale-105 rounded transition-transform transition-colors duration-300" href="/admin/receipt-records">Receipt Records</a></li>
-            
-          <% } else { %>
-              <li class="mb-1"><a class="block p-4 text-sm font-semibold text-[#e8d5b7] hover:bg-green-600 hover:text-white hover:scale-105 rounded transition-transform transition-colors duration-300" href="/customer/menu">Menu</a></li>
-              <li class="mb-1"><a class="block p-4 text-sm font-semibold text-[#e8d5b7] hover:bg-green-600 hover:text-white hover:scale-105 rounded transition-transform transition-colors duration-300" href="/cart/view">Cart</a></li>
-              <li class="mb-1"><a class="block p-4 text-sm font-semibold text-[#e8d5b7] hover:bg-green-600 hover:text-white hover:scale-105 rounded transition-transform transition-colors duration-300" href="/customer/orders">Current Orders</a></li>
-              <li class="mb-1"><a class="block p-4 text-sm font-semibold text-[#e8d5b7] hover:bg-green-600 hover:text-white hover:scale-105 rounded transition-transform transition-colors duration-300" href="/tables">Tables</a></li>
-          <% } %>
-              <li class="mb-1"><a class="block p-4 text-sm font-semibold text-[#e8d5b7] hover:bg-green-600 hover:text-white hover:scale-105 rounded transition-transform transition-colors duration-300" href="/user/profile">Profile</a></li>
-              <li class="mb-1"><a class="block p-4 text-sm font-semibold text-[#e8d5b7] hover:bg-green-600 hover:text-white hover:scale-105 rounded transition-transform transition-colors duration-300" href="/logout">Logout</a></li>
-        <% } else { %>
-                  <li class="mb-1"><a class="block p-4 text-sm font-semibold text-[#e8d5b7] hover:bg-green-600 hover:text-white hover:scale-105 rounded transition-transform transition-colors duration-300" href="/login">Login</a></li>
-                  <li class="mb-1"><a class="block p-4 text-sm font-semibold text-[#e8d5b7] hover:bg-green-600 hover:text-white hover:scale-105 rounded transition-transform transition-colors duration-300" href="/register">Register</a></li>
-        <% } %>
-                    <li class="mb-1"><a class="block p-4 text-sm font-semibold text-[#e8d5b7] hover:bg-green-600 hover:text-white hover:scale-105 rounded transition-transform transition-colors duration-300" href="#contact">Contact</a></li>
-      </ul>
-    </div>
-    <div class="mt-auto">
-      <div class="pt-6">
-        <a class="block px-4 py-3 mb-3 leading-loose text-xs text-center font-semibold leading-none bg-[#3c3d37] hover:bg-gray-100 hover:scale-105 rounded-xl transition-transform transition-colors duration-300" href="#">Sign in</a>
-        <a class="block px-4 py-3 mb-2 leading-loose text-xs text-center text-white font-semibold bg-green-600 hover:bg-green-700 hover:scale-105 rounded-xl transition-transform transition-colors duration-300" href="#">Sign Up</a>
-      </div>
-      <p class="my-4 text-xs text-center text-[#e8d5b7]">
-        <span>Copyright © 2021</span>
-      </p>
-    </div>
-  </nav>
-</div>
+    // Close menu when pressing escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const menu = document.getElementById('profile-menu');
+            const button = document.getElementById('user-menu-button');
+            menu.classList.add('hidden');
+            button.setAttribute('aria-expanded', 'false');
+        }
+    });
+</script>

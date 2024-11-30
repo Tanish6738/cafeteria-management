@@ -11,6 +11,7 @@ const fs = require('fs');
 const { promisify } = require('util');
 const unlinkAsync = promisify(fs.unlink);
 const jwt = require('jsonwebtoken');
+const moment = require('moment'); // Import moment.js
 
 const publishableKey = "pk_test_51Q3z7BC43VQjRgwcUBGg4jE6p8fIgV2bPm3UaIcToGtD0iv63X1E8C6DWdopnBreXLzYRyOgGA2OmuPK3TD5kDKq00OnPi8IFb"
 const SceretKey = "sk_test_51Q3z7BC43VQjRgwcAs49iBHc2K9TjsknC1c82sHQrIcuDBiSlsrqX1hVhrJxrKwpSwwkqt9RzqX15xRnrPlbMMA100lrBmFDXs"
@@ -272,27 +273,37 @@ app.post('/login', asyncHandler(async (req, res) => {
 }));
 
 app.post('/register', asyncHandler(async (req, res) => {
-    const { username, email, password, confirmPassword, mobile } = req.body;
-    if (!username || !email || !password || !confirmPassword || !mobile) {
+    console.log('Registration request received:', req.body);
+    const { email, password, confirmPassword, mobile, firstName, lastName } = req.body;
+    if (!firstName || !lastName || !email || !password || !confirmPassword || !mobile) {
+        console.log('Registration failed: Missing fields');
         setFlash(req, 'error_msg', 'All fields are required');
         return res.redirect('/register');
     }
     if (password !== confirmPassword) {
+        console.log('Registration failed: Passwords do not match');
         setFlash(req, 'error_msg', 'Passwords do not match');
         return res.redirect('/register');
     }
     if (!/^\d{10}$/.test(mobile)) {
+        console.log('Registration failed: Invalid mobile number');
         setFlash(req, 'error_msg', 'Mobile number must be 10 digits');
         return res.redirect('/register');
     }
     try {
         const hashedPassword = await bcrypt.hash(password, 15);
-        const newUser = new Users({ username, email, password: hashedPassword, mobile });
+        const newUser = new Users({ email, password: hashedPassword, mobile, firstName, lastName });
         await newUser.save();
 
-        setFlash(req, 'success_msg', 'You are now registered and can log in');
-        return res.redirect('/login');
+        // Log the user in
+        req.session.user = newUser;
+
+        // Redirect to the menu page
+        console.log('Registration successful:', newUser);
+        setFlash(req, 'success_msg', 'Registration successful! Redirecting to the menu...');
+        return res.redirect('/customer/menu');
     } catch (error) {
+        console.error('Registration error:', error);
         // Handle errors like duplicate email
         if (error.code === 11000) {
             setFlash(req, 'error_msg', 'Email is already registered');
@@ -308,13 +319,22 @@ app.post('/register', asyncHandler(async (req, res) => {
 // Admin Menu Management
 app.get('/admin/menu', ensureAuthenticated, asyncHandler(async (req, res) => {
     const menuItems = await Menu.find();
-    res.render('menu/adminMenu', { menuItems });
+    res.render('menu/adminMenu', { 
+        menuItems,
+        title: 'Admin Menu',
+        currentUser: req.session.user,
+        isAdmin: true
+    });
 }));
 
 // GET route to render the Add Menu Item form
 app.get('/admin/menu/addMenuItem', ensureAdmin, (req, res) => { 
     try {
-        res.render('menu/addMenuItem');
+        res.render('menu/addMenuItem', {
+            title: 'Add Menu Item',
+            currentUser: req.session.user,
+            isAdmin: true
+        });
     } catch (error) {
         console.error('Error rendering add menu item form:', error);
         req.flash('error_msg', 'Failed to load add menu item form.');
@@ -378,7 +398,12 @@ app.get('/admin/menu/:id/edit', ensureAdmin, asyncHandler(async (req, res) => {
         setFlash(req, 'error_msg', 'Menu item not found');
         return res.redirect('/admin/menu');
     }
-    res.render('menu/editMenuItem', { menuItem });
+    res.render('menu/editMenuItem', { 
+        menuItem,
+        title: 'Edit Menu Item',
+        currentUser: req.session.user,
+        isAdmin: true
+    });
 }));
 
 app.post('/admin/menu/:id/edit', ensureAdmin, upload.single('image'), asyncHandler(async (req, res) => {
@@ -404,7 +429,12 @@ app.get('/menu/:id', ensureAuthenticated, asyncHandler(async (req, res) => {
         setFlash(req, 'error_msg', 'Menu item not found');
         return res.redirect('/admin/menu');
     }
-    res.render('menu/menuItem', { menuItem });
+    res.render('menu/menuItem', { 
+        menuItem,
+        title: 'Menu Item',
+        currentUser: req.session.user,
+        isAdmin: true
+    });
 }));
 
 app.get('/admin/menu/:id/delete', ensureAdmin, asyncHandler(async (req, res) => {
@@ -438,7 +468,12 @@ app.post('/admin/menu/:id/toggle-availability', ensureAdmin, asyncHandler(async 
 // Admin Orders Management
 app.get("/admin/orders", ensureAdmin, asyncHandler(async (req, res) => {
     const orders = await Orders.find().populate('items.menuItem').populate('customer');
-    res.render('orders/adminOrders', { orders });
+    res.render('orders/adminOrders', { 
+        orders,
+        title: 'Admin Orders',
+        currentUser: req.session.user,
+        isAdmin: true
+    });
 }));
 
 app.get('/admin/orders/history', ensureAdmin, asyncHandler(async (req, res) => {
@@ -451,7 +486,12 @@ app.get('/admin/orders/history', ensureAdmin, asyncHandler(async (req, res) => {
             .lean(); // Use lean() for faster Mongoose queries and to work with plain JavaScript objects
 
         // Render the admin order history page with the fetched ordersHistory
-        res.render('orders/adminOrderHistory', { orders: ordersHistory });
+        res.render('orders/adminOrderHistory', { 
+            orders: ordersHistory,
+            title: 'Admin Order History',
+            currentUser: req.session.user,
+            isAdmin: true
+        });
     } catch (error) {
         console.error('Error fetching order history:', error);
         req.flash('error_msg', 'Failed to load order history.');
@@ -484,7 +524,12 @@ app.get('/admin/orders/:id/receipt', ensureAdmin, asyncHandler(async (req, res) 
     order.serviceCharge = serviceCharge;
     order.total = total;
 
-    res.render('orders/receipt', { order });
+    res.render('orders/receipt', { 
+        order,
+        title: 'Order Receipt',
+        currentUser: req.session.user,
+        isAdmin: true
+    });
 }));
 
 app.get('/admin/orders/:id', ensureAuthenticated, ensureAdmin, asyncHandler(async (req, res) => {
@@ -499,7 +544,12 @@ app.get('/admin/orders/:id', ensureAuthenticated, ensureAdmin, asyncHandler(asyn
             return res.redirect('/admin/orders/history');
         }
 
-        res.render('orders/orderDetails', { order });
+        res.render('orders/orderDetails', { 
+            order,
+            title: 'Order Details',
+            currentUser: req.session.user,
+            isAdmin: true
+        });
     } catch (error) {
         // Catch any potential errors and handle them
         console.error('Error fetching order:', error);
@@ -621,7 +671,12 @@ app.get('/admin/receipt/:id', ensureAdmin, asyncHandler(async (req, res) => {
             setFlash(req, 'error_msg', 'Receipt not found');
             return res.redirect('/admin/receipt-records');
         }
-        res.render('orders/receipt', { receipt });
+        res.render('orders/receipt', { 
+            receipt,
+            title: 'Receipt',
+            currentUser: req.session.user,
+            isAdmin: true
+        });
 
     } catch (error) {
         console.error('Error fetching receipt:', error);
@@ -637,7 +692,12 @@ app.get('/admin/receipt-records', ensureAdmin, asyncHandler(async (req, res) => 
             .populate('customer')
             .lean();
 
-        res.render('admin/receipt-record', { receipts });
+        res.render('admin/receipt-record', { 
+            receipts,
+            title: 'Receipt Records',
+            currentUser: req.session.user,
+            isAdmin: true
+        });
     } catch (error) {
         console.error('Error fetching receipt records:', error);
         setFlash(req, 'error_msg', 'Failed to load receipt records.');
@@ -658,35 +718,114 @@ app.get('/admin/users', ensureAdmin, asyncHandler(async (req, res) => {
             unpaidOrders
         };
     }));
-    res.render('admin/adminUsers', { users: usersWithOrderInfo });
+    res.render('admin/adminUsers', { 
+        users: usersWithOrderInfo,
+        title: 'Admin Users',
+        currentUser: req.session.user,
+        isAdmin: true
+    });
 }));
 
 app.get('/admin/users/:id', ensureAdmin, asyncHandler(async (req, res) => {
-    const user = await Users.findById(req.params.id)
-        .populate({
-            path: 'orders',
-            populate: {
-                path: 'items.menuItem',
-                model: 'Menu'
-            }
-        })
-        .populate('paymentHistory.orderId');
+    try {
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            setFlash(req, 'error_msg', 'Invalid user ID');
+            return res.redirect('/admin/users');
+        }
 
-    if (!user) {
-        setFlash(req, 'error_msg', 'User not found');
-        return res.redirect('/admin/users');
-    }
+        const user = await Users.findById(req.params.id);
 
-    const orders = await Orders.find({ customer: user._id })
-        .populate({
-            path: 'items.menuItem',
-            model: 'Menu'
+        if (!user) {
+            setFlash(req, 'error_msg', 'User not found');
+            return res.redirect('/admin/users');
+        }
+
+        // Generate username from first and last name
+        user.username = `${user.firstName}_${user.lastName}`;
+
+        // Fetch orders separately to handle potential errors
+        let orders = [];
+        try {
+            orders = await Orders.find({ customer: user._id })
+                .populate('items.menuItem')
+                .sort({ createdAt: -1 })
+                .lean();
+        } catch (orderError) {
+            console.error('Error fetching orders:', orderError);
+        }
+
+        // Fetch receipts separately
+        let receipts = [];
+        try {
+            receipts = await Receipt.find({ customer: user._id })
+                .sort({ createdAt: -1 })
+                .lean();
+        } catch (receiptError) {
+            console.error('Error fetching receipts:', receiptError);
+        }
+
+        // Calculate user statistics
+        const stats = {
+            totalOrders: orders.length,
+            totalSpent: orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0),
+            averageOrderValue: orders.length ? (orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0) / orders.length) : 0,
+            lastOrderDate: orders.length ? moment(orders[0].createdAt).format('MMMM Do YYYY, h:mm:ss a') : 'No orders yet'
+        };
+
+        res.render('admin/adminUserDetails', {
+            user: user.toObject(),
+            orders,
+            receipts,
+            stats,
+            title: 'User Details',
+            currentUser: req.session.user,
+            isAdmin: true
         });
+    } catch (error) {
+        console.error('Error in user details route:', error);
+        setFlash(req, 'error_msg', 'Error fetching user details. Please try again.');
+        res.redirect('/admin/users');
+    }
+}));
 
-    const orderCount = orders.length;
-    const unpaidOrders = orders.filter(order => order.paymentStatus !== 'paid').length;
+app.delete('/admin/user/:id', ensureAdmin, asyncHandler(async (req, res) => {
+    try {
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({ message: 'Invalid user ID' });
+        }
 
-    res.render('admin/adminUserDetails', { user, orders, orderCount, unpaidOrders });
+        const user = await Users.findById(req.params.id);
+        
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Prevent deleting the last admin
+        if (user.role === 'admin') {
+            const adminCount = await Users.countDocuments({ role: 'admin' });
+            if (adminCount <= 1) {
+                return res.status(400).json({ message: 'Cannot delete the last admin user' });
+            }
+        }
+
+        // Delete associated data
+        try {
+            await Promise.all([
+                Orders.deleteMany({ customer: user._id }),
+                Receipt.deleteMany({ customer: user._id }),
+                Payment.deleteMany({ customer: user._id })
+            ]);
+        } catch (cleanupError) {
+            console.error('Error cleaning up user data:', cleanupError);
+            // Continue with user deletion even if cleanup fails
+        }
+
+        await Users.findByIdAndDelete(req.params.id);
+        res.json({ message: 'User deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        res.status(500).json({ message: 'Error deleting user. Please try again.' });
+    }
 }));
 
 app.get('/admin/users/:id/delete', ensureAdmin, asyncHandler(async (req, res) => {
@@ -702,7 +841,12 @@ app.get('/admin/tables/tableHistory', ensureAuthenticated, ensureAdmin, asyncHan
         const tableHistory = await Tables.find({}).populate('reservedBy', 'username'); // Populate only the username field
 
         // Render the table history page with the fetched data
-        res.render('tables/tableHistory', { tableHistory });
+        res.render('tables/tableHistory', { 
+            tableHistory,
+            title: 'Table History',
+            currentUser: req.session.user,
+            isAdmin: true
+        });
     } catch (error) {
         console.error('Error fetching table history:', error);
         req.flash('error_msg', 'Failed to load table history.');
@@ -711,7 +855,11 @@ app.get('/admin/tables/tableHistory', ensureAuthenticated, ensureAdmin, asyncHan
 }));
 
 app.get('/tables/new', ensureAdmin, (req, res) => {
-    res.render('tables/addTable');
+    res.render('tables/addTable', {
+        title: 'Add Table',
+        currentUser: req.session.user,
+        isAdmin: true
+    });
 });
 
 app.post('/tables/new', ensureAdmin, async (req, res) => {
@@ -738,7 +886,12 @@ app.get('/tables/:id/edit', ensureAdmin, asyncHandler(async (req, res) => {
         setFlash(req, 'error_msg', 'Table not found');
         return res.redirect('/tables');
     }
-    res.render('tables/editTable', { table });
+    res.render('tables/editTable', { 
+        table,
+        title: 'Edit Table',
+        currentUser: req.session.user,
+        isAdmin: true
+    });
 }));
 
 app.post('/tables/:id/edit', ensureAdmin, asyncHandler(async (req, res) => {
@@ -778,7 +931,15 @@ app.get('/tables/:id/delete', ensureAdmin, asyncHandler(async (req, res) => {
 app.get('/customer/menu', ensureAuthenticated, asyncHandler(async (req, res) => {
     const menuItems = await Menu.find();
     const reservedTable = await Tables.findOne({ reservedBy: req.session.user._id, status: 'reserved' });
-    res.render('menu/customerMenu', { menuItems, reservedTable });
+    const cartCount = req.session.cart ? req.session.cart.length : 0; // Calculate cart count
+    res.render('menu/customerMenu', { 
+        menuItems,
+        reservedTable,
+        title: 'Customer Menu',
+        currentUser: req.session.user,
+        isAdmin: false,
+        cartCount // Pass cartCount to the template
+    });
 }));
 
 // Order Placement and Management
@@ -869,7 +1030,10 @@ app.get('/cart/view', ensureAuthenticated, asyncHandler(async (req, res) => {
         res.render('cart/viewCart', { 
             cart: cartData,
             tableNumber,
-            user: req.session.user
+            user: req.session.user,
+            title: 'Cart',
+            currentUser: req.session.user,
+            isAdmin: false
         });
     } catch (error) {
         console.error('Error in cart view:', error);
@@ -1035,7 +1199,10 @@ app.get('/customer/orders', ensureAuthenticated, asyncHandler(async (req, res) =
         // Render the customer's orders
         res.render('orders/customerOrders', {
             orders,
-            tableNumber: reservedTable.tableNumber  // Pass table number for display purposes
+            tableNumber: reservedTable.tableNumber,  // Pass table number for display purposes
+            title: 'Customer Orders',
+            currentUser: req.session.user,
+            isAdmin: false
         });
     } catch (error) {
         console.error('Error fetching customer orders:', error);
@@ -1071,7 +1238,12 @@ app.get('/customer/receipt/:id', ensureAuthenticated, asyncHandler(async (req, r
         console.log('Receipt found:', receipt);
 
         // Render the receipt view with the retrieved data
-        res.render('orders/receipt', { receipt });
+        res.render('orders/receipt', { 
+            receipt,
+            title: 'Receipt',
+            currentUser: req.session.user,
+            isAdmin: false
+        });
     } catch (error) {
         console.error('Error fetching receipt:', error);
         setFlash(req, 'error_msg', 'An error occurred while fetching the receipt. Please try again.');
@@ -1271,7 +1443,14 @@ app.get('/customer/orders/:id', ensureAuthenticated, asyncHandler(async (req, re
         const receipt = await Receipt.findOne({ orders: order._id });
 
         console.log('Order details fetched successfully for ID:', id);
-        res.render('orders/orderDetails', { order , table, receipt });
+        res.render('orders/orderDetails', { 
+            order,
+            table,
+            receipt,
+            title: 'Order Details',
+            currentUser: req.session.user,
+            isAdmin: false
+        });
     } catch (error) {
         console.error('Error fetching order details for ID:', id, error);
         req.flash('error_msg', 'An error occurred while fetching order details.');
@@ -1325,7 +1504,16 @@ app.get('/user/profile', ensureAuthenticated, asyncHandler(async (req, res) => {
         console.log('Payments:', payments);
 
         // Render the profile page with the user data, orders, receipts, and payments
-        res.render('users/profile', { user, currentOrders, previousOrders, receipts, payments });
+        res.render('users/profile', { 
+            user,
+            currentOrders,
+            previousOrders,
+            receipts,
+            payments,
+            title: 'Profile',
+            currentUser: req.session.user,
+            isAdmin: false
+        });
     } catch (error) {
         console.error('Error fetching user profile:', error);
         req.flash('error_msg', 'An error occurred while fetching your profile.');
@@ -1335,12 +1523,17 @@ app.get('/user/profile', ensureAuthenticated, asyncHandler(async (req, res) => {
 
 app.get('/user/profile/edit', ensureAuthenticated, asyncHandler(async (req, res) => {
     const user = await Users.findById(req.session.user._id);
-    res.render('users/editProfile', { user });
+    res.render('users/editProfile', { 
+        user,
+        title: 'Edit Profile',
+        currentUser: req.session.user,
+        isAdmin: false
+    });
 }));
 
 app.post('/user/profile', ensureAuthenticated, asyncHandler(async (req, res) => {
-    const { username, email, mobile } = req.body;
-    await Users.findByIdAndUpdate(req.session.user._id, { username, email, mobile });
+    const { firstName, lastName, email, mobile } = req.body;
+    await Users.findByIdAndUpdate(req.session.user._id, { firstName, lastName, email, mobile });
     setFlash(req, 'success_msg', 'Profile updated successfully');
     return res.redirect('/user/profile');
 }));
@@ -1381,7 +1574,12 @@ app.get('/user/payment-history', ensureAuthenticated, asyncHandler(async (req, r
         }
 
         // Render the payment history page with the populated payment data
-        res.render('user/paymentHistory', { paymentHistory: user.paymentHistory });
+        res.render('user/paymentHistory', { 
+            paymentHistory: user.paymentHistory,
+            title: 'Payment History',
+            currentUser: req.session.user,
+            isAdmin: false
+        });
     } catch (err) {
         console.error('Error fetching payment history:', err);
         setFlash(req, 'error_msg', 'An error occurred while retrieving your payment history.');
@@ -1426,7 +1624,10 @@ app.get('/tables', ensureAuthenticated, asyncHandler(async (req, res) => {
         res.render(res.locals.isAdmin ? 'tables/adminTables' : 'tables/customerTables', {
             reservedTables: reservedTablesWithUsers,
             vacantTables,
-            orders: userOrders // Pass user's orders for order cancellation logic
+            orders: userOrders, // Pass user's orders for order cancellation logic
+            title: 'Tables',
+            currentUser: req.session.user,
+            isAdmin: false
         });
     } catch (error) {
         console.error('Error fetching tables:', error);
@@ -1549,7 +1750,10 @@ app.get('/reserve', ensureAuthenticated, async (req, res) => {
         // Render the table reservation page
         res.render('tables/reserveTable', {
             vacantTables,
-            stripePublishableKey: publishableKey  // Ensure the correct key is passed here
+            stripePublishableKey: publishableKey,  // Ensure the correct key is passed here
+            title: 'Reserve Table',
+            currentUser: req.session.user,
+            isAdmin: false
         });
     } catch (error) {
         console.error('Error fetching vacant tables:', error.message);

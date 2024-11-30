@@ -1,202 +1,265 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menu Item Details</title>
-
-    <!-- Tailwind CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
-
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
-
+    <title>Menu Item Details | Cafeteria</title>
+    <%- include('../partials/links') %>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lenis/1.0.0/lenis.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
     <style>
         body {
-            font-family: 'Playfair Display', serif;
-            background: url('https://images.unsplash.com/photo-1526234362653-3b75a0c07438?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center fixed;
+            font-family: 'Cormorant Garamond', serif;
+            background: linear-gradient(rgba(26, 26, 26, 0.9), rgba(26, 26, 26, 0.9)),
+                url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2070&auto=format&fit=crop') no-repeat center center fixed;
             background-size: cover;
+            color: #ECDFCC;
+            min-height: 100vh;
+        }
+
+        .item-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: rgba(26, 26, 26, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(197, 168, 128, 0.1);
+            border-radius: 12px;
+        }
+
+        .item-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .item-title {
+            font-size: 2.5rem;
+            color: #C5A880;
+            margin-bottom: 0.5rem;
+        }
+
+        .item-subtitle {
+            color: #ECDFCC;
+            opacity: 0.8;
+            font-size: 1.2rem;
+        }
+
+        .item-image {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            border-radius: 12px;
+            margin: 2rem auto;
+            display: block;
+            border: 1px solid rgba(197, 168, 128, 0.2);
+        }
+
+        .item-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .detail-group {
+            text-align: center;
+        }
+
+        .detail-label {
+            color: #C5A880;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-value {
+            font-size: 1.2rem;
             color: #ECDFCC;
         }
 
-        .content-section {
-            background-color: rgba(40, 40, 38, 0.9);
-            border-radius: 20px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
-            padding: 50px;
-            margin-bottom: 30px;
-            transition: transform 0.4s ease-in-out, box-shadow 0.4s ease-in-out;
+        .item-description {
+            text-align: center;
+            margin: 2rem 0;
+            line-height: 1.6;
+            font-size: 1.1rem;
         }
 
-        .content-section:hover {
-            transform: translateY(-12px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
         }
 
-        h2 {
-            color: #ECD3A8;
-        }
-
-        p {
-            color: #D4C0A1;
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 1.1rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .btn-primary {
-            background-color: #8C715B;
-            border: none;
-            color: #fff;
-            padding: 12px 20px;
-            border-radius: 10px;
-            font-weight: bold;
-            text-transform: uppercase;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(140, 113, 91, 0.3);
+            background: rgba(197, 168, 128, 0.1);
+            border: 1px solid rgba(197, 168, 128, 0.2);
+            color: #C5A880;
         }
 
         .btn-primary:hover {
-            background-color: #6E5541;
-            transform: scale(1.05);
-            box-shadow: 0 6px 25px rgba(140, 113, 91, 0.4);
+            background: rgba(197, 168, 128, 0.2);
+            border-color: rgba(197, 168, 128, 0.4);
         }
 
-        .hover-scale {
-            transition: transform 0.3s ease-in-out;
+        .btn-danger {
+            background: rgba(220, 38, 38, 0.1);
+            border: 1px solid rgba(220, 38, 38, 0.2);
+            color: #ef4444;
         }
 
-        .hover-scale:hover {
-            transform: scale(1.05);
+        .btn-danger:hover {
+            background: rgba(220, 38, 38, 0.2);
+            border-color: rgba(220, 38, 38, 0.4);
         }
 
-        .success-message {
-            background-color: rgba(144, 238, 144, 0.8);
-            border: 1px solid green;
-            color: green;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 10px;
+        .back-btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: rgba(197, 168, 128, 0.1);
+            border: 1px solid rgba(197, 168, 128, 0.2);
+            color: #C5A880;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+            text-decoration: none;
         }
 
-        .error-message {
-            background-color: rgba(255, 99, 71, 0.8);
-            border: 1px solid red;
-            color: rgb(255, 255, 255);
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 10px;
+        .back-btn:hover {
+            background: rgba(197, 168, 128, 0.2);
+            border-color: rgba(197, 168, 128, 0.4);
         }
 
-        /* Additional text styles */
-        .price,
-        .category {
-            color: #CBAF8E;
+        @media (max-width: 640px) {
+            .item-container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+
+            .item-title {
+                font-size: 2rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
 </head>
 
-<body>
-    <!-- Navbar -->
+<body class="min-h-screen bg-[#1a1a1a]">
     <%- include('../partials/navbar') %>
 
-    <div class="container mx-auto mt-10 fade-in px-4 sm:px-6 lg:px-8">
-        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold mb-10 text-center text-[#ECD3A8]">Menu Item Details</h2>
+    <div class="container mx-auto px-4">
+        <a href="/menu/admin" class="back-btn">
+            <i class="fas fa-arrow-left mr-2"></i>Back to Menu
+        </a>
 
-        <!-- Flash Messages -->
-        <% if (flashMessages.success_msg) { %>
-            <div class="success-message">
-                <strong>Success!</strong> <%= flashMessages.success_msg %>
+        <div class="item-container">
+            <div class="item-header">
+                <h1 class="item-title"><%= menuItem.name %></h1>
+                <p class="item-subtitle"><%= menuItem.category %></p>
             </div>
-        <% } %>
-        <% if (flashMessages.error_msg) { %>
-            <div class="error-message">
-                <strong>Error!</strong> <%= flashMessages.error_msg %>
-            </div>
-        <% } %>
 
-        <div class="content-section flex flex-col lg:flex-row gap-10 justify-center">
-            <div class="w-full lg:w-1/3">
-                <img src="/<%= menuItem.image %>" alt="<%= menuItem.name %>" class="w-full h-64 object-cover rounded-lg mb-6 hover-scale">
-            </div>
-            <div class="w-full lg:w-2/3">
-                <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6 underline"><%= menuItem.name %></h2>
-                <p class="mb-4 text-lg price"><strong>Price:</strong> ₹<%= menuItem.price %></p>
-                <p class="mb-4 text-lg category"><strong>Category:</strong> <%= menuItem.category %></p>
-                <p class="mb-4"><%= menuItem.description %></p>
+            <% if (menuItem.image) { %>
+                <img src="<%= menuItem.image %>" alt="<%= menuItem.name %>" class="item-image">
+            <% } %>
 
-                <!-- Admin Functionality -->
-                <% if (user && user.role === 'admin') { %>
-                    <div class="admin-operations">
-                        <a href="/admin/menu/<%= menuItem._id %>/edit" class="btn-primary hover-scale mt-4 p-2">Edit Item</a>
-                        <form action="/admin/menu/<%= menuItem._id %>/delete" method="POST" style="display:inline-block;">
-                            <button type="submit" class="btn-primary hover-scale mt-4 p-2">Delete Item</button>
-                        </form>
-                    </div>
-                <% } else { %>
-                    <!-- Show customer functionalities -->
-                    <form action="/cart/new" method="POST">
-                        <input type="hidden" name="menuItemId" value="<%= menuItem._id %>">
-                        <button type="submit" class="btn-primary hover-scale mt-4 p-2">Add to Cart</button>
-                    </form>
-                <% } %>
+            <div class="item-details">
+                <div class="detail-group">
+                    <div class="detail-label">Price</div>
+                    <div class="detail-value">$<%= menuItem.price.toFixed(2) %></div>
+                </div>
+                <div class="detail-group">
+                    <div class="detail-label">Status</div>
+                    <div class="detail-value"><%= menuItem.available ? 'Available' : 'Not Available' %></div>
+                </div>
+                <div class="detail-group">
+                    <div class="detail-label">Stock</div>
+                    <div class="detail-value"><%= menuItem.stock %></div>
+                </div>
+            </div>
+
+            <div class="item-description">
+                <%= menuItem.description %>
+            </div>
+
+            <div class="action-buttons">
+                <a href="/menu/edit/<%= menuItem._id %>" class="btn btn-primary">
+                    <i class="fas fa-edit"></i>
+                    Edit Item
+                </a>
+                <form action="/menu/delete/<%= menuItem._id %>" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this item?')">
+                        <i class="fas fa-trash-alt"></i>
+                        Delete Item
+                    </button>
+                </form>
             </div>
         </div>
     </div>
 
-    <!-- JavaScript Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
     <script>
-        
-            // Burger menus
-            document.addEventListener('DOMContentLoaded', function () {
-                // open
-                const burger = document.querySelectorAll('.navbar-burger');
-                const menu = document.querySelectorAll('.navbar-menu');
-
-                if (burger.length && menu.length) {
-                    for (var i = 0; i < burger.length; i++) {
-                        burger[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
-                }
-
-                // close
-                const close = document.querySelectorAll('.navbar-close');
-                const backdrop = document.querySelectorAll('.navbar-backdrop');
-
-                if (close.length) {
-                    for (var i = 0; i < close.length; i++) {
-                        close[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
-                }
-
-                if (backdrop.length) {
-                    for (var i = 0; i < backdrop.length; i++) {
-                        backdrop[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
-                }
-            });
-        // GSAP Animations
-        gsap.from('.content-section', {
+        // Initialize Lenis for smooth scrolling
+        const lenis = new Lenis({
             duration: 1.2,
-            y: 60,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            direction: 'vertical',
+            gestureDirection: 'vertical',
+            smooth: true,
+            mouseMultiplier: 1,
+            smoothTouch: false,
+            touchMultiplier: 2,
+            infinite: false,
+        });
+
+        function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+        }
+
+        requestAnimationFrame(raf);
+
+        // GSAP Animations
+        gsap.from('.item-container', {
             opacity: 0,
-            ease: 'power3.inOut',
+            y: 30,
+            duration: 1,
+            ease: 'power3.out'
+        });
+
+        gsap.from('.item-image', {
+            opacity: 0,
+            scale: 0.95,
+            duration: 1,
+            delay: 0.3,
+            ease: 'power3.out'
+        });
+
+        gsap.from('.item-details > *', {
+            opacity: 0,
+            y: 20,
+            duration: 0.8,
+            stagger: 0.1,
+            delay: 0.5,
+            ease: 'power3.out'
         });
     </script>
 </body>
-
 </html>

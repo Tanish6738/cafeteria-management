@@ -4,7 +4,7 @@
     <div class="auth-box luxury-container">
         <h2 class="heading-primary text-center mb-8">Create Your Account</h2>
         
-        <% if (messages.error) { %>
+        <% if (messages.error && messages.error.length > 0) { %>
             <div class="alert alert-danger luxury-alert">
                 <%= messages.error %>
             </div>
@@ -12,8 +12,13 @@
 
         <form action="/register" method="POST" class="luxury-form">
             <div class="form-group mb-6">
-                <label for="username" class="form-label">Username</label>
-                <input type="text" id="username" name="username" required class="form-control">
+                <label for="firstName" class="form-label">First Name</label>
+                <input type="text" id="firstName" name="firstName" required class="form-control">
+            </div>
+
+            <div class="form-group mb-6">
+                <label for="lastName" class="form-label">Last Name</label>
+                <input type="text" id="lastName" name="lastName" required class="form-control">
             </div>
 
             <div class="form-group mb-6">
@@ -22,8 +27,8 @@
             </div>
 
             <div class="form-group mb-6">
-                <label for="name" class="form-label">Full Name</label>
-                <input type="text" id="name" name="name" required class="form-control">
+                <label for="confirmPassword" class="form-label">Confirm Password</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" required class="form-control">
             </div>
 
             <div class="form-group mb-6">

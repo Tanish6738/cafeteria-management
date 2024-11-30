@@ -1,31 +1,82 @@
     </main>
-    <footer class="section" style="background-color: var(--accent-color); color: white;">
+    <footer class="section" data-scroll-section>
         <div class="container">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
-                <div class="fade-in">
-                    <h3 style="color: var(--primary-color); margin-bottom: 1rem;">Luxury Dining</h3>
-                    <p style="line-height: 1.6;">Experience the finest cuisine in an atmosphere of unparalleled elegance.</p>
+            <div class="footer-grid">
+                <div class="footer-section fade-in" data-scroll data-scroll-speed="1">
+                    <h3>Luxury Dining</h3>
+                    <p>Experience the finest cuisine in an atmosphere of unparalleled elegance.</p>
                 </div>
-                <div class="fade-in">
-                    <h4 style="color: var(--primary-color); margin-bottom: 1rem;">Contact</h4>
-                    <p style="line-height: 1.6;">
+                <div class="footer-section fade-in" data-scroll data-scroll-speed="1.2">
+                    <h4>Contact</h4>
+                    <p>
                         123 Luxury Avenue<br>
                         Gourmet City, GC 12345<br>
                         Phone: (555) 123-4567<br>
                         Email: info@luxurydining.com
                     </p>
                 </div>
-                <div class="fade-in">
-                    <h4 style="color: var(--primary-color); margin-bottom: 1rem;">Hours</h4>
-                    <p style="line-height: 1.6;">
+                <div class="footer-section fade-in" data-scroll data-scroll-speed="1.4">
+                    <h4>Hours</h4>
+                    <p>
                         Monday - Friday: 11am - 11pm<br>
                         Saturday: 10am - 12am<br>
                         Sunday: 10am - 10pm
                     </p>
                 </div>
             </div>
+            <div class="footer-bottom fade-in" data-scroll data-scroll-speed="1">
+                <p>&copy; <%= new Date().getFullYear() %> Luxury Dining. All rights reserved.</p>
+            </div>
         </div>
     </footer>
+
+    <style>
+        footer {
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(197, 168, 128, 0.1);
+            padding: 4rem 0 2rem;
+            color: #ECDFCC;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-section h3,
+        .footer-section h4 {
+            color: #C5A880;
+            margin-bottom: 1.5rem;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+        }
+
+        .footer-section p {
+            line-height: 1.8;
+            opacity: 0.9;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(197, 168, 128, 0.1);
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .footer-grid {
+                gap: 2rem;
+            }
+            
+            .footer-section {
+                text-align: center;
+            }
+        }
+    </style>
 
     <script>
         // Initialize Lenis for smooth scrolling
@@ -64,18 +115,31 @@
             }
         });
 
-        // Fade in animations
-        gsap.utils.toArray('.fade-in').forEach(element => {
-            gsap.from(element, {
+        // Fade in animations for footer sections
+        gsap.utils.toArray('.footer-section').forEach((section, index) => {
+            gsap.from(section, {
                 opacity: 0,
                 y: 30,
                 duration: 1,
+                delay: index * 0.2,
                 scrollTrigger: {
-                    trigger: element,
-                    start: 'top 80%',
+                    trigger: section,
+                    start: 'top 90%',
                     toggleActions: 'play none none reverse'
                 }
             });
+        });
+
+        // Footer bottom fade in
+        gsap.from('.footer-bottom', {
+            opacity: 0,
+            y: 20,
+            duration: 1,
+            scrollTrigger: {
+                trigger: '.footer-bottom',
+                start: 'top 95%',
+                toggleActions: 'play none none reverse'
+            }
         });
     </script>
 </body>

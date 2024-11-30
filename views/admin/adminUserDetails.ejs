@@ -6,44 +6,186 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin User Details</title>
     <%- include('../partials/links') %>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lenis/1.0.0/lenis.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/locomotive-scroll/4.1.3/locomotive-scroll.min.js" crossorigin="anonymous"></script>
     <style>
         body {
             font-family: 'Cormorant Garamond', serif;
             background: linear-gradient(rgba(26, 26, 26, 0.9), rgba(26, 26, 26, 0.9)),
                 url('https://images.unsplash.com/photo-1526234362653-3b75a0c07438?q=80&w=1932&auto=format&fit=crop') no-repeat center center fixed;
             background-size: cover;
-            color: var(--text-color);
+            color: #ECDFCC;
         }
 
-        .profile-container {
+        .user-profile {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid rgba(197, 168, 128, 0.2);
+        }
+
+        .avatar-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 100px;
+            height: 100px;
+            background: #C5A880;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: #1A1A1A;
+        }
+
+        .user-role {
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .user-name h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.5rem;
+            color: #C5A880;
+            margin-bottom: 0.5rem;
+        }
+
+        .user-since {
+            color: rgba(236, 223, 204, 0.7);
+            font-size: 0.9rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .info-card {
             background: rgba(26, 26, 26, 0.85);
             backdrop-filter: blur(10px);
-            border-radius: 15px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(197, 168, 128, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-radius: 12px;
+            padding: 1.5rem;
         }
 
-        .profile-container:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        .info-card h3 {
+            color: #C5A880;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
         }
 
-        .luxury-button {
-            background: var(--primary-color);
-            color: var(--secondary-color);
-            padding: 0.8rem 2rem;
-            border-radius: 5px;
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 500;
-            letter-spacing: 0.5px;
+        .info-content p {
+            margin-bottom: 0.5rem;
+            color: #ECDFCC;
+        }
+
+        .orders-section {
+            margin-bottom: 3rem;
+        }
+
+        .orders-section h2 {
+            color: #C5A880;
+            margin-bottom: 2rem;
+            font-size: 1.8rem;
+        }
+
+        .orders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .order-card {
+            background: rgba(26, 26, 26, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(197, 168, 128, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
             transition: all 0.3s ease;
-            border: 2px solid var(--primary-color);
         }
 
-        .luxury-button:hover {
-            background: transparent;
-            color: var(--primary-color);
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(197, 168, 128, 0.1);
+        }
+
+        .order-header h4 {
+            color: #C5A880;
+        }
+
+        .order-date {
+            color: rgba(236, 223, 204, 0.7);
+            font-size: 0.9rem;
+        }
+
+        .order-items {
+            margin-bottom: 1rem;
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            color: #ECDFCC;
+        }
+
+        .order-total {
+            padding-top: 1rem;
+            border-top: 1px solid rgba(197, 168, 128, 0.1);
+            text-align: right;
+            color: #C5A880;
+        }
+
+        .actions-section {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        .no-orders {
+            text-align: center;
+            color: rgba(236, 223, 204, 0.7);
+            padding: 2rem;
+            background: rgba(26, 26, 26, 0.85);
+            border-radius: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions-section {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -65,110 +207,142 @@
         </div>
     <% } %>
 
-    <main class="container mx-auto px-4 py-8">
-        <div class="profile-container p-8">
-            <h1 class="heading-primary mb-8">Admin User Details</h1>
-            <h3 class="text-2xl font-bold mb-4">User ID: <%= user._id %></h3>
-            <p class="mb-2"><strong>Username:</strong> <%= user.username %></p>
-            <p class="mb-2"><strong>Email:</strong> <%= user.email %></p>
-            <p class="mb-2"><strong>Mobile:</strong> <%= user.mobile %></p>
-            <p class="mb-2"><strong>Role:</strong> <%= user.role %></p>
-            <a href="/admin/users/<%= user._id %>/edit" class="luxury-button mt-4 inline-block">Edit User</a>
-        </div>
-
-        <div class="profile-container mt-10 p-8">
-            <h3 class="text-2xl font-bold mb-4">Orders</h3>
-            <% if (orders && orders.length > 0) { %>
-                <% orders.forEach(order => { %>
-                    <div class="mb-4 p-4 bg-gray-800 rounded">
-                        <h4 class="text-xl font-bold mb-2">Order ID: <%= order._id %></h4>
-                        <p class="mb-2"><strong>Date:</strong> <%= order.placedAt.toDateString() %></p>
-                        <p class="mb-2"><strong>Status:</strong> <%= order.status %></p>
-                        <p class="mb-2"><strong>Payment Status:</strong> <%= order.paymentStatus %></p>
-                        <h5 class="text-lg font-bold mt-2">Items:</h5>
-                        <ul class="list-disc list-inside">
-                            <% order.items.forEach(item => { %>
-                                <li><%= item.menuItem.name %> - <%= item.quantity %> x $<%= item.menuItem.price %></li>
-                            <% }) %>
-                        </ul>
+    <div class="container mx-auto px-4 py-8">
+        <div class="user-profile">
+            <div class="profile-header">
+                <div class="avatar-section">
+                    <div class="user-avatar">
+                        <%= user.firstName.charAt(0) %><%= user.lastName.charAt(0) %>
                     </div>
-                <% }) %>
-            <% } else { %>
-                <p>No orders found.</p>
-            <% } %>
-        </div>
-
-        <div class="profile-container mt-10 p-8">
-            <h3 class="text-2xl font-bold mb-4">Payment History</h3>
-            <% if (user.paymentHistory && user.paymentHistory.length > 0) { %>
-                <% user.paymentHistory.forEach(payment => { %>
-                    <div class="mb-4 p-4 bg-gray-800 rounded">
-                        <h4 class="text-xl font-bold mb-2">Payment ID: <%= payment._id %></h4>
-                        <p class="mb-2"><strong>Order ID:</strong> <%= payment.orderId._id %></p>
-                        <p class="mb-2"><strong>Amount:</strong> $<%= payment.amount %></p>
-                        <p class="mb-2"><strong>Date:</strong> <%= payment.date.toDateString() %></p>
+                    <span class="user-role" style="background: rgba(197, 168, 128, 0.1); color: #C5A880; border: 1px solid rgba(197, 168, 128, 0.3);">
+                        <%= user.role %>
+                    </span>
+                </div>
+                <div class="user-info">
+                    <div class="user-name">
+                        <h1><%= user.firstName %> <%= user.lastName %></h1>
+                        <p class="text-lg text-[#ECDFCC]">@<%= user.firstName %>_<%= user.lastName %></p>
                     </div>
-                <% }) %>
-            <% } else { %>
-                <p>No payment history found.</p>
-            <% } %>
-        </div>
+                    <p class="user-since">Member since <%= new Date(user.createdAt).toLocaleDateString() %></p>
+                </div>
+            </div>
 
-        <div class="profile-container mt-10 p-8">
-            <h3 class="text-2xl font-bold mb-4">Summary</h3>
-            <p class="mb-2"><strong>Total Orders:</strong> <%= orderCount %></p>
-            <p class="mb-2"><strong>Unpaid Orders:</strong> <%= unpaidOrders %></p>
-        </div>
-    </main>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>Contact Information</h3>
+                    <div class="info-content">
+                        <p><strong>Email:</strong> <%= user.email %></p>
+                        <p><strong>Status:</strong> <%= user.status || 'Active' %></p>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <h3>Order Statistics</h3>
+                    <div class="info-content">
+                        <p><strong>Total Orders:</strong> <%= stats.totalOrders %></p>
+                        <p><strong>Total Spent:</strong> $<%= stats.totalSpent.toFixed(2) %></p>
+                        <p><strong>Average Order Value:</strong> $<%= stats.averageOrderValue.toFixed(2) %></p>
+                        <p><strong>Last Order:</strong> <%= stats.lastOrderDate %></p>
+                    </div>
+                </div>
+            </div>
 
-    <!-- GSAP Animations -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
+            <div class="orders-section">
+                <h2>Recent Orders</h2>
+                <div class="orders-grid">
+                    <% if (orders && orders.length > 0) { %>
+                        <% orders.slice(0, 6).forEach(order => { %>
+                            <div class="order-card">
+                                <div class="order-header">
+                                    <h4>Order #<%= order._id.toString().slice(-6) %></h4>
+                                    <span class="order-date"><%= new Date(order.createdAt).toLocaleDateString() %></span>
+                                </div>
+                                <div class="order-items">
+                                    <% order.items.forEach(item => { %>
+                                        <div class="order-item">
+                                            <span><%= item.menuItem.name %> x <%= item.quantity %></span>
+                                            <span>$<%= (item.menuItem.price * item.quantity).toFixed(2) %></span>
+                                        </div>
+                                    <% }) %>
+                                </div>
+                                <div class="order-total">
+                                    Total: $<%= order.totalAmount.toFixed(2) %>
+                                </div>
+                            </div>
+                        <% }) %>
+                    <% } else { %>
+                        <div class="no-orders">
+                            <p>No orders found for this user.</p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <div class="actions-section">
+                <button onclick="window.location.href='/admin/users'" class="action-button">Back to Users</button>
+                <button onclick="deleteUser('<%= user._id %>')" class="action-button delete-button">Delete User</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Burger menus
-        document.addEventListener('DOMContentLoaded', function () {
-            // open
-            const burger = document.querySelectorAll('.navbar-burger');
-            const menu = document.querySelectorAll('.navbar-menu');
-
-            if (burger.length && menu.length) {
-                for (var i = 0; i < burger.length; i++) {
-                    burger[i].addEventListener('click', function () {
-                        for (var j = 0; j < menu.length; j++) {
-                            menu[j].classList.toggle('hidden');
+        // Delete user function
+        async function deleteUser(userId) {
+            if (confirm('Are you sure you want to delete this user?')) {
+                try {
+                    const response = await fetch(`/admin/user/${userId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json'
                         }
                     });
+
+                    if (response.ok) {
+                        window.location.href = '/admin/users';
+                    } else {
+                        const data = await response.json();
+                        alert(data.message || 'Error deleting user');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error deleting user');
                 }
             }
+        }
 
-            // close
-            const close = document.querySelectorAll('.navbar-close');
-            const backdrop = document.querySelectorAll('.navbar-backdrop');
-
-            if (close.length) {
-                for (var i = 0; i < close.length; i++) {
-                    close[i].addEventListener('click', function () {
-                        for (var j = 0; j < menu.length; j++) {
-                            menu[j].classList.toggle('hidden');
-                        }
-                    });
-                }
-            }
-
-            if (backdrop.length) {
-                for (var i = 0; i < backdrop.length; i++) {
-                    backdrop[i].addEventListener('click', function () {
-                        for (var j = 0; j < menu.length; j++) {
-                            menu[j].classList.toggle('hidden');
-                        }
-                    });
-                }
+        // Initialize animations
+        gsap.from('.profile-header', {
+            opacity: 0,
+            y: 30,
+            duration: 1,
+            scrollTrigger: {
+                trigger: '.profile-header',
+                start: 'top 80%',
+                toggleActions: 'play none none reverse'
             }
         });
-        gsap.from('.profile-container', {
-            duration: 1,
-            y: 50,
+
+        gsap.from('.info-card', {
             opacity: 0,
-            ease: 'power3.out'
+            y: 30,
+            duration: 0.8,
+            stagger: 0.2,
+            scrollTrigger: {
+                trigger: '.info-grid',
+                start: 'top 80%',
+                toggleActions: 'play none none reverse'
+            }
+        });
+
+        gsap.from('.order-card', {
+            opacity: 0,
+            y: 30,
+            duration: 0.8,
+            stagger: 0.1,
+            scrollTrigger: {
+                trigger: '.orders-grid',
+                start: 'top 80%',
+                toggleActions: 'play none none reverse'
+            }
         });
     </script>
 </body>

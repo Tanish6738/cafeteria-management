@@ -4,176 +4,321 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Users</title>
+    <title><%= title %></title>
     <%- include('../partials/links') %>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lenis/1.0.0/lenis.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/locomotive-scroll/4.1.3/locomotive-scroll.min.js" crossorigin="anonymous"></script>
     <style>
         body {
             font-family: 'Cormorant Garamond', serif;
             background: linear-gradient(rgba(26, 26, 26, 0.9), rgba(26, 26, 26, 0.9)),
                 url('https://images.unsplash.com/photo-1526234362653-3b75a0c07438?q=80&w=1932&auto=format&fit=crop') no-repeat center center fixed;
             background-size: cover;
-            color: var(--text-color);
+            color: #ECDFCC;
+            min-height: 100vh;
+            position: relative;
+            z-index: 0;
         }
 
-        .table-section {
-            background: rgba(26, 26, 26, 0.85);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(197, 168, 128, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        .container {
+            position: relative;
+            z-index: 1;
         }
 
-        .table-section:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-        }
-
-        .luxury-button {
-            background: var(--primary-color);
-            color: var(--secondary-color);
-            padding: 0.8rem 2rem;
-            border-radius: 5px;
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 500;
-            letter-spacing: 0.5px;
-            transition: all 0.3s ease;
-            border: 2px solid var(--primary-color);
-        }
-
-        .luxury-button:hover {
-            background: transparent;
-            color: var(--primary-color);
-        }
-
-        .luxury-container {
-            background: rgba(26, 26, 26, 0.85);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(197, 168, 128, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .luxury-container:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-        }
-
-        .heading-primary {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 3.5rem;
-            color: var(--primary-color);
+        .admin-header {
             text-align: center;
             margin-bottom: 3rem;
+            position: relative;
+            z-index: 2;
         }
 
-        .form-control {
-            padding: 0.75rem 1rem;
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(197,168,128,0.3);
-            border-radius: 5px;
-            color: white;
-            font-family: 'Montserrat', sans-serif;
-            width: 300px;
+        .admin-header h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.5rem;
+            color: #C5A880;
+            margin-bottom: 0.5rem;
         }
 
-        .flex {
-            display: flex;
+        .admin-header p {
+            color: rgba(236, 223, 204, 0.7);
         }
 
-        .justify-between {
-            justify-content: space-between;
-        }
-
-        .items-center {
-            align-items: center;
-        }
-
-        .mb-8 {
+        .search-section {
             margin-bottom: 2rem;
+            position: relative;
+            z-index: 2;
         }
 
-        .text-primary-color {
-            color: var(--primary-color);
+        .search-input {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            display: block;
+            padding: 1rem;
+            background: rgba(26, 26, 26, 0.8);
+            border: 1px solid rgba(197, 168, 128, 0.2);
+            border-radius: 8px;
+            color: #ECDFCC;
         }
 
-        .py-4 {
-            padding-top: 1rem;
-            padding-bottom: 1rem;
+        .search-input::placeholder {
+            color: rgba(236, 223, 204, 0.5);
         }
 
-        .px-6 {
-            padding-left: 1.5rem;
-            padding-right: 1.5rem;
+        .users-grid {
+            position: relative;
+            z-index: 2;
+            display: grid;
+            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         }
 
-        .border-b {
-            border-bottom: 1px solid rgba(197,168,128,0.3);
+        .user-card {
+            background: rgba(26, 26, 26, 0.95);
+            border: 1px solid rgba(197, 168, 128, 0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
         }
 
-        .border-gray-700 {
-            border-color: rgba(197,168,128,0.3);
+        .user-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(197, 168, 128, 0.15);
+            border-color: rgba(197, 168, 128, 0.4);
         }
 
-        .hover\:bg-gray-800 {
-            transition: background-color 0.3s ease;
+        .user-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(197, 168, 128, 0.2);
         }
 
-        .hover\:bg-gray-800:hover {
-            background-color: rgba(26, 26, 26, 0.85);
+        .user-name {
+            font-size: 1.25rem;
+            color: #C5A880;
+            font-weight: 600;
         }
 
-        .transition-colors {
-            transition: color 0.3s ease;
+        .user-role {
+            font-size: 0.875rem;
+            color: rgba(236, 223, 204, 0.7);
+            padding: 0.25rem 0.75rem;
+            border: 1px solid rgba(197, 168, 128, 0.3);
+            border-radius: 999px;
+            background: rgba(197, 168, 128, 0.1);
+        }
+
+        .user-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .info-label {
+            font-size: 0.875rem;
+            color: rgba(236, 223, 204, 0.7);
+        }
+
+        .info-value {
+            font-size: 1rem;
+            color: #ECDFCC;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 1rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid rgba(197, 168, 128, 0.2);
+        }
+
+        .action-button {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            background: rgba(197, 168, 128, 0.1);
+            border: 1px solid rgba(197, 168, 128, 0.2);
+            color: #C5A880;
+            cursor: pointer;
+        }
+
+        .action-button:hover {
+            background: rgba(197, 168, 128, 0.2);
+            border-color: rgba(197, 168, 128, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .delete-button {
+            background: rgba(220, 38, 38, 0.1);
+            border-color: rgba(220, 38, 38, 0.2);
+            color: #ef4444;
+        }
+
+        .delete-button:hover {
+            background: rgba(220, 38, 38, 0.2);
+            border-color: rgba(220, 38, 38, 0.4);
+        }
+
+        @media (max-width: 640px) {
+            .user-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .user-actions {
+                flex-wrap: wrap;
+            }
+
+            .action-button {
+                flex: 1;
+                text-align: center;
+                min-width: 120px;
+            }
         }
     </style>
 </head>
 
-<body class="bg-gray-100">
+<body class="min-h-screen bg-[#1a1a1a]" data-scroll-container>
     <%- include('../partials/navbar') %>
 
-    <div class="admin-container" style="min-height: 100vh; background: linear-gradient(rgba(0,0,0,0.9), rgba(0,0,0,0.9)), url('/assets/img/admin-bg.jpg') center/cover; padding: 6rem 0;">
-        <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 2rem;">
-            <h1 class="heading-primary mb-8 text-center">User Management</h1>
-
-            <div class="admin-content luxury-container p-8">
-                <!-- Search and Filter Section -->
-                <div class="search-filter flex justify-between items-center mb-8">
-                    <input type="text" id="searchInput" placeholder="Search users..." class="form-control">
-                </div>
-
-                <div class="users-table overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead>
-                            <tr class="border-b border-gray-700">
-                                <th class="py-4 px-6 text-primary-color">User ID</th>
-                                <th class="py-4 px-6 text-primary-color">Username</th>
-                                <th class="py-4 px-6 text-primary-color">Email</th>
-                                <th class="py-4 px-6 text-primary-color">Role</th>
-                                <th class="py-4 px-6 text-primary-color">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% users.forEach(user => { %>
-                                <tr class="hover:bg-gray-800 transition-colors">
-                                    <td class="py-4 px-6"><%= user._id %></td>
-                                    <td class="py-4 px-6"><%= user.username %></td>
-                                    <td class="py-4 px-6"><%= user.email %></td>
-                                    <td class="py-4 px-6"><%= user.role %></td>
-                                    <td class="py-4 px-6">
-                                        <a href="/admin/users/<%= user._id %>/edit" class="luxury-button">Edit</a>
-                                    </td>
-                                </tr>
-                            <% }); %>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+    <main class="container mx-auto px-4 py-8 relative" data-scroll-section>
+        <div class="admin-header fade-in" data-scroll data-scroll-speed="1">
+            <h1>User Management</h1>
+            <p>View and manage all registered users</p>
         </div>
-    </div>
 
-    <%- include('../partials/footer') %>
+        <div class="search-section fade-in" data-scroll data-scroll-speed="1">
+            <input type="text" id="userSearch" placeholder="Search users..." class="search-input">
+        </div>
+
+        <div class="users-grid" data-scroll data-scroll-speed="1">
+            <% users.forEach(user => { %>
+                <div class="user-card fade-in">
+                    <div class="user-header">
+                        <span class="user-name"><%= user.firstName %> <%= user.lastName %></span>
+                        <span class="user-role"><%= user.role %></span>
+                    </div>
+                    <div class="user-info">
+                        <div class="info-item">
+                            <span class="info-label">Email</span>
+                            <span class="info-value"><%= user.email %></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Username</span>
+                            <span class="info-value">@<%= user.firstName %>_<%= user.lastName %></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Status</span>
+                            <span class="info-value"><%= user.status || 'Active' %></span>
+                        </div>
+                    </div>
+                    <div class="user-actions">
+                        <a href="/admin/users/<%= user._id %>" class="action-button">View Details</a>
+                        <button class="action-button delete-button" onclick="deleteUser('<%= user._id %>')">Delete</button>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+    </main>
+
+    <script>
+        // Initialize Lenis for smooth scrolling
+        const lenis = new Lenis({
+            duration: 1.2,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            direction: 'vertical',
+            gestureDirection: 'vertical',
+            smooth: true,
+            mouseMultiplier: 1,
+            smoothTouch: false,
+            touchMultiplier: 2,
+            infinite: false,
+        });
+
+        function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+        }
+
+        requestAnimationFrame(raf);
+
+        // Initialize GSAP and ScrollTrigger
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Animate elements on scroll
+        gsap.utils.toArray('.fade-in').forEach((element) => {
+            gsap.from(element, {
+                opacity: 0,
+                y: 30,
+                duration: 1,
+                scrollTrigger: {
+                    trigger: element,
+                    start: 'top bottom-=100',
+                    toggleActions: 'play none none reverse'
+                }
+            });
+        });
+
+        // User search functionality
+        document.getElementById('userSearch').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const userCards = document.querySelectorAll('.user-card');
+
+            userCards.forEach(card => {
+                const userName = card.querySelector('.user-name').textContent.toLowerCase();
+                const userEmail = card.querySelector('.info-value').textContent.toLowerCase();
+                const userRole = card.querySelector('.user-role').textContent.toLowerCase();
+
+                if (userName.includes(searchTerm) || userEmail.includes(searchTerm) || userRole.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+
+        // Delete user function
+        function deleteUser(userId) {
+            if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+                fetch(`/admin/user/${userId}/delete`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error deleting user: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while deleting the user');
+                });
+            }
+        }
+    </script>
 </body>
 
 </html>

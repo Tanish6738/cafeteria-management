@@ -1,218 +1,438 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Menu</title>
-    
-    <!-- Tailwind CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
-
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
-
+    <title>Admin Menu | Cafeteria</title>
+    <%- include('../partials/links') %>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lenis/1.0.0/lenis.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
     <style>
         body {
-            font-family: 'Playfair Display', serif;
-            background: url('https://images.unsplash.com/photo-1526234362653-3b75a0c07438?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center fixed;
+            font-family: 'Cormorant Garamond', serif;
+            background: linear-gradient(rgba(26, 26, 26, 0.9), rgba(26, 26, 26, 0.9)),
+                url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2070&auto=format&fit=crop') no-repeat center center fixed;
             background-size: cover;
             color: #ECDFCC;
+            min-height: 100vh;
         }
 
-        .table-section {
-            background-color: rgba(51, 51, 51, 0.85);
-            border-radius: 15px;
-            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
-            padding: 50px 20px;
-            margin-bottom: 20px;
-            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        .menu-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: rgba(26, 26, 26, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(197, 168, 128, 0.1);
+            border-radius: 12px;
         }
 
-        .table-section:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        .menu-header {
+            text-align: center;
+            margin-bottom: 3rem;
         }
 
-        .btn-primary {
-            background-color: #555;
-            border-color: #555;
-            color: #fff;
+        .menu-title {
+            font-size: 3rem;
+            color: #C5A880;
+            margin-bottom: 0.5rem;
+        }
+
+        .menu-subtitle {
+            color: #ECDFCC;
+            opacity: 0.8;
+            font-size: 1.2rem;
+        }
+
+        .menu-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .search-container {
+            flex: 1;
+            min-width: 200px;
+            max-width: 400px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(26, 26, 26, 0.8);
+            border: 1px solid rgba(197, 168, 128, 0.2);
+            border-radius: 6px;
+            color: #ECDFCC;
             transition: all 0.3s ease;
         }
 
+        .search-input:focus {
+            outline: none;
+            border-color: rgba(197, 168, 128, 0.4);
+            box-shadow: 0 0 0 2px rgba(197, 168, 128, 0.1);
+        }
+
+        .filter-container {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 0.75rem 1.5rem;
+            background: rgba(197, 168, 128, 0.1);
+            border: 1px solid rgba(197, 168, 128, 0.2);
+            color: #C5A880;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: rgba(197, 168, 128, 0.2);
+            border-color: rgba(197, 168, 128, 0.4);
+        }
+
+        .add-item-btn {
+            padding: 0.75rem 1.5rem;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .add-item-btn:hover {
+            background: rgba(34, 197, 94, 0.2);
+            border-color: rgba(34, 197, 94, 0.4);
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .menu-item {
+            background: rgba(26, 26, 26, 0.6);
+            border: 1px solid rgba(197, 168, 128, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .menu-item:hover {
+            transform: translateY(-5px);
+            border-color: rgba(197, 168, 128, 0.3);
+        }
+
+        .item-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .item-content {
+            padding: 1.5rem;
+        }
+
+        .item-title {
+            font-size: 1.5rem;
+            color: #C5A880;
+            margin-bottom: 0.5rem;
+        }
+
+        .item-category {
+            font-size: 0.9rem;
+            color: #ECDFCC;
+            opacity: 0.8;
+            margin-bottom: 1rem;
+        }
+
+        .item-price {
+            font-size: 1.2rem;
+            color: #ECDFCC;
+            margin-bottom: 1rem;
+        }
+
+        .item-description {
+            color: #ECDFCC;
+            opacity: 0.9;
+            margin-bottom: 1.5rem;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .item-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: rgba(197, 168, 128, 0.1);
+            border: 1px solid rgba(197, 168, 128, 0.2);
+            color: #C5A880;
+        }
+
         .btn-primary:hover {
-            background-color: #333;
-            border-color: #333;
+            background: rgba(197, 168, 128, 0.2);
+            border-color: rgba(197, 168, 128, 0.4);
         }
 
-        .hover-scale {
-            transition: transform 0.3s ease-in-out;
+        .btn-danger {
+            background: rgba(220, 38, 38, 0.1);
+            border: 1px solid rgba(220, 38, 38, 0.2);
+            color: #ef4444;
         }
 
-        .hover-scale:hover {
-            transform: scale(1.05);
+        .btn-danger:hover {
+            background: rgba(220, 38, 38, 0.2);
+            border-color: rgba(220, 38, 38, 0.4);
+        }
+
+        .flash-message {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 6px;
+            text-align: center;
         }
 
         .success-message {
-            background-color: rgba(144, 238, 144, 0.8);
-            border: 1px solid green;
-            color: green;
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            animation: fadeIn 1s ease-in-out;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            color: #22c55e;
         }
 
         .error-message {
-            background-color: rgba(255, 99, 71, 0.8);
-            border: 1px solid red;
-            color: rgb(255, 255, 255);
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            animation: fadeIn 1s ease-in-out;
+            background: rgba(220, 38, 38, 0.1);
+            border: 1px solid rgba(220, 38, 38, 0.2);
+            color: #ef4444;
         }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
+        @media (max-width: 768px) {
+            .menu-container {
+                margin: 1rem;
+                padding: 1.5rem;
             }
-            to {
-                opacity: 1;
-                transform: translateY(0);
+
+            .menu-title {
+                font-size: 2.5rem;
             }
-        }
 
-        .table-section table {
-            transition: all 0.3s ease-in-out;
-        }
+            .menu-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
 
-        .table-section table tr:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
+            .search-container {
+                max-width: none;
+            }
 
-        .table-section table th, .table-section table td {
-            transition: all 0.3s ease-in-out;
-        }
-
-        .table-section table th:hover, .table-section table td:hover {
-            background-color: rgba(255, 255, 255, 0.2);
+            .item-actions {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 
-<body>
-    <!-- Navbar -->
+<body class="min-h-screen bg-[#1a1a1a]">
     <%- include('../partials/navbar') %>
 
-    <div class="container mx-auto mt-10 fade-in">
-        <h2 class="text-5xl font-bold mb-10 text-center text-[#ECDFCC]">Admin Inventory Management</h2>
-
-        <!-- Flash Messages -->
-        <% if (flashMessages.success_msg) { %>
-            <div class="success-message">
-                <strong>Success!</strong> <%= flashMessages.success_msg %>
-            </div>
-        <% } %>
-        <% if (flashMessages.error_msg) { %>
-            <div class="error-message">
-                <strong>Error!</strong> <%= flashMessages.error_msg %>
-            </div>
-        <% } %>
-
-        <div class="flex justify-end mb-4">
-            <a href="/admin/menu/addMenuItem" class="btn-primary hover-scale py-2 px-4 rounded">Add New Item</a>
+    <div class="menu-container">
+        <div class="menu-header">
+            <h1 class="menu-title">Menu Management</h1>
+            <p class="menu-subtitle">Manage your menu items</p>
         </div>
-        <div class="table-section overflow-x-auto shadow-lg">
-            <table class="min-w-full bg-transparent text-light">
-                <thead>
-                    <tr>
-                        <th class="py-4 px-6 border-b text-left text-xl font-semibold">Name</th>
-                        <th class="py-4 px-6 border-b text-left text-xl font-semibold">Price</th>
-                        <th class="py-4 px-6 border-b text-left text-xl font-semibold">Category</th>
-                        <th class="py-4 px-6 border-b text-left text-xl font-semibold">Available</th>
-                        <th class="py-4 px-6 border-b text-left text-xl font-semibold">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% menuItems.forEach(item => { %>
-                        <tr>
-                            <td class="py-2 px-6 border-b text-lg font-semibold"><%= item.name %></td>
-                            <td class="py-2 px-6 border-b text-lg font-semibold">₹<%= item.price %></td>
-                            <td class="py-2 px-6 border-b text-lg font-semibold"><%= item.category %></td>
-                            <td class="py-2 px-6 border-b text-lg font-semibold"><%= item.available ? 'Yes' : 'No' %></td>
-                            <td class="py-2 px-6 border-b text-lg font-semibold flex items-center space-x-2">
-                                <a href="/menu/<%= item._id %>" class="btn-primary hover-scale py-1 px-3 rounded">View</a>
-                                <a href="/admin/menu/<%= item._id %>/edit" class="btn-primary hover-scale py-1 px-3 rounded">Edit</a>
-                                <a href="/admin/menu/<%= item._id %>/delete" class="btn-primary hover-scale py-1 px-3 rounded">Delete</a>
-                                <form action="/admin/menu/<%= item._id %>/toggle-availability" method="POST" class="inline">
-                                    <button type="submit" class="btn-primary hover-scale py-1 px-3 rounded">Toggle Availability</button>
-                                </form>
-                            </td>
-                        </tr>
-                    <% }) %>
-                </tbody>
-            </table>
+
+        <% if (messages.success_msg) { %>
+            <div class="flash-message success-message">
+                <%= messages.success_msg %>
+            </div>
+        <% } %>
+        <% if (messages.error_msg) { %>
+            <div class="flash-message error-message">
+                <%= messages.error_msg %>
+            </div>
+        <% } %>
+
+        <div class="menu-actions">
+            <div class="search-container">
+                <input type="text" class="search-input" placeholder="Search menu items...">
+            </div>
+            <div class="filter-container">
+                <button class="filter-btn active">All</button>
+                <button class="filter-btn">Appetizers</button>
+                <button class="filter-btn">Main Course</button>
+                <button class="filter-btn">Desserts</button>
+                <button class="filter-btn">Beverages</button>
+            </div>
+            <a href="/menu/add" class="add-item-btn">
+                <i class="fas fa-plus"></i>
+                Add New Item
+            </a>
+        </div>
+
+        <div class="menu-grid">
+            <% menuItems.forEach(item => { %>
+                <div class="menu-item" data-category="<%= item.category %>">
+                    <% if (item.image) { %>
+                        <img src="<%= item.image %>" alt="<%= item.name %>" class="item-image">
+                    <% } %>
+                    <div class="item-content">
+                        <h3 class="item-title"><%= item.name %></h3>
+                        <p class="item-category"><%= item.category %></p>
+                        <p class="item-price">$<%= item.price.toFixed(2) %></p>
+                        <p class="item-description"><%= item.description %></p>
+                        <div class="item-actions">
+                            <a href="/menu/edit/<%= item._id %>" class="btn btn-primary">
+                                <i class="fas fa-edit"></i>
+                                Edit
+                            </a>
+                            <form action="/menu/delete/<%= item._id %>" method="POST" style="flex: 1;">
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this item?')">
+                                    <i class="fas fa-trash-alt"></i>
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
         </div>
     </div>
 
-    <!-- JavaScript Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
     <script>
-        
-            // Burger menus
-            document.addEventListener('DOMContentLoaded', function () {
-                // open
-                const burger = document.querySelectorAll('.navbar-burger');
-                const menu = document.querySelectorAll('.navbar-menu');
+        // Initialize Lenis for smooth scrolling
+        const lenis = new Lenis({
+            duration: 1.2,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            direction: 'vertical',
+            gestureDirection: 'vertical',
+            smooth: true,
+            mouseMultiplier: 1,
+            smoothTouch: false,
+            touchMultiplier: 2,
+            infinite: false,
+        });
 
-                if (burger.length && menu.length) {
-                    for (var i = 0; i < burger.length; i++) {
-                        burger[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
-                }
+        function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+        }
 
-                // close
-                const close = document.querySelectorAll('.navbar-close');
-                const backdrop = document.querySelectorAll('.navbar-backdrop');
+        requestAnimationFrame(raf);
 
-                if (close.length) {
-                    for (var i = 0; i < close.length; i++) {
-                        close[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
-                }
+        // GSAP Animations
+        gsap.from('.menu-header', {
+            opacity: 0,
+            y: 30,
+            duration: 1,
+            ease: 'power3.out'
+        });
 
-                if (backdrop.length) {
-                    for (var i = 0; i < backdrop.length; i++) {
-                        backdrop[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
+        gsap.from('.menu-actions', {
+            opacity: 0,
+            y: 20,
+            duration: 0.8,
+            delay: 0.3,
+            ease: 'power3.out'
+        });
+
+        gsap.from('.menu-item', {
+            opacity: 0,
+            y: 30,
+            duration: 0.8,
+            stagger: 0.1,
+            delay: 0.5,
+            ease: 'power3.out'
+        });
+
+        // Auto-hide flash messages
+        const flashMessages = document.querySelectorAll('.flash-message');
+        flashMessages.forEach(message => {
+            setTimeout(() => {
+                message.style.opacity = '0';
+                setTimeout(() => message.remove(), 300);
+            }, 3000);
+        });
+
+        // Search and Filter Functionality
+        const searchInput = document.querySelector('.search-input');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const menuItems = document.querySelectorAll('.menu-item');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            filterItems();
+        });
+
+        function filterItems() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const activeFilter = document.querySelector('.filter-btn.active').textContent;
+
+            menuItems.forEach(item => {
+                const title = item.querySelector('.item-title').textContent.toLowerCase();
+                const category = item.dataset.category;
+                const matchesSearch = title.includes(searchTerm);
+                const matchesFilter = activeFilter === 'All' || category === activeFilter;
+
+                if (matchesSearch && matchesFilter) {
+                    item.style.display = 'block';
+                    gsap.to(item, {
+                        opacity: 1,
+                        y: 0,
+                        duration: 0.4,
+                        ease: 'power2.out'
+                    });
+                } else {
+                    gsap.to(item, {
+                        opacity: 0,
+                        y: 20,
+                        duration: 0.4,
+                        ease: 'power2.out',
+                        onComplete: () => item.style.display = 'none'
+                    });
                 }
             });
-        // GSAP Animations
-        gsap.from('.table-section', {
-            duration: 1,
-            y: 50,
-            opacity: 0,
-            stagger: 0.2
+        }
+
+        searchInput.addEventListener('input', filterItems);
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                filterItems();
+            });
         });
     </script>
 </body>
-
 </html>

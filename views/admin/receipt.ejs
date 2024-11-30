@@ -8,31 +8,45 @@
     <%- include('../partials/links') %>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lenis/1.0.0/lenis.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/locomotive-scroll/4.1.3/locomotive-scroll.min.js" crossorigin="anonymous"></script>
     <style>
         body {
             font-family: 'Playfair Display', serif;
-            background: url('https://images.unsplash.com/photo-1526234362653-3b75a0c07438?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center fixed;
+            background: linear-gradient(rgba(26, 26, 26, 0.9), rgba(26, 26, 26, 0.9)),
+                url('https://images.unsplash.com/photo-1526234362653-3b75a0c07438?q=80&w=1932&auto=format&fit=crop') no-repeat center center fixed;
             background-size: cover;
             color: #ECDFCC;
         }
 
         .receipt-container {
-            background-color: rgba(60, 61, 55, 0.8);
-            border-radius: 10px;
+            background: rgba(26, 26, 26, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(197, 168, 128, 0.1);
             padding: 40px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
             color: #ECDFCC;
         }
 
         .btn-primary {
-            background-color: #697565;
-            color: #fff;
-            transition: background-color 0.3s ease;
+            background: #C5A880;
+            color: #1A1A1A;
+            padding: 0.8rem 2rem;
+            border-radius: 5px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            border: 2px solid #C5A880;
         }
 
         .btn-primary:hover {
-            background-color: #3C3D37;
+            background: transparent;
+            color: #C5A880;
         }
 
         .hover-scale {
@@ -42,14 +56,42 @@
         .hover-scale:hover {
             transform: scale(1.05);
         }
+
+        h2, h3, h4 {
+            color: #C5A880;
+        }
+
+        strong {
+            color: #C5A880;
+        }
+
+        .list-disc li {
+            color: #ECDFCC;
+            margin: 0.5rem 0;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 
-<body>
+<body data-scroll-container>
     <%- include('../partials/navbar') %>
 
-     <!-- Flash Messages -->
-     <% if (flashMessages.success_msg) { %>
+    <!-- Flash Messages -->
+    <% if (flashMessages.success_msg) { %>
         <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
             <strong class="font-bold">Success!</strong>
             <span class="block sm:inline"><%= flashMessages.success_msg %></span>
@@ -62,81 +104,178 @@
         </div>
     <% } %>
 
-    <div class="container mx-auto mt-10 fade-in">
-        <h2 class="text-4xl font-bold mb-6 text-center">Receipt Details</h2>
-        <div class="receipt-container">
-            <h3 class="text-2xl font-bold mb-4">Receipt ID: <%= receipt._id %></h3>
-            <p class="mb-2"><strong>Customer Name:</strong> <%= receipt.customer.username %></p>
-            <p class="mb-2"><strong>Customer Email:</strong> <%= receipt.customer.email %></p>
-            <h4 class="text-lg font-bold mt-4">Orders:</h4>
-            <% if (receipt.orders && receipt.orders.length > 0) { %>
-                <ul class="list-disc list-inside">
-                    <% receipt.orders.forEach(order => { %>
-                        <% order.items.forEach(item => { %>
-                            <li>
-                                <strong>Menu Item:</strong> <%= item.menuItem.name %> - 
-                                <%= item.quantity %> x $<%= item.menuItem.price %>
+    <div class="container mx-auto mt-10 fade-in" data-scroll-section>
+        <h2 class="text-4xl font-bold mb-6 text-center" data-scroll data-scroll-speed="1">Receipt Details</h2>
+        <div class="receipt-container fade-in" data-scroll data-scroll-section>
+            <div class="receipt-header">
+                <h2>Receipt #<%= receipt.receiptNumber %></h2>
+                <p class="receipt-date">Generated: <%= new Date(receipt.generatedAt).toLocaleString() %></p>
+            </div>
+            
+            <div class="receipt-details">
+                <div class="order-info">
+                    <h3>Order Details</h3>
+                    <ul class="list-disc">
+                        <% receipt.items.forEach(item => { %>
+                            <li class="receipt-item">
+                                <span class="item-name"><%= item.name %></span>
+                                <span class="item-quantity">x<%= item.quantity %></span>
+                                <span class="item-price">$<%= item.price.toFixed(2) %></span>
+                                <span class="item-subtotal">$<%= item.subtotal.toFixed(2) %></span>
                             </li>
-                        <% }) %>
-                    <% }) %>
-                </ul>
-            <% } else { %>
-                <p>No orders found for this receipt.</p>
-            <% } %>
-            <p class="mt-4"><strong>Total Amount:</strong> $<%= receipt.totalAmount.toFixed(2) %></p>
-            <p class="mt-2"><strong>Payment Status:</strong> <%= receipt.paymentStatus %></p>
+                        <% }); %>
+                    </ul>
+                </div>
+
+                <div class="payment-info">
+                    <h3>Payment Information</h3>
+                    <div class="payment-details">
+                        <p><strong>Subtotal:</strong> $<%= receipt.subtotal.toFixed(2) %></p>
+                        <p><strong>Tax:</strong> $<%= receipt.tax.toFixed(2) %></p>
+                        <p class="total"><strong>Total:</strong> $<%= receipt.total.toFixed(2) %></p>
+                    </div>
+                </div>
+
+                <div class="cashier-info">
+                    <p><strong>Cashier:</strong> <%= receipt.cashier ? receipt.cashier.firstName + ' ' + receipt.cashier.lastName : 'System' %></p>
+                    <p><strong>Transaction ID:</strong> <%= receipt.payment._id %></p>
+                </div>
+            </div>
+
+            <div class="receipt-actions">
+                <button class="btn-primary hover-scale" onclick="window.print()">Print Receipt</button>
+                <a href="/admin/receipt-record" class="btn-secondary hover-scale">Back to Records</a>
+            </div>
         </div>
-        <a href="/admin/receipt-records" class="btn-primary hover-scale p-2 rounded inline-block">Back to Records</a>
+
+        <style>
+            @media print {
+                body * {
+                    visibility: hidden;
+                }
+                .receipt-container, .receipt-container * {
+                    visibility: visible;
+                }
+                .receipt-container {
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    width: 100%;
+                    background: white !important;
+                    color: black !important;
+                }
+                .receipt-actions {
+                    display: none;
+                }
+            }
+
+            .receipt-header {
+                border-bottom: 1px solid rgba(197, 168, 128, 0.2);
+                margin-bottom: 2rem;
+                padding-bottom: 1rem;
+            }
+
+            .receipt-date {
+                color: rgba(236, 223, 204, 0.7);
+                font-size: 0.9rem;
+            }
+
+            .receipt-details {
+                display: grid;
+                gap: 2rem;
+            }
+
+            .receipt-item {
+                display: grid;
+                grid-template-columns: 2fr 1fr 1fr 1fr;
+                gap: 1rem;
+                padding: 0.5rem 0;
+                border-bottom: 1px solid rgba(197, 168, 128, 0.1);
+            }
+
+            .item-name {
+                font-weight: 500;
+            }
+
+            .item-quantity, .item-price, .item-subtotal {
+                text-align: right;
+            }
+
+            .payment-info {
+                background: rgba(197, 168, 128, 0.1);
+                padding: 1.5rem;
+                border-radius: 10px;
+                margin-top: 2rem;
+            }
+
+            .payment-details p {
+                display: flex;
+                justify-content: space-between;
+                margin: 0.5rem 0;
+            }
+
+            .total {
+                font-size: 1.2rem;
+                border-top: 1px solid rgba(197, 168, 128, 0.2);
+                padding-top: 1rem;
+                margin-top: 1rem;
+            }
+
+            .cashier-info {
+                margin-top: 2rem;
+                padding-top: 1rem;
+                border-top: 1px solid rgba(197, 168, 128, 0.2);
+            }
+
+            .receipt-actions {
+                display: flex;
+                gap: 1rem;
+                margin-top: 2rem;
+                justify-content: flex-end;
+            }
+
+            .btn-secondary {
+                background: transparent;
+                color: #C5A880;
+                padding: 0.8rem 2rem;
+                border-radius: 5px;
+                font-family: 'Montserrat', sans-serif;
+                font-weight: 500;
+                letter-spacing: 0.5px;
+                transition: all 0.3s ease;
+                border: 2px solid #C5A880;
+                text-decoration: none;
+            }
+
+            .btn-secondary:hover {
+                background: rgba(197, 168, 128, 0.1);
+            }
+        </style>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
     <script>
-        // Burger menus
         document.addEventListener('DOMContentLoaded', function () {
-            // open
-            const burger = document.querySelectorAll('.navbar-burger');
-            const menu = document.querySelectorAll('.navbar-menu');
-
-            if (burger.length && menu.length) {
-                for (var i = 0; i < burger.length; i++) {
-                    burger[i].addEventListener('click', function () {
-                        for (var j = 0; j < menu.length; j++) {
-                            menu[j].classList.toggle('hidden');
-                        }
-                    });
-                }
+            const lenis = new Lenis();
+            lenis.on('scroll', (e) => {
+                console.log(e);
+            });
+            function raf(time) {
+                lenis.raf(time);
+                requestAnimationFrame(raf);
             }
+            requestAnimationFrame(raf);
 
-            // close
-            const close = document.querySelectorAll('.navbar-close');
-            const backdrop = document.querySelectorAll('.navbar-backdrop');
-
-            if (close.length) {
-                for (var i = 0; i < close.length; i++) {
-                    close[i].addEventListener('click', function () {
-                        for (var j = 0; j < menu.length; j++) {
-                            menu[j].classList.toggle('hidden');
-                        }
-                    });
-                }
-            }
-
-            if (backdrop.length) {
-                for (var i = 0; i < backdrop.length; i++) {
-                    backdrop[i].addEventListener('click', function () {
-                        for (var j = 0; j < menu.length; j++) {
-                            menu[j].classList.toggle('hidden');
-                        }
-                    });
-                }
-            }
-        });
-
-        gsap.from('.receipt-container', {
-            duration: 1,
-            y: 50,
-            opacity: 0,
-            ease: 'power3.out'
+            gsap.from('.receipt-container', {
+                scrollTrigger: {
+                    trigger: '.receipt-container',
+                    start: 'top 80%',
+                    toggleActions: 'play none none none'
+                },
+                duration: 1,
+                y: 50,
+                opacity: 0,
+                ease: 'power3.out'
+            });
         });
     </script>
 </body>

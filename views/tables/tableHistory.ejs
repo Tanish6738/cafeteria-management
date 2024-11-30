@@ -4,196 +4,261 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Table History</title>
-    
-    <!-- Tailwind CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
-
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
-
+    <title><%= title %></title>
+    <%- include('../partials/links') %>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lenis/1.0.0/lenis.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" crossorigin="anonymous"></script>
     <style>
         body {
-            font-family: 'Playfair Display', serif;
-            background: url('https://images.unsplash.com/photo-1526234362653-3b75a0c07438?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center fixed;
+            font-family: 'Cormorant Garamond', serif;
+            background: linear-gradient(rgba(26, 26, 26, 0.9), rgba(26, 26, 26, 0.9)),
+                url('https://images.unsplash.com/photo-1526234362653-3b75a0c07438?q=80&w=1932&auto=format&fit=crop') no-repeat center center fixed;
             background-size: cover;
             color: #ECDFCC;
+            min-height: 100vh;
         }
 
-        .table-container {
-            background-color: rgba(60, 61, 55, 0.85);
-            border-radius: 15px;
-            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
-            padding: 50px 20px;
-            margin-bottom: 20px;
-        }
-
-        .btn-primary {
-            background-color: #697565;
-            border-color: #697565;
-            color: #fff;
+        .history-section {
+            background: rgba(26, 26, 26, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(197, 168, 128, 0.1);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem auto;
             transition: all 0.3s ease;
         }
 
-        .btn-primary:hover {
-            background-color: #3C3D37;
-            border-color: #3C3D37;
+        .history-section:hover {
+            border-color: rgba(197, 168, 128, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
 
-        .hover-scale {
-            transition: transform 0.3s ease-in-out;
-        }
-
-        .hover-scale:hover {
-            transform: scale(1.05);
-        }
-
-        .success-message {
-            background-color: rgba(144, 238, 144, 0.8);
-            border: 1px solid green;
-            color: green;
-            padding: 10px;
-            margin-bottom: 20px;
+        .history-card {
+            background: rgba(197, 168, 128, 0.1);
+            border: 1px solid rgba(197, 168, 128, 0.2);
             border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
         }
 
-        .error-message {
-            background-color: rgba(255, 99, 71, 0.8);
-            border: 1px solid red;
-            color: rgb(255, 255, 255);
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 8px;
+        .history-card:hover {
+            background: rgba(197, 168, 128, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .history-date {
+            color: #C5A880 !important;
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .history-info {
+            color: #ECDFCC !important;
+            margin-bottom: 0.5rem;
+        }
+
+        .history-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #ECDFCC !important;
+            background: rgba(197, 168, 128, 0.2);
+            border: 1px solid rgba(197, 168, 128, 0.3);
+        }
+
+        .history-amount {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #C5A880 !important;
+            text-align: right;
+            margin-top: 1rem;
+        }
+
+        .filter-section {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 0.75rem;
+            background: rgba(26, 26, 26, 0.8);
+            border: 1px solid rgba(197, 168, 128, 0.2);
+            border-radius: 6px;
+            color: #ECDFCC !important;
+            transition: all 0.3s ease;
+        }
+
+        .filter-input:focus {
+            outline: none;
+            border-color: rgba(197, 168, 128, 0.4);
+            box-shadow: 0 0 0 2px rgba(197, 168, 128, 0.1);
+        }
+
+        .filter-button {
+            background: rgba(197, 168, 128, 0.1);
+            border: 1px solid rgba(197, 168, 128, 0.2);
+            color: #C5A880;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .filter-button:hover {
+            background: rgba(197, 168, 128, 0.2);
+            border-color: rgba(197, 168, 128, 0.4);
+        }
+
+        .no-history {
+            text-align: center;
+            padding: 3rem;
+            color: #ECDFCC !important;
+            opacity: 0.7;
+        }
+
+        @media (max-width: 640px) {
+            .history-section {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+
+            .filter-section {
+                flex-direction: column;
+            }
+
+            .filter-input {
+                width: 100%;
+            }
         }
     </style>
 </head>
 
-<body>
-    <!-- Navbar -->
+<body class="min-h-screen bg-[#1a1a1a]">
     <%- include('../partials/navbar') %>
 
-    <div class="container mx-auto mt-10 fade-in">
-        <h2 class="text-5xl font-bold mb-10 text-center text-[#4b3a36]">Table History</h2>
+    <div class="container mx-auto px-4 py-8">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-[#C5A880] mb-2">Table History</h1>
+            <p class="text-[#ECDFCC]/70">View past reservations and payments</p>
+        </div>
 
-        <!-- Flash Messages -->
-        <% if (flashMessages && flashMessages.success_msg) { %>
-            <div class="success-message">
-                <strong>Success!</strong> <%= flashMessages.success_msg %>
+        <div class="history-section">
+            <div class="filter-section">
+                <input type="date" class="filter-input" id="dateFilter" placeholder="Filter by date">
+                <select class="filter-input" id="statusFilter">
+                    <option value="">All Statuses</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                    <option value="pending">Pending</option>
+                </select>
+                <button class="filter-button" onclick="applyFilters()">
+                    <i class="fas fa-filter mr-2"></i>Apply Filters
+                </button>
             </div>
-        <% } %>
-        <% if (flashMessages && flashMessages.error_msg) { %>
-            <div class="error-message">
-                <strong>Error!</strong> <%= flashMessages.error_msg %>
-            </div>
-        <% } %>
 
-        <!-- Table History Table -->
-        <div class="table-container">
-            <div class="overflow-x-auto">
-                <table class="min-w-full bg-transparent text-light">
-                    <thead>
-                        <tr class="bg-gray-700">
-                            <th class="py-4 px-6 border-b text-left">Table Number</th>
-                            <th class="py-4 px-6 border-b text-left">Status</th>
-                            <th class="py-4 px-6 border-b text-left">Reserved By</th>
-                            <th class="py-4 px-6 border-b text-left">Capacity</th>
-                            <th class="py-4 px-6 border-b text-left">Reservation Start</th>
-                            <th class="py-4 px-6 border-b text-left">Reservation End</th>
-                            <th class="py-4 px-6 border-b text-left">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% if (tableHistory && tableHistory.length > 0) { %>
-                            <% tableHistory.forEach(table => { %>
-                                <tr class="border-t">
-                                    <td class="py-2 px-6 border-b"><%= table.tableNumber %></td>
-                                    <td class="py-2 px-6 border-b capitalize"><%= table.status %></td>
-                                    <td class="py-2 px-6 border-b"><%= table.reservedBy ? table.reservedBy.username : 'N/A' %></td>
-                                    <td class="py-2 px-6 border-b"><%= table.capacity %></td>
-                                    <td class="py-2 px-6 border-b">
-                                        <% if (table.reservationStartTime && !isNaN(new Date(table.reservationStartTime))) { %>
-                                            <%= new Date(table.reservationStartTime).toLocaleString() %>
-                                        <% } else { %>
-                                            N/A
-                                        <% } %>
-                                    </td>
-                                    <td class="py-2 px-6 border-b">
-                                        <% if (table.reservationEndTime && !isNaN(new Date(table.reservationEndTime))) { %>
-                                            <%= new Date(table.reservationEndTime).toLocaleString() %>
-                                        <% } else { %>
-                                            N/A
-                                        <% } %>
-                                    </td>
-                                    <td class="py-2 px-6 border-b">
-                                        <a href="/tables/<%= table._id %>/" class="btn-primary hover-scale py-2 px-4 rounded" aria-label="View Table Details">View</a>
-                                    </td>
-                                </tr>
-                            <% }) %>
-                        <% } else { %>
-                            <tr>
-                                <td colspan="7" class="py-4 px-6 text-center text-gray-600">No table history found.</td>
-                            </tr>
-                        <% } %>
-                    </tbody>
-                </table>
-            </div>
+            <% if (history && history.length > 0) { %>
+                <% history.forEach(record => { %>
+                    <div class="history-card">
+                        <div class="history-date">
+                            <i class="far fa-calendar-alt mr-2"></i>
+                            <%= new Date(record.date).toLocaleDateString() %>
+                        </div>
+                        <div class="history-info">
+                            <p>Table Number: <%= record.tableNumber %></p>
+                            <p>Duration: <%= record.duration %> minutes</p>
+                            <p>Payment Method: <%= record.paymentMethod %></p>
+                        </div>
+                        <div class="history-status">
+                            <%= record.status %>
+                        </div>
+                        <div class="history-amount">
+                            Total: $<%= record.amount %>
+                        </div>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <div class="no-history">
+                    <i class="fas fa-history fa-3x mb-4"></i>
+                    <p>No history records found</p>
+                </div>
+            <% } %>
         </div>
     </div>
 
-    <!-- JavaScript Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
     <script>
-        // Burger menus
-        document.addEventListener('DOMContentLoaded', function () {
-            // open
-            const burger = document.querySelectorAll('.navbar-burger');
-            const menu = document.querySelectorAll('.navbar-menu');
-
-            if (burger.length && menu.length) {
-                for (var i = 0; i < burger.length; i++) {
-                    burger[i].addEventListener('click', function () {
-                        for (var j = 0; j < menu.length; j++) {
-                            menu[j].classList.toggle('hidden');
-                        }
-                    });
-                }
-            }
-
-            // close
-            const close = document.querySelectorAll('.navbar-close');
-            const backdrop = document.querySelectorAll('.navbar-backdrop');
-
-            if (close.length) {
-                for (var i = 0; i < close.length; i++) {
-                    close[i].addEventListener('click', function () {
-                        for (var j = 0; j < menu.length; j++) {
-                            menu[j].classList.toggle('hidden');
-                        }
-                    });
-                }
-            }
-
-            if (backdrop.length) {
-                for (var i = 0; i < backdrop.length; i++) {
-                    backdrop[i].addEventListener('click', function () {
-                        for (var j = 0; j < menu.length; j++) {
-                            menu[j].classList.toggle('hidden');
-                        }
-                    });
-                }
-            }
+        // Initialize Lenis for smooth scrolling
+        const lenis = new Lenis({
+            duration: 1.2,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            direction: 'vertical',
+            gestureDirection: 'vertical',
+            smooth: true,
+            mouseMultiplier: 1,
+            smoothTouch: false,
+            touchMultiplier: 2,
+            infinite: false,
         });
-        
+
+        function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+        }
+
+        requestAnimationFrame(raf);
+
         // GSAP Animations
-        gsap.from('.table-container', {
-            duration: 1,
-            y: 50,
-            opacity: 0,
-            stagger: 0.2
+        gsap.registerPlugin(ScrollTrigger);
+
+        // History cards animation
+        gsap.utils.toArray('.history-card').forEach(card => {
+            gsap.from(card, {
+                opacity: 0,
+                y: 30,
+                duration: 1,
+                scrollTrigger: {
+                    trigger: card,
+                    start: 'top 80%',
+                    end: 'top 50%',
+                    scrub: 1
+                }
+            });
         });
+
+        // Filter functionality
+        function applyFilters() {
+            const dateFilter = document.getElementById('dateFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const cards = document.querySelectorAll('.history-card');
+
+            cards.forEach(card => {
+                let show = true;
+
+                if (dateFilter) {
+                    const cardDate = card.querySelector('.history-date').textContent.trim();
+                    if (!cardDate.includes(dateFilter)) {
+                        show = false;
+                    }
+                }
+
+                if (statusFilter) {
+                    const cardStatus = card.querySelector('.history-status').textContent.trim().toLowerCase();
+                    if (cardStatus !== statusFilter.toLowerCase()) {
+                        show = false;
+                    }
+                }
+
+                card.style.display = show ? 'block' : 'none';
+            });
+        }
     </script>
 </body>
 

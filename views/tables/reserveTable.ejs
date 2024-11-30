@@ -5,216 +5,247 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reserve a Table</title>
-
-    <!-- Import TailwindCSS and FontAwesome -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
-
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
-
+    <%- include('../partials/links') %>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lenis/1.0.0/lenis.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" crossorigin="anonymous"></script>
     <style>
         body {
-            font-family: 'Playfair Display', serif;
-            background: url('https://images.unsplash.com/photo-1526234362653-3b75a0c07438?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center fixed;
+            font-family: 'Cormorant Garamond', serif;
+            background: linear-gradient(rgba(26, 26, 26, 0.9), rgba(26, 26, 26, 0.9)),
+                url('https://images.unsplash.com/photo-1526234362653-3b75a0c07438?q=80&w=1932&auto=format&fit=crop') no-repeat center center fixed;
             background-size: cover;
             color: #ECDFCC;
+            min-height: 100vh;
         }
 
-        .table-section {
-            background-color: rgba(60, 61, 55, 0.8);
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-            padding: 40px;
-            margin-bottom: 20px;
-            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-        }
-
-        .table-section:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .btn-primary {
-            background-color: #697565;
-            border-color: #697565;
-            color: #fff;
+        .reservation-section {
+            background: rgba(26, 26, 26, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(197, 168, 128, 0.1);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 600px;
+            margin: 2rem auto;
             transition: all 0.3s ease;
         }
 
-        .btn-primary:hover {
-            background-color: #3C3D37;
-            border-color: #3C3D37;
+        .reservation-section:hover {
+            border-color: rgba(197, 168, 128, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
 
-        .hover-scale {
-            transition: transform 0.3s ease-in-out;
-        }
-
-        .hover-scale:hover {
-            transform: scale(1.05);
-        }
-
-        .success-message {
-            background-color: rgba(144, 238, 144, 0.8);
-            border: 1px solid green;
-            color: green;
-            padding: 10px;
-            margin-bottom: 20px;
+        .table-info {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: rgba(197, 168, 128, 0.1);
             border-radius: 8px;
-            animation: fadeIn 1s ease-in-out;
+            border: 1px solid rgba(197, 168, 128, 0.2);
         }
 
-        .error-message {
-            background-color: rgba(255, 99, 71, 0.8);
-            border: 1px solid red;
-            color: rgb(255, 255, 255);
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            animation: fadeIn 1s ease-in-out;
+        .table-info h3 {
+            color: #C5A880 !important;
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
         }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
+        .table-info p {
+            color: #ECDFCC !important;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #C5A880;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(26, 26, 26, 0.8);
+            border: 1px solid rgba(197, 168, 128, 0.2);
+            border-radius: 6px;
+            color: #ECDFCC !important;
+            transition: all 0.3s ease;
+        }
+
+        .form-input::placeholder {
+            color: rgba(236, 223, 204, 0.5) !important;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: rgba(197, 168, 128, 0.4);
+            box-shadow: 0 0 0 2px rgba(197, 168, 128, 0.1);
+        }
+
+        .action-button {
+            background: rgba(197, 168, 128, 0.1);
+            border: 1px solid rgba(197, 168, 128, 0.2);
+            color: #C5A880;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .action-button:hover {
+            background: rgba(197, 168, 128, 0.2);
+            border-color: rgba(197, 168, 128, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .back-button {
+            background: transparent;
+            border: 1px solid rgba(197, 168, 128, 0.2);
+        }
+
+        .back-button:hover {
+            background: rgba(197, 168, 128, 0.1);
+        }
+
+        @media (max-width: 640px) {
+            .reservation-section {
+                margin: 1rem;
+                padding: 1.5rem;
             }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .table-section table {
-            transition: all 0.3s ease-in-out;
-        }
-
-        .table-section table tr:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .table-section table th,
-        .table-section table td {
-            transition: all 0.3s ease-in-out;
-        }
-
-        .table-section table th:hover,
-        .table-section table td:hover {
-            background-color: rgba(255, 255, 255, 0.2);
         }
     </style>
 </head>
 
-<body class="bg-gray-100">
-    <!-- Navbar -->
-    <%- include('../partials/header') %>
+<body class="min-h-screen bg-[#1a1a1a]">
+    <%- include('../partials/navbar') %>
 
-    <div class="reservation-container" style="min-height: 100vh; background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('/assets/img/reservation-bg.jpg') center/cover; padding: 6rem 0;">
-        <div class="container">
-            <div class="reservation-content" style="max-width: 800px; margin: 0 auto;">
-                <h1 style="font-family: 'Cormorant Garamond', serif; font-size: 3.5rem; color: var(--primary-color); text-align: center; margin-bottom: 2rem;">Reserve Your Table</h1>
-                <p style="color: #999; text-align: center; margin-bottom: 3rem; font-family: 'Montserrat', sans-serif;">Experience luxury dining at its finest</p>
+    <div class="container mx-auto px-4 py-8">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-[#C5A880] mb-2">Reserve Table</h1>
+            <p class="text-[#ECDFCC]/70">Book your table in advance</p>
+        </div>
 
-                <div class="reservation-form" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); padding: 3rem; border-radius: 10px; box-shadow: 0 15px 35px rgba(0,0,0,0.2);">
-                    <% if (messages.error) { %>
-                        <div class="alert alert-danger" style="background: rgba(220,53,69,0.1); color: #dc3545; padding: 1rem; border-radius: 5px; margin-bottom: 2rem;">
-                            <%= messages.error %>
-                        </div>
-                    <% } %>
-
-                    <form action="/tables/reserve" method="POST">
-                        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
-                            <div class="form-group">
-                                <label style="display: block; color: #999; margin-bottom: 0.5rem; font-family: 'Montserrat', sans-serif;">Date</label>
-                                <input type="date" name="date" required class="form-control" style="width: 100%; padding: 1rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(197,168,128,0.3); border-radius: 5px; color: white; font-family: 'Montserrat', sans-serif;">
-                            </div>
-
-                            <div class="form-group">
-                                <label style="display: block; color: #999; margin-bottom: 0.5rem; font-family: 'Montserrat', sans-serif;">Time</label>
-                                <input type="time" name="time" required class="form-control" style="width: 100%; padding: 1rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(197,168,128,0.3); border-radius: 5px; color: white; font-family: 'Montserrat', sans-serif;">
-                            </div>
-                        </div>
-
-                        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
-                            <div class="form-group">
-                                <label style="display: block; color: #999; margin-bottom: 0.5rem; font-family: 'Montserrat', sans-serif;">Number of Guests</label>
-                                <select name="guests" required class="form-control" style="width: 100%; padding: 1rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(197,168,128,0.3); border-radius: 5px; color: white; font-family: 'Montserrat', sans-serif;">
-                                    <option value="">Select number of guests</option>
-                                    <% for(let i = 1; i <= 10; i++) { %>
-                                        <option value="<%= i %>"><%= i %> <%= i === 1 ? 'Guest' : 'Guests' %></option>
-                                    <% } %>
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label style="display: block; color: #999; margin-bottom: 0.5rem; font-family: 'Montserrat', sans-serif;">Seating Preference</label>
-                                <select name="seating" required class="form-control" style="width: 100%; padding: 1rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(197,168,128,0.3); border-radius: 5px; color: white; font-family: 'Montserrat', sans-serif;">
-                                    <option value="">Select seating preference</option>
-                                    <option value="indoor">Indoor</option>
-                                    <option value="outdoor">Outdoor</option>
-                                    <option value="bar">Bar</option>
-                                    <option value="private">Private Room</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="form-group" style="margin-bottom: 2rem;">
-                            <label style="display: block; color: #999; margin-bottom: 0.5rem; font-family: 'Montserrat', sans-serif;">Special Requests</label>
-                            <textarea name="specialRequests" rows="4" class="form-control" style="width: 100%; padding: 1rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(197,168,128,0.3); border-radius: 5px; color: white; font-family: 'Montserrat', sans-serif; resize: vertical;"></textarea>
-                        </div>
-
-                        <button type="submit" class="btn" style="width: 100%; padding: 1rem; background: var(--primary-color); color: white; border: none; border-radius: 5px; font-family: 'Montserrat', sans-serif; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.3s ease;">Reserve Now</button>
-                    </form>
-                </div>
-
-                <div class="reservation-info" style="margin-top: 3rem; text-align: center; color: #999; font-family: 'Montserrat', sans-serif;">
-                    <p>For parties larger than 10 or special events, please contact us directly:</p>
-                    <a href="tel:+1234567890" style="color: var(--primary-color); text-decoration: none; transition: all 0.3s ease;">+1 (234) 567-890</a>
-                </div>
+        <div class="reservation-section">
+            <div class="table-info">
+                <h3>Table Information</h3>
+                <p>Table Number: 1</p>
+                <p>Capacity: 10 persons</p>
+                <p>Current Status: Available</p>
             </div>
+
+            <form action="/tables/reserve" method="POST">
+                <div class="form-group">
+                    <label class="form-label">Reservation Date</label>
+                    <input type="date" 
+                           name="reservationDate" 
+                           class="form-input" 
+                           required 
+                           min="<%= new Date().toISOString().split('T')[0] %>">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Reservation Time</label>
+                    <input type="time" 
+                           name="reservationTime" 
+                           class="form-input" 
+                           required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Number of Guests</label>
+                    <input type="number" 
+                           name="numberOfGuests" 
+                           class="form-input" 
+                           required 
+                           min="1" 
+                           max="10"
+                           placeholder="Enter number of guests">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Special Requests</label>
+                    <textarea name="specialRequests" 
+                              class="form-input" 
+                              rows="3"
+                              placeholder="Any special requests or notes"></textarea>
+                </div>
+
+                <button type="submit" class="action-button">
+                    <i class="fas fa-calendar-check mr-2"></i>Confirm Reservation
+                </button>
+
+                <a href="/tables" class="action-button back-button block">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Tables
+                </a>
+            </form>
         </div>
     </div>
 
-    <style>
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px rgba(197,168,128,0.2);
-        }
-
-        .btn:hover {
-            background: transparent !important;
-            color: var(--primary-color) !important;
-            box-shadow: inset 0 0 0 2px var(--primary-color);
-        }
-
-        select option {
-            background: #1a1a1a;
-            color: white;
-        }
-
-        @media (max-width: 768px) {
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-
-            .reservation-form {
-                padding: 2rem;
-            }
-        }
-    </style>
-
-    <!-- JavaScript Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
     <script>
+        // Initialize Lenis for smooth scrolling
+        const lenis = new Lenis({
+            duration: 1.2,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            direction: 'vertical',
+            gestureDirection: 'vertical',
+            smooth: true,
+            mouseMultiplier: 1,
+            smoothTouch: false,
+            touchMultiplier: 2,
+            infinite: false,
+        });
+
+        function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+        }
+
+        requestAnimationFrame(raf);
+
         // GSAP Animations
-        gsap.from('.table-section', {
-            duration: 1,
-            y: 50,
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Reservation section animation
+        gsap.from('.reservation-section', {
             opacity: 0,
-            stagger: 0.2
+            y: 30,
+            duration: 1,
+            scrollTrigger: {
+                trigger: '.reservation-section',
+                start: 'top 80%',
+                end: 'top 50%',
+                scrub: 1
+            }
+        });
+
+        // Form validation
+        const form = document.querySelector('form');
+        form.addEventListener('submit', (e) => {
+            const numberOfGuests = document.querySelector('input[name="numberOfGuests"]');
+            const maxCapacity = 10;
+
+            if (numberOfGuests.value < 1 || numberOfGuests.value > maxCapacity) {
+                e.preventDefault();
+                alert(`Number of guests must be between 1 and ${maxCapacity}`);
+                return;
+            }
+
+            const reservationDate = document.querySelector('input[name="reservationDate"]');
+            const today = new Date();
+            const selectedDate = new Date(reservationDate.value);
+            
+            if (selectedDate < today) {
+                e.preventDefault();
+                alert('Please select a future date for your reservation');
+                return;
+            }
         });
     </script>
 </body>
