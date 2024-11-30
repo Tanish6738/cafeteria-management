@@ -1,241 +1,153 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Cart</title>
+    <title>Your Cart - Luxury Dining</title>
     
     <!-- Tailwind CSS -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     
     <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
-
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <%- include('../partials/styles') %>
 
     <style>
-        body {
-            font-family: 'Playfair Display', serif;
-            background: url('https://images.unsplash.com/photo-1526234362653-3b75a0c07438?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center fixed;
-            background-size: cover;
-            color: #ECDFCC;
+        .cart-item {
+            transition: transform 0.3s ease, opacity 0.3s ease;
         }
-
-        .cart-container {
-            background-color: rgba(60, 61, 55, 0.85);
-            border-radius: 15px;
-            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
-            padding: 40px;
-            margin-bottom: 20px;
-            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        .cart-item:hover {
+            transform: translateY(-2px);
         }
-
-        .cart-container:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .btn-primary {
-            background-color: #697565;
-            border-color: #697565;
-            color: #fff;
+        .quantity-button {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
             transition: all 0.3s ease;
         }
-
-        .btn-primary:hover {
-            background-color: #3C3D37;
-            border-color: #3C3D37;
+        .quantity-button:hover {
+            background: var(--primary-color);
+            color: var(--secondary-color);
         }
-
-        .hover-scale {
-            transition: transform 0.3s ease-in-out;
+        .remove-button {
+            transition: all 0.3s ease;
         }
-
-        .hover-scale:hover {
-            transform: scale(1.05);
-        }
-
-        .inputModel {
-            background-color: #3c3d37;
-            border: 1px solid #888;
-            color: #ECDFCC;
-            font-size: 25px;
-        }
-
-        .success-message {
-            background-color: rgba(144, 238, 144, 0.8);
-            border: 1px solid green;
-            color: green;
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            animation: fadeIn 1s ease-in-out;
-        }
-
-        .error-message {
-            background-color: rgba(255, 99, 71, 0.8);
-            border: 1px solid red;
-            color: rgb(255, 255, 255);
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            animation: fadeIn 1s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .cart-container table {
-            transition: all 0.3s ease-in-out;
-        }
-
-        .cart-container table tr:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .cart-container table th, .cart-container table td {
-            transition: all 0.3s ease-in-out;
-        }
-
-        .cart-container table th:hover, .cart-container table td:hover {
-            background-color: rgba(255, 255, 255, 0.2);
+        .remove-button:hover {
+            color: var(--error-color);
+            transform: scale(1.1);
         }
     </style>
 </head>
 
-<body class="bg-gray-100">
-    <!-- Navbar -->
+<body class="min-h-screen bg-gray-900">
     <%- include('../partials/navbar') %>
 
-    <div class="container mx-auto mt-10 fade-in">
-        <h2 class="text-5xl font-bold mb-10 text-center text-[#4b3a36]">Your Cart</h2>
-
-        <!-- Flash Messages -->
-        <% if (flashMessages.success_msg) { %>
-            <div class="success-message">
-                <strong>Success!</strong> <%= flashMessages.success_msg %>
-            </div>
-        <% } %>
-        <% if (flashMessages.error_msg) { %>
-            <div class="error-message">
-                <strong>Error!</strong> <%= flashMessages.error_msg %>
+    <main class="container mx-auto px-4 py-8">
+        <% if (messages.success_msg || messages.error_msg) { %>
+            <div class="alert <%= messages.success_msg ? 'alert-success' : 'alert-danger' %> mb-6">
+                <%= messages.success_msg || messages.error_msg %>
             </div>
         <% } %>
 
-        <div class="cart-container">
-            <% if (cartItems.length > 0) { %>
-                <form action="/orders/place" method="POST">
-                    <table class="min-w-full bg-transparent text-light">
-                        <thead>
-                            <tr>
-                                <th class="py-4 px-6 border-b text-left">Item</th>
-                                <th class="py-4 px-6 border-b text-left">Quantity</th>
-                                <th class="py-4 px-6 border-b text-left">Price</th>
-                                <th class="py-4 px-6 border-b text-left">Total</th>
-                                <th class="py-4 px-6 border-b text-left">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% cartItems.forEach(item => { %>
-                                <% if (item.menuItem) { %>
-                                    <tr>
-                                        <td class="py-2 px-6 border-b"><%= item.menuItem.name %></td>
-                                        <td class="py-2 px-6 border-b"><%= item.quantity %></td>
-                                        <td class="py-2 px-6 border-b">₹<%= item.menuItem.price %></td>
-                                        <td class="py-2 px-6 border-b">₹<%= item.menuItem.price * item.quantity %></td>
-                                        <td class="py-2 px-6 border-b flex items-center space-x-2">
-                                            <a href="/cart/increment/<%= item.menuItem._id %>" class="text-white bg-green-500 hover:bg-green-700 py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">+</a>
-                                            <a href="/cart/decrement/<%= item.menuItem._id %>" class="text-white bg-yellow-500 hover:bg-yellow-700 py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">-</a>
-                                            <a href="/cart/remove/<%= item.menuItem._id %>" class="text-white bg-red-500 hover:bg-red-700 py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">x</a>
-                                        </td>
-                                    </tr>
-                                <% } else { %>
-                                    <tr>
-                                        <td colspan="5" class="py-4 px-6 border-b text-center text-red-500">Item not found</td>
-                                    </tr>
-                                <% } %>
-                            <% }); %>
-                        </tbody>
-                    </table>
-                    <div class="mt-6">
-                        <label for="tableNumber" class="block mb-2 text-light">Table Number:</label>
-                        <input type="text" id="tableNumber" name="tableNumber" class="inputModel border p-3 w-full rounded bg-[#3C3D37] text-[#e8d5b7]" value="<%= tableNumber %>" required>
+        <div class="luxury-container p-8">
+            <h1 class="heading-primary mb-8">Your Cart</h1>
+
+            <% if (cart && cart.items && cart.items.length > 0) { %>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Cart Items -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <% cart.items.forEach(item => { %>
+                            <div class="cart-item luxury-container p-6">
+                                <div class="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+                                    <div class="flex flex-col md:flex-row items-center md:space-x-4 text-center md:text-left">
+                                        <img src="<%= item.menuItem.image %>" alt="<%= item.menuItem.name %>" 
+                                            class="w-24 h-24 object-cover rounded-lg mb-4 md:mb-0">
+                                        <div>
+                                            <h3 class="text-xl font-semibold text-primary-color mb-2"><%= item.menuItem.name %></h3>
+                                            <p class="text-muted">$<%= item.menuItem.price.toFixed(2) %> each</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-6">
+                                        <div class="flex items-center space-x-3">
+                                            <a href="/cart/decrement/<%= item.menuItem._id %>" 
+                                                class="quantity-button luxury-button">
+                                                <i class="fas fa-minus"></i>
+                                            </a>
+                                            <span class="text-lg px-3 font-medium"><%= item.quantity %></span>
+                                            <a href="/cart/increment/<%= item.menuItem._id %>" 
+                                                class="quantity-button luxury-button">
+                                                <i class="fas fa-plus"></i>
+                                            </a>
+                                        </div>
+                                        <p class="text-primary-color font-semibold text-lg">
+                                            $<%= (item.menuItem.price * item.quantity).toFixed(2) %>
+                                        </p>
+                                        <a href="/cart/remove/<%= item.menuItem._id %>" 
+                                            class="remove-button text-gray-400 hover:text-red-500">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }); %>
                     </div>
-                    <div class="mt-6">
-                        <label for="total" class="block mb-2 text-light">Total:</label>
-                        <input type="number" id="total" name="total" class="inputModel border p-3 w-full rounded bg-[#3C3D37] text-[#e8d5b7]" value="<%= totalPrice %>" required readonly>
+
+                    <!-- Order Summary -->
+                    <div class="lg:col-span-1">
+                        <div class="luxury-container p-6 sticky top-4">
+                            <h2 class="text-2xl font-semibold text-primary-color mb-6">Order Summary</h2>
+                            <div class="space-y-4 mb-6">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-muted">Subtotal</span>
+                                    <span class="text-lg">$<%= cart.total.toFixed(2) %></span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-muted">Tax (10%)</span>
+                                    <span class="text-lg">$<%= (cart.total * 0.1).toFixed(2) %></span>
+                                </div>
+                                <div class="border-t border-gray-700 pt-4">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-lg font-semibold">Total</span>
+                                        <span class="text-2xl font-bold text-primary-color">
+                                            $<%= (cart.total * 1.1).toFixed(2) %>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <% if (tableNumber) { %>
+                                <form action="/cart/checkout" method="POST">
+                                    <input type="hidden" name="tableNumber" value="<%= tableNumber %>">
+                                    <button type="submit" class="luxury-button w-full py-3 text-center">
+                                        Proceed to Checkout
+                                    </button>
+                                </form>
+                            <% } else { %>
+                                <div class="text-center space-y-4">
+                                    <p class="text-muted">Please reserve a table to proceed with checkout</p>
+                                    <a href="/tables" class="luxury-button inline-block">Reserve a Table</a>
+                                </div>
+                            <% } %>
+                        </div>
                     </div>
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white p-3 rounded mt-2 w-full transition duration-300 ease-in-out transform hover:scale-105">Place Order</button>
-                </form>
-                <a href="/cart/clear" class="bg-gradient-to-r from-red-500 to-red-700 hover:from-red-700 hover:to-red-900 text-white p-3 rounded mt-2 w-full transition duration-300 ease-in-out transform hover:scale-105 shadow-lg hover:shadow-xl block text-center">Clear Cart</a>
+                </div>
             <% } else { %>
-                <p class="text-center text-light">Your cart is empty.</p>
+                <div class="text-center py-16">
+                    <i class="fas fa-shopping-cart text-5xl text-primary-color mb-6"></i>
+                    <h2 class="text-2xl font-semibold text-primary-color mb-4">Your Cart is Empty</h2>
+                    <p class="text-muted mb-8">Add some delicious items from our menu</p>
+                    <a href="/customer/menu" class="luxury-button inline-block">View Menu</a>
+                </div>
             <% } %>
         </div>
-    </div>
+    </main>
 
-    <!-- JavaScript Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
-    <script>
-        
-            // Burger menus
-            document.addEventListener('DOMContentLoaded', function () {
-                // open
-                const burger = document.querySelectorAll('.navbar-burger');
-                const menu = document.querySelectorAll('.navbar-menu');
-
-                if (burger.length && menu.length) {
-                    for (var i = 0; i < burger.length; i++) {
-                        burger[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
-                }
-
-                // close
-                const close = document.querySelectorAll('.navbar-close');
-                const backdrop = document.querySelectorAll('.navbar-backdrop');
-
-                if (close.length) {
-                    for (var i = 0; i < close.length; i++) {
-                        close[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
-                }
-
-                if (backdrop.length) {
-                    for (var i = 0; i < backdrop.length; i++) {
-                        backdrop[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
-                }
-            });
-        // GSAP Animations
-        gsap.from('.cart-container', {
-            duration: 1,
-            y: 50,
-            opacity: 0,
-            stagger: 0.2
-        });
-    </script>
+    <%- include('../partials/footer') %>
 </body>
-
 </html>

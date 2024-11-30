@@ -5,103 +5,127 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Users</title>
-
-    <!-- Import TailwindCSS and FontAwesome -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
-
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
-
+    <%- include('../partials/links') %>
     <style>
         body {
-            font-family: 'Playfair Display', serif;
-            background: url('https://images.unsplash.com/photo-1526234362653-3b75a0c07438?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center fixed;
+            font-family: 'Cormorant Garamond', serif;
+            background: linear-gradient(rgba(26, 26, 26, 0.9), rgba(26, 26, 26, 0.9)),
+                url('https://images.unsplash.com/photo-1526234362653-3b75a0c07438?q=80&w=1932&auto=format&fit=crop') no-repeat center center fixed;
             background-size: cover;
-            color: #ECDFCC;
+            color: var(--text-color);
         }
 
         .table-section {
-            background-color: rgba(60, 61, 55, 0.8);
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-            padding: 40px;
-            margin-bottom: 20px;
-            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            background: rgba(26, 26, 26, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(197, 168, 128, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         .table-section:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
         }
 
-        .btn-primary {
-            background-color: #697565;
-            border-color: #697565;
-            color: #fff;
+        .luxury-button {
+            background: var(--primary-color);
+            color: var(--secondary-color);
+            padding: 0.8rem 2rem;
+            border-radius: 5px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 500;
+            letter-spacing: 0.5px;
             transition: all 0.3s ease;
+            border: 2px solid var(--primary-color);
         }
 
-        .btn-primary:hover {
-            background-color: #3C3D37;
-            border-color: #3C3D37;
+        .luxury-button:hover {
+            background: transparent;
+            color: var(--primary-color);
         }
 
-        .hover-scale {
-            transition: transform 0.3s ease-in-out;
+        .luxury-container {
+            background: rgba(26, 26, 26, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(197, 168, 128, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
-        .hover-scale:hover {
-            transform: scale(1.05);
+        .luxury-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
         }
 
-        .success-message {
-            background-color: rgba(144, 238, 144, 0.8);
-            border: 1px solid green;
-            color: green;
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            animation: fadeIn 1s ease-in-out;
+        .heading-primary {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3.5rem;
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 3rem;
         }
 
-        .error-message {
-            background-color: rgba(255, 99, 71, 0.8);
-            border: 1px solid red;
-            color: rgb(255, 255, 255);
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            animation: fadeIn 1s ease-in-out;
+        .form-control {
+            padding: 0.75rem 1rem;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(197,168,128,0.3);
+            border-radius: 5px;
+            color: white;
+            font-family: 'Montserrat', sans-serif;
+            width: 300px;
         }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .flex {
+            display: flex;
         }
 
-        .table-section table {
-            transition: all 0.3s ease-in-out;
+        .justify-between {
+            justify-content: space-between;
         }
 
-        .table-section table tr:hover {
-            background-color: rgba(255, 255, 255, 0.1);
+        .items-center {
+            align-items: center;
         }
 
-        .table-section table th,
-        .table-section table td {
-            transition: all 0.3s ease-in-out;
+        .mb-8 {
+            margin-bottom: 2rem;
         }
 
-        .table-section table th:hover,
-        .table-section table td:hover {
-            background-color: rgba(255, 255, 255, 0.2);
+        .text-primary-color {
+            color: var(--primary-color);
+        }
+
+        .py-4 {
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+
+        .px-6 {
+            padding-left: 1.5rem;
+            padding-right: 1.5rem;
+        }
+
+        .border-b {
+            border-bottom: 1px solid rgba(197,168,128,0.3);
+        }
+
+        .border-gray-700 {
+            border-color: rgba(197,168,128,0.3);
+        }
+
+        .hover\:bg-gray-800 {
+            transition: background-color 0.3s ease;
+        }
+
+        .hover\:bg-gray-800:hover {
+            background-color: rgba(26, 26, 26, 0.85);
+        }
+
+        .transition-colors {
+            transition: color 0.3s ease;
         }
     </style>
 </head>
@@ -109,109 +133,47 @@
 <body class="bg-gray-100">
     <%- include('../partials/navbar') %>
 
-    <div class="container mx-auto mt-10 fade-in px-4 sm:px-6 lg:px-8">
-        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-10 text-center text-[#4b3a36]">Admin User Management</h2>
+    <div class="admin-container" style="min-height: 100vh; background: linear-gradient(rgba(0,0,0,0.9), rgba(0,0,0,0.9)), url('/assets/img/admin-bg.jpg') center/cover; padding: 6rem 0;">
+        <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 2rem;">
+            <h1 class="heading-primary mb-8 text-center">User Management</h1>
 
-        <!-- Flash Messages -->
-        <% if (flashMessages.success_msg) { %>
-            <div class="success-message">
-                <strong>Success!</strong> <%= flashMessages.success_msg %>
-            </div>
-        <% } %>
-        <% if (flashMessages.error_msg) { %>
-            <div class="error-message">
-                <strong>Error!</strong> <%= flashMessages.error_msg %>
-            </div>
-        <% } %>
+            <div class="admin-content luxury-container p-8">
+                <!-- Search and Filter Section -->
+                <div class="search-filter flex justify-between items-center mb-8">
+                    <input type="text" id="searchInput" placeholder="Search users..." class="form-control">
+                </div>
 
-        <!-- Button to add new user -->
-        <div class="flex justify-end mb-4">
-            <a href="/admin/users/new" class="btn-primary hover-scale py-2 px-4 rounded">Add New User</a>
-        </div>
-
-        <div class="table-section overflow-x-auto">
-            <h3 class="text-2xl sm:text-3xl font-extrabold mb-6 underline">Users</h3>
-            <% if (users.length > 0) { %>
-                <table class="min-w-full bg-transparent text-light">
-                    <thead>
-                        <tr>
-                            <th class="py-4 px-6 border-b text-left">Username</th>
-                            <th class="py-4 px-6 border-b text-left">Email</th>
-                            <th class="py-4 px-6 border-b text-left">Role</th>
-                            <th class="py-4 px-6 border-b text-left">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% users.forEach(user => { %>
-                            <tr>
-                                <td class="py-2 px-6 border-b"><%= user.username %></td>
-                                <td class="py-2 px-6 border-b"><%= user.email %></td>
-                                <td class="py-2 px-6 border-b"><%= user.role %></td>
-                                <td class="py-2 px-6 border-b flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2">
-                                    <a href="/admin/users/<%= user._id %>" class="btn-primary hover-scale py-1 px-3 rounded">View</a>
-                                    <a href="/admin/users/<%= user._id %>/edit" class="btn-primary hover-scale py-1 px-3 rounded">Edit</a>
-                                    <a href="/admin/users/<%= user._id %>/delete" class="btn-primary hover-scale py-1 px-3 rounded">Delete</a>
-                                </td>
+                <div class="users-table overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="border-b border-gray-700">
+                                <th class="py-4 px-6 text-primary-color">User ID</th>
+                                <th class="py-4 px-6 text-primary-color">Username</th>
+                                <th class="py-4 px-6 text-primary-color">Email</th>
+                                <th class="py-4 px-6 text-primary-color">Role</th>
+                                <th class="py-4 px-6 text-primary-color">Actions</th>
                             </tr>
-                        <% }) %>
-                    </tbody>
-                </table>
-            <% } else { %>
-                <p class="text-gray-500">No users found.</p>
-            <% } %>
+                        </thead>
+                        <tbody>
+                            <% users.forEach(user => { %>
+                                <tr class="hover:bg-gray-800 transition-colors">
+                                    <td class="py-4 px-6"><%= user._id %></td>
+                                    <td class="py-4 px-6"><%= user.username %></td>
+                                    <td class="py-4 px-6"><%= user.email %></td>
+                                    <td class="py-4 px-6"><%= user.role %></td>
+                                    <td class="py-4 px-6">
+                                        <a href="/admin/users/<%= user._id %>/edit" class="luxury-button">Edit</a>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- JavaScript Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
-    <script>
-        // GSAP Animations
-        document.addEventListener('DOMContentLoaded', function () {
-            // open
-            const burger = document.querySelectorAll('.navbar-burger');
-            const menu = document.querySelectorAll('.navbar-menu');
-
-            if (burger.length && menu.length) {
-                for (var i = 0; i < burger.length; i++) {
-                    burger[i].addEventListener('click', function () {
-                        for (var j = 0; j < menu.length; j++) {
-                            menu[j].classList.toggle('hidden');
-                        }
-                    });
-                }
-            }
-
-            // close
-            const close = document.querySelectorAll('.navbar-close');
-            const backdrop = document.querySelectorAll('.navbar-backdrop');
-
-            if (close.length) {
-                for (var i = 0; i < close.length; i++) {
-                    close[i].addEventListener('click', function () {
-                        for (var j = 0; j < menu.length; j++) {
-                            menu[j].classList.toggle('hidden');
-                        }
-                    });
-                }
-            }
-
-            if (backdrop.length) {
-                for (var i = 0; i < backdrop.length; i++) {
-                    backdrop[i].addEventListener('click', function () {
-                        for (var j = 0; j < menu.length; j++) {
-                            menu[j].classList.toggle('hidden');
-                        }
-                    });
-                }
-            }
-        });
-        gsap.from('.table-section', {
-            duration: 1,
-            y: 50,
-            opacity: 0,
-            stagger: 0.2
-        });
-    </script>
+    <%- include('../partials/footer') %>
 </body>
 
 </html>

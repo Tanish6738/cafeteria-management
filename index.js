@@ -27,7 +27,7 @@ const Receipt = require('./models/Receipt');
 
 // Connect to MongoDB with retry mechanism
 const connectWithRetry = () => {
-    mongoose.connect('mongodb://localhost:27017/Cafe')
+    mongoose.connect('mongodb://localhost:27017/UpdatedCafe', )
         .then(() => console.log('Connected to MongoDB'))
         .catch(err => {
             console.error('Error connecting to MongoDB', err);
@@ -41,6 +41,8 @@ connectWithRetry();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Session middleware setup
 app.use(session({
     secret: 'defaultSecretKey',  // Local secret key
     resave: false,
@@ -51,7 +53,20 @@ app.use(session({
         maxAge: 1000 * 60 * 60 // 1 hour
     }
 }));
+
+// Flash messages middleware
 app.use(flash());
+
+// Global variables middleware
+app.use((req, res, next) => {
+    res.locals.messages = {
+        success: req.flash('success_msg'),
+        error: req.flash('error_msg'),
+        info: req.flash('info_msg')
+    };
+    res.locals.user = req.session.user || null;
+    next();
+});
 
 // Set view engine
 app.set('view engine', 'ejs');
@@ -221,7 +236,12 @@ app.get('/', async (req, res) => {
 
 // Authentication
 app.get('/login', (req, res) => {
-    res.render('auth/login');
+    res.render('auth/login', {
+        messages: {
+            error: req.flash('error_msg'),
+            success: req.flash('success_msg')
+        }
+    });
 });
 
 app.get('/logout', (req, res) => {
@@ -230,7 +250,12 @@ app.get('/logout', (req, res) => {
 });
 
 app.get('/register', (req, res) => {
-    res.render('auth/register');
+    res.render('auth/register', { 
+        messages: {
+            error: req.flash('error_msg'),
+            success: req.flash('success_msg')
+        }
+    });
 });
 
 app.post('/login', asyncHandler(async (req, res) => {
@@ -487,7 +512,7 @@ app.post('/orders/:id/update-status', ensureAdmin, asyncHandler(async (req, res)
     const { id } = req.params;
     const { status } = req.body;
 
-    const validStatuses = ['pending', 'preparing', 'ready', 'served', 'completed', 'canceled'];
+    const validStatuses = ['pending', 'preparing', 'ready', 'served', 'completed', 'cancelled'];
     if (!validStatuses.includes(status)) {
         setFlash(req, 'error_msg', 'Invalid order status');
         return res.redirect('/admin/orders');
@@ -818,19 +843,39 @@ app.post('/cart/update', ensureAuthenticated, asyncHandler(async (req, res) => {
 }));
 
 app.get('/cart/view', ensureAuthenticated, asyncHandler(async (req, res) => {
-    const cart = req.session.cart || [];
-    const menuItems = await Menu.find({ _id: { $in: cart.map(item => item.menuItemId) } });
-    const cartItems = cart.map(item => ({
-        menuItem: menuItems.find(menuItem => menuItem._id.toString() === item.menuItemId),
-        quantity: item.quantity
-    }));
-    const totalPrice = cart.reduce((total, item) => {
-        const menuItem = menuItems.find(menuItem => menuItem._id.toString() === item.menuItemId);
-        return total + (menuItem.price * item.quantity);
-    }, 0);
-    const tableNumberJson = await Tables.findOne({ reservedBy: req.session.user._id, status: 'reserved' });
-    const tableNumber = tableNumberJson ? tableNumberJson.tableNumber : null;
-    res.render('cart/viewCart', { cartItems, totalPrice, tableNumber });
+    try {
+        const cart = req.session.cart || [];
+        const menuItems = await Menu.find({ _id: { $in: cart.map(item => item.menuItemId) } });
+        
+        // Create a properly structured cart object
+        const cartData = {
+            items: cart.map(item => {
+                const menuItem = menuItems.find(menu => menu._id.toString() === item.menuItemId);
+                return {
+                    menuItem: menuItem,
+                    quantity: item.quantity,
+                    subtotal: menuItem ? menuItem.price * item.quantity : 0
+                };
+            }),
+            total: 0
+        };
+        
+        // Calculate total
+        cartData.total = cartData.items.reduce((total, item) => total + item.subtotal, 0);
+        
+        const tableNumberJson = await Tables.findOne({ reservedBy: req.session.user._id, status: 'reserved' });
+        const tableNumber = tableNumberJson ? tableNumberJson.tableNumber : null;
+        
+        res.render('cart/viewCart', { 
+            cart: cartData,
+            tableNumber,
+            user: req.session.user
+        });
+    } catch (error) {
+        console.error('Error in cart view:', error);
+        req.flash('error_msg', 'Error loading cart');
+        res.redirect('/menu');
+    }
 }));
 
 // route for increasing the quantity of the item in the cart
@@ -940,16 +985,16 @@ app.post('/orders/cancel/:id', ensureAuthenticated, ensureTableReserved, asyncHa
         }
 
         if (['ready', 'served'].includes(order.status)) {
-            req.flash('error_msg', 'Orders that are ready or served cannot be canceled');
+            req.flash('error_msg', 'Orders that are ready or served cannot be cancelled');
             return res.redirect('/customer/orders');
         }
 
-        order.status = 'canceled';
+        order.status = 'cancelled';
         await order.save();
-        req.flash('success_msg', 'Order canceled successfully');
+        req.flash('success_msg', 'Order cancelled successfully');
         return res.redirect('/customer/orders');
     } catch (err) {
-        console.error('Error canceling order:', err);
+        console.error('Error cancelling order:', err);
         req.flash('error_msg', 'Failed to cancel the order');
         return res.redirect('/customer/orders');
     }
@@ -974,7 +1019,7 @@ app.get('/customer/orders', ensureAuthenticated, asyncHandler(async (req, res) =
         const orders = await Orders.find({
                 customer: userId,
                 tableNumber: reservedTable.tableNumber,  // Match table number of the reserved table
-                status: { $ne: 'completed' },  // Fetch only orders that are not completed
+                status: { $nin: ['completed', 'cancelled'] },  // Fetch only orders that are not completed
                 placedAt: { $gte: reservedTable.reservationStartTime }  // Orders placed after the table was reserved
             })
             .populate('items.menuItem')  // Populate menu item details
@@ -1009,8 +1054,8 @@ app.get('/customer/receipt/:id', ensureAuthenticated, asyncHandler(async (req, r
             .populate({
                 path: 'orders',
                 populate: {
-                    path: 'items.menuItem', // Corrected: populate items array, and within it, populate menuItem
-                    model: 'Menu'           // Ensure this is your menu item model
+                    path: 'items.menuItem', // Correctly populate the nested menuItem within items
+                    model: 'Menu'
                 }
             })
             .populate('customer')
@@ -1068,9 +1113,9 @@ app.post('/customer/orders/:tableNumber/pay', ensureAuthenticated, asyncHandler(
                     product_data: {
                         name: item.menuItem.name,
                     },
-                    unit_amount: item.menuItem.price * 100, // Convert to cents
+                    unit_amount: item.menuItem.price * 100 * item.quantity, // Convert to cents
                 },
-                quantity: item.quantity,
+                quantity: 1,
             })),
             mode: 'payment',
             success_url: `${req.protocol}://${req.get('host')}/customer/orders/succeed?session_id={CHECKOUT_SESSION_ID}&tableNumber=${tableNumber}`,
@@ -1255,8 +1300,15 @@ app.get('/user/profile', ensureAuthenticated, asyncHandler(async (req, res) => {
             });
 
         // Separate current and previous orders
-        const currentOrders = user.orders.filter(order => ['pending', 'preparing', 'served'].includes(order.status));
-        const previousOrders = user.orders.filter(order => ['completed', 'canceled'].includes(order.status));
+        const currentOrders = await Orders.find({
+            customer: req.session.user._id,
+            status: { $in: ['pending', 'preparing', 'served'] }
+        }).populate('items.menuItem');
+        
+        const previousOrders = await Orders.find({
+            customer: req.session.user._id,
+            status: { $in: ['completed', 'cancelled'] }  // Fixed spelling of 'cancelled'
+        }).populate('items.menuItem');
 
         // Fetch receipts related to this user
         const receipts = await Receipt.find({ customer: req.session.user._id })
@@ -1354,7 +1406,7 @@ app.get('/tables', ensureAuthenticated, asyncHandler(async (req, res) => {
         const userOrders = reservedTable ? await Orders.find({
             customer: userId,
             tableNumber: reservedTable.tableNumber,  // Match the table number of the reserved table
-            status: { $ne: ['completed' ,'canceled'] },  // Fetch only non-completed orders
+            status: { $nin: ['completed', 'cancelled'] },  // Fetch only non-completed orders
             placedAt: { $gte: reservedTable.reservationStartTime }  // Only fetch orders placed after the reservation start time
         }) : [];
 
@@ -1438,11 +1490,11 @@ app.post('/customer/tables/cancel', ensureAuthenticated, asyncHandler(async (req
         await table.save();
 
         io.emit('tableStatusChanged', { tableNumber: table.tableNumber, status: table.status });
-        setFlash(req, 'success_msg', 'Table reservation canceled successfully with no cancellation fee.');
+        setFlash(req, 'success_msg', 'Table reservation cancelled successfully with no cancellation fee.');
 
     } catch (err) {
-        console.error('Error canceling table reservation:', err);
-        setFlash(req, 'error_msg', 'An error occurred while canceling the table reservation');
+        console.error('Error cancelling table reservation:', err);
+        setFlash(req, 'error_msg', 'An error occurred while cancelling the table reservation');
     }
 
     return res.redirect('/tables');
@@ -1456,11 +1508,11 @@ app.get('/customer/tables/cancel/success', ensureAuthenticated, asyncHandler(asy
         const session = await stripe.checkout.sessions.retrieve(session_id);
 
         if (session.payment_status === 'paid') {
-            // Mark the table as canceled and vacant after successful payment
+            // Mark the table as cancelled and vacant after successful payment
             const table = await Tables.findOne({ tableNumber, reservedBy: req.session.user._id, status: 'reserved' });
             
             if (!table) {
-                setFlash(req, 'error_msg', 'Table not found or already canceled.');
+                setFlash(req, 'error_msg', 'Table not found or already cancelled.');
                 return res.redirect('/tables');
             }
 
@@ -1470,7 +1522,7 @@ app.get('/customer/tables/cancel/success', ensureAuthenticated, asyncHandler(asy
 
             io.emit('tableStatusChanged', { tableNumber: table.tableNumber, status: table.status });
             
-            setFlash(req, 'success_msg', `Table reservation for Table #${tableNumber} canceled successfully after paying the cancellation fee.`);
+            setFlash(req, 'success_msg', `Table reservation for Table #${tableNumber} cancelled successfully after paying the cancellation fee.`);
             return res.redirect('/tables');
         } else {
             setFlash(req, 'error_msg', 'Payment for cancellation was not successful.');
@@ -1606,6 +1658,25 @@ app.get('/tables/confirm-reservation/:tableNumber', ensureAuthenticated, async (
         return res.redirect('/tables');
     }
 });
+
+app.get('/tables/with-orders', ensureAuthenticated, asyncHandler(async (req, res) => {
+    try {
+        // Use $in operator to match multiple status values
+        const orders = await Orders.find({
+            status: { $in: ['completed', 'cancelled'] }
+        });
+        
+        const tableNumbers = orders.map(order => order.tableNumber);
+        const tables = await Tables.find({
+            tableNumber: { $in: tableNumbers }
+        });
+        
+        res.json(tables);
+    } catch (error) {
+        console.error('Error fetching tables:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}));
 
 app.get("*", (req, res) => {
     res.render('404');

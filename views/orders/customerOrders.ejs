@@ -1,288 +1,147 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Orders</title>
-
-    <!-- Import TailwindCSS and FontAwesome -->
+    <title>Your Orders - Luxury Dining</title>
+    
+    <!-- Tailwind CSS -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
-
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;700&display=swap"
-        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <%- include('../partials/styles') %>
 
     <style>
-        body {
-            font-family: 'Playfair Display', serif;
-            background: url('https://images.unsplash.com/photo-1526234362653-3b75a0c07438?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center fixed;
-            background-size: cover;
-            color: #ECDFCC;
+        .order-card {
+            transition: transform 0.3s ease;
         }
 
-        .orders-container {
-            background-color: rgba(60, 61, 55, 0.8);
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-            padding: 40px;
-            margin-bottom: 20px;
-            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        .order-card:hover {
+            transform: translateY(-5px);
         }
 
-        .orders-container:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-family: 'Montserrat', sans-serif;
         }
 
-        .btn-primary {
-            background-color: #697565;
-            border-color: #697565;
-            color: #fff;
-            transition: all 0.3s ease;
+        .status-pending {
+            background: rgba(255,193,7,0.1);
+            color: #ffc107;
         }
 
-        .btn-primary:hover {
-            background-color: #3C3D37;
-            border-color: #3C3D37;
+        .status-preparing {
+            background: rgba(0,123,255,0.1);
+            color: #007bff;
         }
 
-        .hover-scale {
-            transition: transform 0.3s ease-in-out;
+        .status-completed {
+            background: rgba(40,167,69,0.1);
+            color: #28a745;
         }
 
-        .hover-scale:hover {
-            transform: scale(1.05);
-        }
-
-        .success-message {
-            background-color: rgba(144, 238, 144, 0.8);
-            border: 1px solid green;
-            color: green;
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            animation: fadeIn 1s ease-in-out;
-        }
-
-        .error-message {
-            background-color: rgba(255, 99, 71, 0.8);
-            border: 1px solid red;
-            color: rgb(255, 255, 255);
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            animation: fadeIn 1s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 50;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.4);
-        }
-
-        .modal-content {
-            background-color: #3C3D37;
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 500px;
-            color: white;
-            border-radius: 10px;
-        }
-
-        .modal-footer {
-            text-align: right;
-        }
-
-        .modal-footer button {
-            margin-left: 10px;
+        .status-cancelled {
+            background: rgba(220,53,69,0.1);
+            color: #dc3545;
         }
     </style>
 </head>
 
-<body class="bg-gray-100">
-    <!-- Navbar -->
+<body class="min-h-screen bg-gray-900">
     <%- include('../partials/navbar') %>
 
-    <div class="container mx-auto mt-10 fade-in">
-        <h2 class="text-5xl font-bold mb-10 text-center text-[#4b3a36]">Your Orders at table # <%= tableNumber %></h2>
-
-        <!-- Flash Messages -->
-        <% if (flashMessages.success_msg) { %>
-        <div class="success-message">
-            <strong>Success!</strong>
-            <%= flashMessages.success_msg %>
-        </div>
-        <% } %>
-        <% if (flashMessages.error_msg) { %>
-        <div class="error-message">
-            <strong>Error!</strong>
-            <%= flashMessages.error_msg %>
-        </div>
+    <main class="container mx-auto px-4 py-8">
+        <% if (messages.success_msg || messages.error_msg) { %>
+            <div class="alert <%= messages.success_msg ? 'alert-success' : 'alert-danger' %> mb-6">
+                <%= messages.success_msg || messages.error_msg %>
+            </div>
         <% } %>
 
-        <div class="orders-container">
-            <h3 class="text-3xl font-bold mb-6">Order List</h3>
+        <div class="luxury-container p-8">
+            <h1 class="heading-primary mb-8">Your Orders at Table #<%= tableNumber %></h1>
+
             <% if (orders && orders.length > 0) { %>
-            <div class="overflow-x-auto">
-                <table class="min-w-full bg-transparent text-light">
-                    <thead>
-                        <tr>
-                            <th class="py-4 px-6 border-b text-left">Order ID</th>
-                            <th class="py-4 px-6 border-b text-left">Status</th>
-                            <th class="py-4 px-6 border-b text-left">Payment Status</th>
-                            <th class="py-4 px-6 border-b text-left">Total Price</th>
-                            <th class="py-4 px-6 border-b text-left">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% let totalPrice = 0; %>
-                        <% orders.forEach(order => { %>
-                        <tr>
-                            <td class="py-2 px-6 border-b">
-                                <%= order._id %>
-                            </td>
-                            <td class="py-2 px-6 border-b">
-                                <%= order.status %>
-                            </td>
-                            <td class="py-2 px-6 border-b">
-                                <% if (order.paymentStatus === 'paid') { %>
-                                <span class="text-green-500">Paid</span>
-                                <% } else { %>
-                                <span class="text-red-500">Unpaid</span>
-                                <% } %>
-                            </td>
-                            <td class="py-2 px-6 border-b">₹<%= order.total %></td>
-                            <td class="py-2 px-6 border-b flex items-center space-x-2">
-                                <a href="/customer/orders/<%= order._id %>"
-                                    class="text-white bg-blue-500 hover:bg-blue-700 py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">View</a>
-                                <% if (order.status === 'pending') { %>
-                                <form action="/orders/cancel/<%= order._id %>" method="POST" style="display:inline;">
-                                    <button type="submit"
-                                        class="text-white bg-red-500 hover:bg-red-700 py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105"
-                                        onclick="return confirm('Are you sure you want to cancel this order?');">Cancel</button>
-                                </form>
-                                <% } else { %>
-                                <span class="bg-gray-500 text-white py-2 px-4 rounded">Cannot Cancel</span>
-                                <% } %>
-                            </td>
-                        </tr>
-                        <% totalPrice += order.total; %>
-                        <% }) %>
-                    </tbody>
-                </table>
-            </div>
+                <div class="space-y-8">
+                    <% orders.forEach(order => { %>
+                        <div class="order-card luxury-container p-6">
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-700 pb-4 mb-6">
+                                <div>
+                                    <h3 class="text-xl font-semibold text-primary-color mb-2">Order #<%= order._id %></h3>
+                                    <p class="text-muted text-sm">
+                                        <%= new Date(order.createdAt).toLocaleString() %>
+                                    </p>
+                                </div>
+                                <div class="mt-4 md:mt-0">
+                                    <span class="status-badge <%= 
+                                        order.status === 'pending' ? 'status-pending' :
+                                        order.status === 'preparing' ? 'status-preparing' :
+                                        order.status === 'completed' ? 'status-completed' :
+                                        'status-cancelled'
+                                    %>">
+                                        <%= order.status.charAt(0).toUpperCase() + order.status.slice(1) %>
+                                    </span>
+                                </div>
+                            </div>
 
-            <!-- Show Total Price and Payment Option -->
-            <div class="mt-6">
-                <h3 class="text-2xl font-bold text-white">Total Price for All Orders: ₹<%= totalPrice %></h3>
-                <button type="button"
-                    class="text-white bg-green-500 hover:bg-green-700 py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105 mt-4"
-                    onclick="openBillingModal()">Proceed to Billing</button>
-            </div>
+                            <div class="space-y-4">
+                                <% order.items.forEach(item => { %>
+                                    <div class="flex flex-col md:flex-row justify-between items-center py-4 border-b border-gray-700 last:border-0">
+                                        <div class="flex flex-col md:flex-row items-center md:space-x-4 text-center md:text-left">
+                                            <img src="<%= item.menuItem.image %>" alt="<%= item.menuItem.name %>" 
+                                                class="w-20 h-20 object-cover rounded-lg mb-4 md:mb-0">
+                                            <div>
+                                                <h4 class="font-semibold text-lg mb-1"><%= item.menuItem.name %></h4>
+                                                <p class="text-muted">Quantity: <%= item.quantity %></p>
+                                            </div>
+                                        </div>
+                                        <p class="text-primary-color font-semibold mt-4 md:mt-0">
+                                            $<%= (item.menuItem.price * item.quantity).toFixed(2) %>
+                                        </p>
+                                    </div>
+                                <% }); %>
+                            </div>
+
+                            <div class="mt-6 pt-4 border-t border-gray-700">
+                                <div class="flex flex-col md:flex-row justify-between items-center">
+                                    <div class="text-center md:text-left mb-4 md:mb-0">
+                                        <p class="text-lg text-muted mb-1">Total Amount</p>
+                                        <p class="text-2xl font-bold text-primary-color">$<%= order.total.toFixed(2) %></p>
+                                    </div>
+                                    <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 w-full md:w-auto">
+                                        <% if (order.status === 'pending') { %>
+                                            <form action="/orders/cancel/<%= order._id %>" method="POST" class="w-full md:w-auto">
+                                                <button type="submit" class="luxury-button bg-error-color border-error-color hover:bg-transparent hover:text-error-color w-full">
+                                                    Cancel Order
+                                                </button>
+                                            </form>
+                                        <% } %>
+                                        <a href="/orders/<%= order._id %>" class="luxury-button text-center w-full md:w-auto">
+                                            View Details
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
             <% } else { %>
-            <p class="text-gray-500">No orders found.</p>
+                <div class="text-center py-16">
+                    <i class="fas fa-receipt text-5xl text-primary-color mb-6"></i>
+                    <h2 class="text-2xl font-semibold text-primary-color mb-4">No Orders Yet</h2>
+                    <p class="text-muted mb-8">Start ordering delicious meals from our menu</p>
+                    <a href="/customer/menu" class="luxury-button inline-block">View Menu</a>
+                </div>
             <% } %>
         </div>
-    </div>
+    </main>
 
-    <!-- Modal for billing confirmation -->
-    <div id="billingModal" class="modal">
-        <div class="modal-content">
-            <h3 class="text-2xl font-bold mb-4">Confirm Billing</h3>
-            <p>Are you sure you want to proceed with the billing? Once the payment is made, your table will be marked as vacant, and further orders for this session will not be allowed. Please ensure you have completed your meal before proceeding.</p>
-            <div class="modal-footer mt-4">
-                <button onclick="closeBillingModal()"
-                    class="text-gray-500 bg-gray-300 hover:bg-gray-400 py-2 px-4 rounded">Cancel</button>
-                <form action="/customer/orders/<%= tableNumber %>/pay" method="POST" class="inline">
-                    <button type="submit"
-                        class="text-white bg-green-500 hover:bg-green-700 py-2 px-4 rounded transition duration-300 ease-in-out">Proceed to Payment</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- JavaScript Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // open
-            const burger = document.querySelectorAll('.navbar-burger');
-            const menu = document.querySelectorAll('.navbar-menu');
-
-            if (burger.length && menu.length) {
-                for (var i = 0; i < burger.length; i++) {
-                    burger[i].addEventListener('click', function () {
-                        for (var j = 0; j < menu.length; j++) {
-                            menu[j].classList.toggle('hidden');
-                        }
-                    });
-                }
-            }
-
-            // close
-            const close = document.querySelectorAll('.navbar-close');
-            const backdrop = document.querySelectorAll('.navbar-backdrop');
-
-            if (close.length) {
-                for (var i = 0; i < close.length; i++) {
-                    close[i].addEventListener('click', function () {
-                        for (var j = 0; j < menu.length; j++) {
-                            menu[j].classList.toggle('hidden');
-                        }
-                    });
-                }
-            }
-
-            if (backdrop.length) {
-                for (var i = 0; i < backdrop.length; i++) {
-                    backdrop[i].addEventListener('click', function () {
-                        for (var j = 0; j < menu.length; j++) {
-                            menu[j].classList.toggle('hidden');
-                        }
-                    });
-                }
-            }
-        });
-        // Open the billing modal
-        function openBillingModal() {
-            document.getElementById('billingModal').style.display = 'block';
-        }
-
-        // Close the billing modal
-        function closeBillingModal() {
-            document.getElementById('billingModal').style.display = 'none';
-        }
-
-        // GSAP Animations
-        gsap.from('.orders-container', {
-            duration: 1,
-            y: 50,
-            opacity: 0,
-            stagger: 0.2
-        });
-    </script>
+    <%- include('../partials/footer') %>
 </body>
-
 </html>

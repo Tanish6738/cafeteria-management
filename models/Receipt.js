@@ -2,28 +2,32 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const ReceiptSchema = new Schema({
-    customer: { type: mongoose.Schema.Types.ObjectId, ref: 'Users', required: true },
-    paymentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Payment', required: true }, // Reference to the related payment
-    tableNumber: { type: Number, required: true }, // Track the table number associated with the receipt
-    orders: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Orders',
-        required: true
-    }], // Store all related orders for this receipt
-    totalAmount: { type: Number, required: true }, // Total amount paid
-    taxAmount: { type: Number, default: 0 }, // Tax amount (if applicable)
-    serviceCharge: { type: Number, default: 0 }, // Service charge (if applicable)
-    paymentMethod: { type: String, enum: ['card', 'cash'], required: true },
-    receiptDate: { type: Date, default: Date.now }, // Date when the receipt was generated
+    order: { type: mongoose.Schema.Types.ObjectId, ref: 'Orders', required: true },
+    payment: { type: mongoose.Schema.Types.ObjectId, ref: 'Payment', required: true },
+    receiptNumber: { type: String, required: true, unique: true },
+    items: [{
+        name: { type: String, required: true },
+        quantity: { type: Number, required: true },
+        price: { type: Number, required: true },
+        subtotal: { type: Number, required: true }
+    }],
+    subtotal: { type: Number, required: true },
+    tax: { type: Number, required: true },
+    total: { type: Number, required: true },
+    generatedAt: { type: Date, default: Date.now },
+    cashier: { type: mongoose.Schema.Types.ObjectId, ref: 'Users' }
 }, {
     timestamps: true
 });
 
-// Middleware to check if the payment is completed before generating the receipt
+// Generate receipt number before saving
 ReceiptSchema.pre('save', async function(next) {
-    const payment = await mongoose.model('Payment').findById(this.paymentId);
-    if (!payment || payment.paymentStatus !== 'paid') {
-        return next(new Error('Cannot generate receipt until payment is completed.'));
+    if (this.isNew) {
+        const date = new Date();
+        const prefix = date.getFullYear().toString().substr(-2) + 
+                      (date.getMonth() + 1).toString().padStart(2, '0');
+        const count = await this.constructor.countDocuments();
+        this.receiptNumber = `${prefix}-${(count + 1).toString().padStart(4, '0')}`;
     }
     next();
 });

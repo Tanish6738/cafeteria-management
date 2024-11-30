@@ -1,38 +1,28 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-// Order Schema
 const OrderSchema = new Schema({
-    items: [
-        {
-            menuItem: { type: mongoose.Schema.Types.ObjectId, ref: 'Menu', required: true },
-            quantity: { type: Number, required: true },
-        }
-    ],
     tableNumber: { type: Number, required: true },
-    total: { type: Number, required: true },
+    items: [{
+        menuItem: { type: mongoose.Schema.Types.ObjectId, ref: 'Menu', required: true },
+        quantity: { type: Number, required: true, min: 1 },
+        price: { type: Number, required: true },
+        notes: { type: String }
+    }],
     status: {
         type: String,
-        enum: ['pending', 'preparing', 'ready', 'served', 'completed', 'canceled'],
+        enum: ['pending', 'preparing', 'ready', 'served', 'cancelled'],
         default: 'pending'
     },
-    paymentStatus: {
+    totalAmount: { type: Number, required: true },
+    orderType: {
         type: String,
-        enum: ['unpaid', 'paid'],
-        default: 'unpaid'
+        enum: ['dine-in', 'takeaway'],
+        required: true
     },
-    customer: { type: mongoose.Schema.Types.ObjectId, ref: 'Users', required: true },
-    receipt: { type: mongoose.Schema.Types.ObjectId, ref: 'Receipt' }, // Reference to Receipt
-    placedAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date }
+    specialInstructions: { type: String }
 }, {
     timestamps: true
-});
-
-// Middleware to update the updatedAt field
-OrderSchema.pre('save', function(next) {
-    this.updatedAt = Date.now();
-    next();
 });
 
 module.exports = mongoose.model('Orders', OrderSchema);

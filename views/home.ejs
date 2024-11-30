@@ -29,12 +29,65 @@
   <link rel="stylesheet" href="https://unpkg.com/lenis@1.1.13/dist/lenis.css">
   <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
 
+  <style>
+    .btn {
+      display: inline-block;
+      padding: 1rem 2.5rem;
+      font-size: 1.1rem;
+      font-family: 'Montserrat', sans-serif;
+      color: white;
+      background: var(--primary-color);
+      border: 2px solid var(--primary-color);
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
 
+    .btn:hover {
+      background: transparent;
+      color: var(--primary-color);
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(197, 168, 128, 0.3);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: white;
+      border: 2px solid white;
+    }
+
+    .btn-outline:hover {
+      background: white !important;
+      color: var(--primary-color) !important;
+      border-color: white !important;
+    }
+
+    .hero-buttons {
+      margin-top: 2rem;
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .hero-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .btn {
+        width: 100%;
+        max-width: 300px;
+        text-align: center;
+      }
+    }
+  </style>
 
 </head>
 
 <body>
-
 
   <!-- ======= Header ======= -->
   <header id="header" class="fixed-top d-flex align-items-cente">
@@ -78,425 +131,154 @@
   </header><!-- End Header -->
 
   <!-- ======= Hero Section ======= -->
-  <section id="hero" class="d-flex align-items-center">
-    <div class="container position-relative text-center text-lg-start">
-      <div class="row">
-        <div class="col-lg-8">
-          <h1>Welcome to <span class="highlight">Restaurantly</span></h1>
-          <h2>Crafting Exquisite Culinary Journeys for Over <strong>18 Years</strong></h2>
-          <p class="mt-3">Experience a blend of gourmet flavors, world-class service, and an ambiance that elevates
-            every moment. Join us for a taste of luxury where every dish tells a story.</p>
-
-          <div class="hero-btns mt-4">
-            <a href="#menu" class="btn btn-menu scrollto">Explore Our Menu</a>
-            <a href="#book-a-table" class="btn btn-book scrollto">Reserve Your Table</a>
-          </div>
+  <section class="hero" style="height: 100vh; background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('/assets/img/hero-bg.jpg') center/cover; display: flex; align-items: center; color: white;">
+    <div class="container">
+      <div class="hero-content fade-in">
+        <h1 style="font-size: 4.5rem; margin-bottom: 1rem; font-weight: 700; font-family: 'Cormorant Garamond', serif;">Luxury Dining</h1>
+        <p style="font-size: 1.4rem; margin-bottom: 2rem; max-width: 600px; line-height: 1.6;">Experience culinary excellence in an atmosphere of unparalleled sophistication.</p>
+        <div class="hero-buttons">
+          <a href="/menu" class="btn">Explore Menu</a>
+          <a href="/tables" class="btn btn-outline">Reserve Table</a>
         </div>
       </div>
     </div>
   </section>
-  <!-- End Hero Section -->
 
-
-  <main id="main">
-
-    <!-- ======= About Section ======= -->
-    <section id="about" class="about">
-      <div class="container" data-aos="fade-up">
-
-        <div class="row">
-          <div class="col-lg-6 order-1 order-lg-2" data-aos="zoom-in" data-aos-delay="100">
-            <div class="about-img">
-              <img src="assets/img/about.jpg" alt="Elegant Interior of Our Café" class="img-fluid">
-            </div>
-          </div>
-          <div class="col-lg-6 pt-4 pt-lg-0 order-2 order-lg-1 content">
-            <h3>A Haven of Elegance and Culinary Excellence</h3>
-            <p class="fst-italic">
-              Nestled in the heart of the city, our café offers a luxurious escape where elegance meets extraordinary
-              flavors. Designed for the discerning guest, we provide not just a meal, but an experience that indulges
-              all the senses.
-            </p>
-            <ul>
-              <li><i class="bi bi-check-circle"></i> Handcrafted gourmet dishes using only the finest, locally sourced
-                ingredients.</li>
-              <li><i class="bi bi-check-circle"></i> An exquisite ambiance where modern luxury meets timeless charm.
-              </li>
-              <li><i class="bi bi-check-circle"></i> Impeccable service tailored to create an unforgettable dining
-                experience, every time.</li>
-            </ul>
-            <p>
-              At our café, every detail has been thoughtfully curated — from the delicate balance of flavors in each
-              dish to the inviting warmth of our interiors. Whether you're enjoying a quiet afternoon with artisanal
-              coffee or an intimate dinner, we ensure that every visit feels special. Indulge in the art of fine dining,
-              where luxury is not just about what you eat, but how it makes you feel.
-            </p>
-          </div>
+  <!-- Featured Section -->
+  <section class="section" style="background-color: #0c0c0c; color: white; padding: 8rem 0;">
+    <div class="container">
+      <div class="featured-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;">
+        <div class="featured-item fade-in">
+          <img src="/assets/img/appetizer.jpg" alt="Appetizers" style="width: 100%; height: 400px; object-fit: cover; border-radius: 10px; margin-bottom: 1.5rem;">
+          <h3 style="font-size: 1.8rem; color: var(--primary-color); margin-bottom: 1rem;">Exquisite Appetizers</h3>
+          <p style="color: #999; line-height: 1.6;">Begin your culinary journey with our carefully crafted appetizers, each a masterpiece of flavor and presentation.</p>
         </div>
-
-      </div>
-    </section><!-- End About Section -->
-
-    <!-- ======= Why Us Section ======= -->
-    <section id="why-us" class="why-us section-bg" style="border-bottom: 2px dotted;">
-      <div class="container" data-aos="fade-up">
-
-        <div class="section-title">
-          <h2>Why Us</h2>
-          <p>Discover Why We Stand Out</p>
+        <div class="featured-item fade-in">
+          <img src="/assets/img/main-course.jpg" alt="Main Course" style="width: 100%; height: 400px; object-fit: cover; border-radius: 10px; margin-bottom: 1.5rem;">
+          <h3 style="font-size: 1.8rem; color: var(--primary-color); margin-bottom: 1rem;">Signature Mains</h3>
+          <p style="color: #999; line-height: 1.6;">Indulge in our chef's specially curated main courses, where tradition meets innovation.</p>
         </div>
-
-        <div class="row">
-
-          <div class="col-lg-4">
-            <div class="box" data-aos="zoom-in" data-aos-delay="100">
-              <span class="elegant-number">01</span>
-              <h4>Exquisite Flavors</h4>
-              <p>Our chefs use the finest ingredients and authentic techniques to bring you a culinary experience like
-                no other. Every dish is crafted with passion and precision.</p>
-            </div>
-          </div>
-
-          <div class="col-lg-4 mt-4 mt-lg-0">
-            <div class="box" data-aos="zoom-in" data-aos-delay="200">
-              <span class="elegant-number">02</span>
-              <h4>Unmatched Ambiance</h4>
-              <p>Immerse yourself in an atmosphere that perfectly blends traditional elegance with modern luxury. From
-                the decor to the service, every detail has been curated for your comfort.</p>
-            </div>
-          </div>
-
-          <div class="col-lg-4 mt-4 mt-lg-0">
-            <div class="box" data-aos="zoom-in" data-aos-delay="300">
-              <span class="elegant-number">03</span>
-              <h4>Exceptional Service</h4>
-              <p>Our staff is dedicated to providing a seamless dining experience, ensuring that every moment you spend
-                with us is memorable and enjoyable.</p>
-            </div>
-          </div>
-
-        </div>
-
-      </div>
-    </section><!-- End Why Us Section -->
-
-    <!-- ======= Menu Section ======= -->
-    <section id="menu" class="menu section-bg">
-      <div class="container" data-aos="fade-up">
-
-        <div class="section-title">
-          <h2>Menu</h2>
-          <p>A World of Flavors Awaits</p>
-        </div>
-
-        <div class="row menu-container" data-aos="fade-up" data-aos-delay="200">
-
-          <!-- Starter: Italian Bruschetta -->
-          <div class="col-lg-6 menu-item filter-starters">
-            <img
-              src="https://plus.unsplash.com/premium_photo-1677686707252-16013f466e61?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8QnJ1c2NoZXR0YXxlbnwwfHwwfHx8MA%3D%3D"
-              class="menu-img" alt="Bruschetta">
-            <div class="menu-content">
-              <a href="#">Bruschetta</a><span>₹120</span>
-            </div>
-            <div class="menu-ingredients">
-              Crisp toasted bread topped with a blend of fresh tomatoes, garlic, basil, and olive oil.
-            </div>
-          </div>
-
-          <!-- Starter: Japanese Gyoza -->
-          <div class="col-lg-6 menu-item filter-starters">
-            <img
-              src="https://plus.unsplash.com/premium_photo-1723669629687-0e618541c49e?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8SmFwYW5lc2UlMjBHeW96YXxlbnwwfHwwfHx8MA%3D%3D"
-              class="menu-img" alt="Gyoza">
-            <div class="menu-content">
-              <a href="#">Japanese Gyoza</a><span>₹150</span>
-            </div>
-            <div class="menu-ingredients">
-              Pan-fried dumplings filled with seasoned pork and cabbage, served with soy dipping sauce.
-            </div>
-          </div>
-
-          <!-- Specialty: Mexican Tacos -->
-          <div class="col-lg-6 menu-item filter-specialty">
-            <img
-              src="https://images.unsplash.com/photo-1524412529635-a258ed66c010?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8TWV4aWNhbiUyMFRhY29zfGVufDB8fDB8fHww"
-              class="menu-img" alt="Tacos">
-            <div class="menu-content">
-              <a href="#">Mexican Tacos</a><span>₹200</span>
-            </div>
-            <div class="menu-ingredients">
-              Soft tortillas filled with grilled chicken, avocado, fresh salsa, and a sprinkle of cheese.
-            </div>
-          </div>
-
-          <!-- Specialty: Indian Butter Chicken -->
-          <div class="col-lg-6 menu-item filter-specialty">
-            <img
-              src="https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8YnV0dGVyJTIwY2hpY2tlbnxlbnwwfHwwfHx8MA%3D%3D"
-              class="menu-img" alt="Butter Chicken">
-            <div class="menu-content">
-              <a href="#">Butter Chicken</a><span>₹320</span>
-            </div>
-            <div class="menu-ingredients">
-              Tender chicken cooked in a creamy tomato-based gravy with rich spices, a North Indian favorite.
-            </div>
-          </div>
-
-          <!-- Specialty: Italian Margherita Pizza -->
-          <div class="col-lg-6 menu-item filter-specialty">
-            <img
-              src="https://images.unsplash.com/photo-1667207394004-acb6aaf4790e?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fE1hcmdoZXJpdGElMjBQaXp6YXxlbnwwfHwwfHx8MA%3D%3D"
-              class="menu-img" alt="Margherita Pizza">
-            <div class="menu-content">
-              <a href="#">Margherita Pizza</a><span>₹280</span>
-            </div>
-            <div class="menu-ingredients">
-              Fresh mozzarella, tomatoes, and basil on a crispy, wood-fired pizza crust.
-            </div>
-          </div>
-
-          <!-- Specialty: Thai Pad Thai -->
-          <div class="col-lg-6 menu-item filter-specialty">
-            <img
-              src="https://images.unsplash.com/photo-1565355857989-333dff0b3dc8?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8VGhhaSUyMFBhZCUyMFRoYWl8ZW58MHx8MHx8fDA%3D"
-              class="menu-img" alt="Pad Thai">
-            <div class="menu-content">
-              <a href="#">Thai Pad Thai</a><span>₹240</span>
-            </div>
-            <div class="menu-ingredients">
-              Stir-fried rice noodles with shrimp, tofu, peanuts, and tamarind sauce, served with lime.
-            </div>
-          </div>
-
-        </div>
-
-      </div>
-    </section>
-    <!-- End Menu Section -->
-
-
-    <!-- ======= Specials Section ======= -->
-    <section id="specials" class="specials">
-      <div class="container" data-aos="fade-up">
-
-        <div class="section-title">
-          <h2>Specials</h2>
-          <p>Discover Our Signature Specials</p>
-        </div>
-
-        <div class="row" data-aos="fade-up" data-aos-delay="100">
-          <div class="col-lg-3">
-            <ul class="nav nav-tabs flex-column">
-              <li class="nav-item">
-                <a class="nav-link active show" data-bs-toggle="tab" href="#tab-1">Margherita Pizza</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#tab-2">Mediterranean Falafel Platter</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#tab-3">Thai Green Curry</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#tab-4">Truffle Mushroom Risotto</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#tab-5">New York Cheesecake</a>
-              </li>
-            </ul>
-          </div>
-
-          <div class="col-lg-9 mt-4 mt-lg-0">
-            <div class="tab-content">
-              <div class="tab-pane active show" id="tab-1">
-                <div class="row">
-                  <div class="col-lg-8 details order-2 order-lg-1">
-                    <h3>Margherita Pizza</h3>
-                    <p class="fst-italic">Classic Italian pizza with fresh mozzarella, ripe tomatoes, and basil leaves,
-                      baked to perfection.</p>
-                    <p>Our wood-fired Margherita Pizza showcases the simplicity of Italian cuisine, where the freshest
-                      ingredients meet traditional techniques. With a perfectly crisp crust and a balance of savory
-                      flavors, this dish will transport you to the streets of Naples.</p>
-                  </div>
-                  <div class="col-lg-4 text-center order-1 order-lg-2">
-                    <img
-                      src="https://images.unsplash.com/photo-1680405620826-83b0f0f61b28?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8TWFyZ2hlcml0YSUyMFBpenphfGVufDB8fDB8fHww"
-                      alt="Margherita Pizza" class="img-fluid"
-                      style="width: 100%; height: 350px; border-radius: 25px; object-fit: cover;">
-                  </div>
-                </div>
-              </div>
-
-              <div class="tab-pane" id="tab-2">
-                <div class="row">
-                  <div class="col-lg-8 details order-2 order-lg-1">
-                    <h3>Mediterranean Falafel Platter</h3>
-                    <p class="fst-italic">Crispy falafel served with hummus, pita, fresh salads, and a drizzle of
-                      tahini.</p>
-                    <p>This vibrant dish brings the heart of the Mediterranean to your table. Enjoy the crunch of
-                      perfectly spiced falafel alongside creamy hummus, tangy tabbouleh, and warm pita bread, offering a
-                      delightful combination of textures and flavors.</p>
-                  </div>
-                  <div class="col-lg-4 text-center order-1 order-lg-2">
-                    <img
-                      src="https://images.unsplash.com/photo-1542528180-1c2803fa048c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8TWVkaXRlcnJhbmVhbiUyMEZhbGFmZWwlMjBQbGF0dGVyfGVufDB8fDB8fHww"
-                      alt="Falafel Platter" class="img-fluid"
-                      style="width: 100%; height: 350px; border-radius: 25px; object-fit: cover;">
-                  </div>
-                </div>
-              </div>
-
-              <div class="tab-pane" id="tab-3">
-                <div class="row">
-                  <div class="col-lg-8 details order-2 order-lg-1">
-                    <h3>Thai Green Curry</h3>
-                    <p class="fst-italic">A fragrant Thai dish made with coconut milk, green curry paste, and your
-                      choice of chicken or tofu.</p>
-                    <p>This comforting curry offers a perfect balance of creamy coconut milk, zesty lime, and bold
-                      spices. Served with steamed jasmine rice, the dish is a harmonious blend of sweet, spicy, and
-                      savory elements that will leave your palate craving more.</p>
-                  </div>
-                  <div class="col-lg-4 text-center order-1 order-lg-2">
-                    <img
-                      src="https://images.unsplash.com/photo-1668665772043-bdd32e348998?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8VGhhaSUyMEdyZWVuJTIwQ3Vycnl8ZW58MHx8MHx8fDA%3D"
-                      alt="Thai Green Curry" class="img-fluid"
-                      style="width: 100%; height: 350px; border-radius: 25px; object-fit: cover;">
-                  </div>
-                </div>
-              </div>
-
-              <div class="tab-pane" id="tab-4">
-                <div class="row">
-                  <div class="col-lg-8 details order-2 order-lg-1">
-                    <h3>Truffle Mushroom Risotto</h3>
-                    <p class="fst-italic">A creamy, indulgent risotto infused with earthy truffle oil and sautéed
-                      mushrooms.</p>
-                    <p>This dish is a luxurious take on the traditional risotto, combining the richness of Parmesan with
-                      the deep flavors of wild mushrooms and the unmistakable aroma of truffle oil. It’s an elegant,
-                      savory experience perfect for any special occasion.</p>
-                  </div>
-                  <div class="col-lg-4 text-center order-1 order-lg-2">
-                    <img
-                      src="https://images.unsplash.com/photo-1633964913295-ceb43826e7c9?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8VHJ1ZmZsZSUyME11c2hyb29tJTIwUmlzb3R0b3xlbnwwfHwwfHx8MA%3D%3D"
-                      alt="Truffle Mushroom Risotto" class="img-fluid"
-                      style="width: 100%; height: 350px; border-radius: 25px; object-fit: cover;">
-                  </div>
-                </div>
-              </div>
-
-              <div class="tab-pane" id="tab-5">
-                <div class="row">
-                  <div class="col-lg-8 details order-2 order-lg-1">
-                    <h3>New York Cheesecake</h3>
-                    <p class="fst-italic">A rich, creamy dessert with a graham cracker crust and a luscious cream cheese
-                      filling.</p>
-                    <p>Our classic New York Cheesecake offers a smooth and silky texture that melts in your mouth, with
-                      the perfect balance of sweetness and tang. Topped with fresh berries or a drizzle of caramel, it’s
-                      a heavenly end to your meal.</p>
-                  </div>
-                  <div class="col-lg-4 text-center order-1 order-lg-2">
-                    <img
-                      src="https://images.unsplash.com/photo-1578775887804-699de7086ff9?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8TmV3JTIwWW9yayUyMENoZWVzZWNha2V8ZW58MHx8MHx8fDA%3D"
-                      alt="New York Cheesecake" class="img-fluid"
-                      style="width: 100%; height: 350px; border-radius: 25px; object-fit: cover;">
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </section><!-- End Specials Section -->
-
-
-    <!-- ======= Contact Section ======= -->
-    <section id="contact" class="contact">
-      <div class="container" data-aos="fade-up">
-
-        <div class="section-title">
-          <h2>Contact</h2>
-          <p>Contact Us</p>
+        <div class="featured-item fade-in">
+          <img src="/assets/img/dessert.jpg" alt="Desserts" style="width: 100%; height: 400px; object-fit: cover; border-radius: 10px; margin-bottom: 1.5rem;">
+          <h3 style="font-size: 1.8rem; color: var(--primary-color); margin-bottom: 1rem;">Divine Desserts</h3>
+          <p style="color: #999; line-height: 1.6;">Complete your dining experience with our decadent desserts, each a sweet finale to your meal.</p>
         </div>
       </div>
+    </div>
+  </section>
 
-      <div data-aos="fade-up">
-        <iframe style="border:0; width: 100%; height: 350px;"
-          src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d12097.433213460943!2d-74.0062269!3d40.7101282!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0xb89d1fe6bc499443!2sDowntown+Conference+Center!5e0!3m2!1smk!2sbg!4v1539943755621"
-          frameborder="0" allowfullscreen></iframe>
-      </div>
-
-      <div class="container" data-aos="fade-up">
-
-        <div class="row mt-5">
-
-          <div class="col-lg-4">
-            <div class="info">
-              <div class="address">
-                <i class="bi bi-geo-alt"></i>
-                <h4>Location:</h4>
-                <p>A108 Adam Street, New York, NY 535022</p>
-              </div>
-
-              <div class="open-hours">
-                <i class="bi bi-clock"></i>
-                <h4>Open Hours:</h4>
-                <p>
-                  Monday-Saturday:<br>
-                  11:00 AM - 2300 PM
-                </p>
-              </div>
-
-              <div class="email">
-                <i class="bi bi-envelope"></i>
-                <h4>Email:</h4>
-                <p>info@example.com</p>
-              </div>
-
-              <div class="phone">
-                <i class="bi bi-phone"></i>
-                <h4>Call:</h4>
-                <p>+1 5589 55488 55s</p>
-              </div>
-
+  <!-- About Section -->
+  <section class="section about-section" style="padding: 8rem 0; background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('/assets/img/about-bg.jpg') center/cover fixed;">
+    <div class="container">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;">
+        <div class="fade-in">
+          <h2 style="font-size: 3rem; color: white; margin-bottom: 1.5rem;">Our Story</h2>
+          <p style="color: #ccc; line-height: 1.8; margin-bottom: 2rem; font-size: 1.1rem;">
+            At Luxury Dining, we blend traditional flavors with modern culinary techniques to create an 
+            unforgettable dining experience. Our expert chefs source only the finest ingredients to craft 
+            dishes that delight both the palate and the eye.
+          </p>
+          <div class="stats" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-top: 3rem;">
+            <div class="stat-item">
+              <h3 style="font-size: 2.5rem; color: var(--primary-color);">15+</h3>
+              <p style="color: white;">Years of Excellence</p>
             </div>
-
+            <div class="stat-item">
+              <h3 style="font-size: 2.5rem; color: var(--primary-color);">50+</h3>
+              <p style="color: white;">Signature Dishes</p>
+            </div>
+            <div class="stat-item">
+              <h3 style="font-size: 2.5rem; color: var(--primary-color);">5000+</h3>
+              <p style="color: white;">Happy Guests</p>
+            </div>
           </div>
-
-          <div class="col-lg-8 mt-5 mt-lg-0">
-
-            <form action="forms/contact.php" method="post" role="form" class="php-email-form">
-              <div class="row">
-                <div class="col-md-6 form-group">
-                  <input type="text" name="name" class="form-control" id="name" placeholder="Your Name" required>
-                </div>
-                <div class="col-md-6 form-group mt-3 mt-md-0">
-                  <input type="email" class="form-control" name="email" id="email" placeholder="Your Email" required>
-                </div>
-              </div>
-              <div class="form-group mt-3">
-                <input type="text" class="form-control" name="subject" id="subject" placeholder="Subject" required>
-              </div>
-              <div class="form-group mt-3">
-                <textarea class="form-control" name="message" rows="8" placeholder="Message" required></textarea>
-              </div>
-              <div class="my-3">
-                <div class="loading">Loading</div>
-                <div class="error-message"></div>
-                <div class="sent-message">Your message has been sent. Thank you!</div>
-              </div>
-              <div class="text-center"><button type="submit">Send Message</button></div>
-            </form>
-
-          </div>
-
         </div>
-
+        <div class="about-image fade-in" style="position: relative;">
+          <img src="/assets/img/chef.jpg" alt="Our Chef" style="width: 100%; height: auto; border-radius: 10px;">
+          <div style="position: absolute; bottom: -30px; right: -30px; width: 200px; height: 200px; background-color: var(--primary-color); z-index: -1; border-radius: 10px;"></div>
+        </div>
       </div>
-    </section><!-- End Contact Section -->
+    </div>
+  </section>
 
-  </main><!-- End #main -->
+  <!-- Special Menu Section -->
+  <section class="section" style="background-color: #0c0c0c; color: white; padding: 8rem 0;">
+    <div class="container">
+      <div class="text-center fade-in" style="margin-bottom: 4rem;">
+        <h2 style="font-size: 3rem;">Special Menu</h2>
+        <p style="color: var(--primary-color); font-size: 1.2rem;">Culinary Excellence</p>
+      </div>
+      <div class="menu-showcase" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+        <% menuItems.forEach(item => { %>
+          <div class="menu-item fade-in" style="background: rgba(255,255,255,0.05); padding: 2rem; border-radius: 10px; backdrop-filter: blur(10px);">
+            <img src="<%= item.image %>" alt="<%= item.name %>" style="width: 100%; height: 250px; object-fit: cover; border-radius: 5px; margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <h3 style="font-size: 1.5rem; color: white;"><%= item.name %></h3>
+              <span style="color: var(--primary-color); font-size: 1.2rem;">$<%= item.price %></span>
+            </div>
+            <p style="color: #999; margin-bottom: 1.5rem;"><%= item.description %></p>
+            <button class="btn" style="width: 100%;">Order Now</button>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+  </section>
+
+  <!-- Reservation Section -->
+  <section class="section reservation-section" style="padding: 8rem 0; background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('/assets/img/reservation-bg.jpg') center/cover fixed;">
+    <div class="container">
+      <div style="max-width: 800px; margin: 0 auto; text-align: center;">
+        <div class="fade-in">
+          <h2 style="font-size: 3rem; color: white; margin-bottom: 1.5rem;">Reserve Your Table</h2>
+          <p style="color: #ccc; margin-bottom: 2.5rem; font-size: 1.2rem;">Experience the perfect blend of ambiance and culinary excellence</p>
+          <a href="/tables" class="btn" style="padding: 1rem 3rem; font-size: 1.1rem;">Make Reservation</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Custom Styles -->
+  <style>
+    .featured-item {
+      transition: transform 0.3s ease;
+    }
+    
+    .featured-item:hover {
+      transform: translateY(-10px);
+    }
+
+    .menu-item {
+      transition: all 0.3s ease;
+    }
+
+    .menu-item:hover {
+      transform: translateY(-10px);
+      background: rgba(255,255,255,0.1);
+    }
+
+    @media (max-width: 768px) {
+      .featured-grid {
+        grid-template-columns: 1fr !important;
+      }
+
+      .hero h1 {
+        font-size: 3rem !important;
+      }
+      
+      .section {
+        padding: 4rem 0 !important;
+      }
+
+      [style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+      }
+
+      .stats {
+        grid-template-columns: 1fr !important;
+        text-align: center;
+      }
+    }
+  </style>
 
   <!-- ======= Footer ======= -->
   <footer id="footer">

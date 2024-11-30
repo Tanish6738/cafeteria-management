@@ -2,32 +2,20 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const UserSchema = new Schema({
-    username: { type: String, required: true },
+    username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    role: { 
-        type: String, 
-        enum: ['admin', 'customer'], 
-        default: 'customer' 
-    }, 
-    email: { type: String, required: true, unique: true },
-    mobile: { 
-        type: String, 
-        required: true, 
-        match: [/^\d{10}$/, 'Mobile number must be 10 digits'] 
+    role: {
+        type: String,
+        enum: ['admin', 'staff', 'customer'],
+        default: 'customer'
     },
-    orders: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Orders'
-        }
-    ],
-    paymentHistory: [
-        {
-            orderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Orders' },
-            amount: { type: Number, required: true },
-            date: { type: Date, default: Date.now }
-        }
-    ]
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    mobile: { type: String },
+    orders: [{ type: Schema.Types.ObjectId, ref: 'Order' }],
+    paymentHistory: [{ type: Schema.Types.ObjectId, ref: 'Payment' }],
+    active: { type: Boolean, default: true },
+    lastLogin: { type: Date }
 }, {
     timestamps: true
 });
