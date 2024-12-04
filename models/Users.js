@@ -12,12 +12,17 @@ const UserSchema = new Schema({
     lastName: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     mobile: { type: String },
-    orders: [{ type: Schema.Types.ObjectId, ref: 'Order' }],
+    orders: [{ type: Schema.Types.ObjectId, ref: 'Orders' }],
     paymentHistory: [{ type: Schema.Types.ObjectId, ref: 'Payment' }],
     active: { type: Boolean, default: true },
     lastLogin: { type: Date }
 }, {
     timestamps: true
 });
+
+// Static method to validate ObjectId
+UserSchema.statics.isValidId = function(id) {
+    return mongoose.Types.ObjectId.isValid(id);
+};
 
 module.exports = mongoose.model('Users', UserSchema);

@@ -8,26 +8,90 @@
     <%- include('../partials/links') %>
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
     <style>
         body {
-            font-family: 'Playfair Display', serif;
-            background: url('https://images.unsplash.com/photo-1526234362653-3b75a0c07438?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center fixed;
+            font-family: 'Cormorant Garamond', serif;
+            background: linear-gradient(rgba(26, 26, 26, 0.9), rgba(26, 26, 26, 0.9)),
+                url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2070&auto=format&fit=crop') no-repeat center center fixed;
             background-size: cover;
+            color: #ECDFCC;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            /* padding-top: 60px; Adjust based on navbar height */
+        }
+
+        .profile-card {
+            background: rgba(26, 26, 26, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(197, 168, 128, 0.1);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            margin-bottom: 2rem;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .profile-header h2 {
+            font-size: 2.5rem;
+            color: #C5A880;
+        }
+
+        .profile-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .profile-details p {
+            font-size: 1.1rem;
             color: #ECDFCC;
         }
 
-        .profile-container {
-            background-color: rgba(60, 61, 55, 0.8);
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-            padding: 40px;
+        .profile-details p span {
+            color: #C5A880;
+        }
+
+        .edit-btn {
+            display: inline-block;
+            background-color: #C5A880;
+            color: #1a1a1a;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: background-color 0.3s ease;
+            text-align: center;
+        }
+
+        .edit-btn:hover {
+            background-color: #3C3D37;
             color: #ECDFCC;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: rgba(26, 26, 26, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(197, 168, 128, 0.1);
+            border-radius: 12px;
         }
 
         .btn-primary {
-            background-color: #697565;
-            border-color: #697565;
+            background-color: #C5A880;
+            border-color: #C5A880;
             color: #fff;
             transition: background-color 0.3s ease;
         }
@@ -44,175 +108,164 @@
         .hover-scale:hover {
             transform: scale(1.05);
         }
-
-        .container-custom {
-            background-color: rgba(60, 61, 55, 0.85);
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-            padding: 20px;
-            color: #ECDFCC;
-        }
     </style>
 </head>
 
 <body>
     <%- include('../partials/navbar') %>
 
-    <div class="container mx-auto mt-16 fade-in px-4">
-        <!-- Flash Messages -->
-        <% if (flashMessages && flashMessages.success_msg) { %>
-            <div class="success-message">
-                <strong>Success!</strong>
-                <%= flashMessages.success_msg %>
-            </div>
-        <% } %>
-        <% if (flashMessages && flashMessages.error_msg) { %>
-            <div class="error-message">
-                <strong>Error!</strong>
-                <%= flashMessages.error_msg %>
-            </div>
-        <% } %>
-
-        <!-- User Profile Section -->
-        <div class="container-custom pb-8">
-            <div class="flex flex-col items-center mt-2">
-                <div class="flex items-center space-x-2 mt-2">
-                    <p class="text-2xl font-bold underline">User Profile</p>
-                </div>
-                <p class="text-lg text-gray-300">User ID: <%= user._id %></p>
-                <p class="text-lg text-gray-400">Username: <%= user.username %></p>
-                <p class="text-lg text-gray-400">Email: <%= user.email %></p>
-                <p class="text-lg text-gray-400">Mobile: <%= user.mobile %></p>
-                <a href="/user/profile/edit"
-                   class="mt-4 inline-block bg-blue-500 hover:bg-blue-700 text-white p-2 rounded transition duration-300 ease-in-out transform hover:scale-105">Edit Profile</a>
-            </div>
+    <div class="profile-card">
+        <div class="profile-header">
+            <h2>User Profile</h2>
+            <a href="/user/profile/edit" class="edit-btn">Edit Profile</a>
         </div>
-
-        <!-- Current Orders Section -->
-        <div class="container-custom p-8 mt-10">
-            <h3 class="text-2xl font-bold mb-4">Current Orders</h3>
-            <% if (currentOrders && currentOrders.length > 0) { %>
-                <% currentOrders.forEach(order => { %>
-                    <div class="order-item mb-4 p-4 bg-gray-800 rounded">
-                        <h4 class="text-xl font-bold mb-2">Order ID: <%= order._id %></h4>
-                        <p class="mb-2"><strong>Date:</strong> <%= new Date(order.createdAt).toDateString() %></p>
-                        <p class="mb-2"><strong>Status:</strong> <%= order.status %></p>
-                        <h5 class="text-lg font-bold mt-2">Items:</h5>
-                        <ul class="list-disc list-inside">
-                            <% order.items.forEach(item => { %>
-                                <li><%= item.menuItem.name %> - <%= item.quantity %> x ₹<%= item.menuItem.price %></li>
-                            <% }) %>
-                        </ul>
-                        <% if (order.receipt) { %>
-                            <a href="/customer/receipt/<%= order.receipt._id %>" class="btn-view-receipt mt-2 inline-block bg-green-500 hover:bg-green-700 text-white p-2 rounded">View Receipt</a>
-                        <% } %>
-                    </div>
-                <% }) %>
-            <% } else { %>
-                <p>No current orders found.</p>
-            <% } %>
+        <div class="profile-details">
+            <p><span>First Name:</span> <%= user.firstName %></p>
+            <p><span>Last Name:</span> <%= user.lastName %></p>
+            <p><span>Email:</span> <%= user.email %></p>
+            <p><span>Mobile:</span> <%= user.mobile %></p>
+            <p><span>Role:</span> <%= user.role %></p>
+            <p><span>Last Login:</span> <%= user.lastLogin ? user.lastLogin.toDateString() : 'Never' %></p>
         </div>
-
-        <!-- Previous Orders Section -->
-        <div class="container-custom p-8 mt-10">
-            <h3 class="text-2xl font-bold mb-4">Previous Orders</h3>
-            <% if (previousOrders && previousOrders.length > 0) { %>
-                <% previousOrders.forEach(order => { %>
-                    <div class="order-item mb-4 p-4 bg-gray-800 rounded">
-                        <h4 class="text-xl font-bold mb-2">Order ID: <%= order._id %></h4>
-                        <p class="mb-2"><strong>Date:</strong> <%= new Date(order.createdAt).toDateString() %></p>
-                        <p class="mb-2"><strong>Status:</strong> <%= order.status %></p>
-                        <h5 class="text-lg font-bold mt-2">Items:</h5>
-                        <ul class="list-disc list-inside">
-                            <% order.items.forEach(item => { %>
-                                <li><%= item.menuItem.name %> - <%= item.quantity %> x ₹<%= item.menuItem.price %></li>
-                            <% }) %>
-                        </ul>
-                        <% if (order.receipt) { %>
-                            <a href="/customer/receipt/<%= order.receipt._id %>" class="btn-view-receipt mt-2 inline-block bg-green-500 hover:bg-green-700 text-white p-2 rounded">View Receipt</a>
-                        <% } %>
-                    </div>
-                <% }) %>
-            <% } else { %>
-                <p>No previous orders found.</p>
-            <% } %>
-        </div>
-
-        <!-- Payment History Section -->
-        <div class="container-custom p-8 mt-10">
-            <h3 class="text-2xl font-bold mb-4">Payment History</h3>
-            <% if (payments && payments.length > 0) { %>
-                <% payments.forEach(payment => { %>
-                    <div class="payment-item mb-4 p-4 bg-gray-800 rounded">
-                        <h4 class="text-xl font-bold mb-2">Payment ID: <%= payment._id %></h4>
-                        <p class="mb-2"><strong>Order IDs:</strong>
-                            <% payment.orders.forEach(order => { %>
-                                <%= order._id %>
-                            <% }) %>
-                        </p>
-                        <p class="mb-2"><strong>Amount:</strong> ₹<%= payment.totalAmount %></p>
-                        <p class="mb-2"><strong>Date:</strong> <%= new Date(payment.paymentDate).toDateString() %></p>
-                        <% if (payment.receipt) { %>
-                            <a href="/customer/receipt/<%= payment.receipt._id %>" class="btn-view-receipt mt-2 inline-block bg-green-500 hover:bg-green-700 text-white p-2 rounded">View Receipt</a>
-                        <% } %>
-                    </div>
-                <% }) %>
-            <% } else { %>
-                <p>No payment history found.</p>
-            <% } %>
-        </div>
-
     </div>
+
+    <!-- Flash Messages -->
+    <% if (flashMessages && flashMessages.success_msg) { %>
+        <div class="success-message">
+            <strong>Success!</strong>
+            <%= flashMessages.success_msg %>
+        </div>
+    <% } %>
+    <% if (flashMessages && flashMessages.error_msg) { %>
+        <div class="error-message">
+            <strong>Error!</strong>
+            <%= flashMessages.error_msg %>
+        </div>
+    <% } %>
+
+    <!-- Current Orders Section -->
+    <div class="container mt-10">
+        <h3 class="text-2xl font-bold mb-4">Current Orders</h3>
+        <% if (currentOrders && currentOrders.length > 0) { %>
+            <% currentOrders.forEach(order => { %>
+                <div class="order-item mb-4 p-4 bg-gray-800 rounded">
+                    <h4 class="text-xl font-bold mb-2">Order ID: <%= order._id %></h4>
+                    <p class="mb-2"><strong>Date:</strong> <%= new Date(order.createdAt).toDateString() %></p>
+                    <p class="mb-2"><strong>Status:</strong> <%= order.status %></p>
+                    <h5 class="text-lg font-bold mt-2">Items:</h5>
+                    <ul class="list-disc list-inside">
+                        <% order.items.forEach(item => { %>
+                            <li><%= item.menuItem.name %> - <%= item.quantity %> x ₹<%= item.menuItem.price %></li>
+                        <% }) %>
+                    </ul>
+                    <% if (order.receipt) { %>
+                        <a href="/customer/receipt/<%= order.receipt._id %>" class="btn-view-receipt mt-2 inline-block bg-green-500 hover:bg-green-700 text-white p-2 rounded">View Receipt</a>
+                    <% } %>
+                </div>
+            <% }) %>
+        <% } else { %>
+            <p>No current orders found.</p>
+        <% } %>
+    </div>
+
+    <!-- Previous Orders Section -->
+    <div class="container mt-10">
+        <h3 class="text-2xl font-bold mb-4">Previous Orders</h3>
+        <% if (previousOrders && previousOrders.length > 0) { %>
+            <% previousOrders.forEach(order => { %>
+                <div class="order-item mb-4 p-4 bg-gray-800 rounded">
+                    <h4 class="text-xl font-bold mb-2">Order ID: <%= order._id %></h4>
+                    <p class="mb-2"><strong>Date:</strong> <%= new Date(order.createdAt).toDateString() %></p>
+                    <p class="mb-2"><strong>Status:</strong> <%= order.status %></p>
+                    <h5 class="text-lg font-bold mt-2">Items:</h5>
+                    <ul class="list-disc list-inside">
+                        <% order.items.forEach(item => { %>
+                            <li><%= item.menuItem.name %> - <%= item.quantity %> x ₹<%= item.menuItem.price %></li>
+                        <% }) %>
+                    </ul>
+                    <% if (order.receipt) { %>
+                        <a href="/customer/receipt/<%= order.receipt._id %>" class="btn-view-receipt mt-2 inline-block bg-green-500 hover:bg-green-700 text-white p-2 rounded">View Receipt</a>
+                    <% } %>
+                </div>
+            <% }) %>
+        <% } else { %>
+            <p>No previous orders found.</p>
+        <% } %>
+    </div>
+
+    <!-- Payment History Section -->
+    <div class="container mt-10">
+        <h3 class="text-2xl font-bold mb-4">Payment History</h3>
+        <% if (payments && payments.length > 0) { %>
+            <% payments.forEach(payment => { %>
+                <div class="payment-item mb-4 p-4 bg-gray-800 rounded">
+                    <h4 class="text-xl font-bold mb-2">Payment ID: <%= payment._id %></h4>
+                    <p class="mb-2"><strong>Order IDs:</strong>
+                        <% payment.orders.forEach(order => { %>
+                            <%= order._id %>
+                        <% }) %>
+                    </p>
+                    <p class="mb-2"><strong>Amount:</strong> ₹<%= payment.totalAmount %></p>
+                    <p class="mb-2"><strong>Date:</strong> <%= new Date(payment.paymentDate).toDateString() %></p>
+                    <% if (payment.receipt) { %>
+                        <a href="/customer/receipt/<%= payment.receipt._id %>" class="btn-view-receipt mt-2 inline-block bg-green-500 hover:bg-green-700 text-white p-2 rounded">View Receipt</a>
+                    <% } %>
+                </div>
+            <% }) %>
+        <% } else { %>
+            <p>No payment history found.</p>
+        <% } %>
+    </div>
+    <%- include('../partials/scripts') %>
 
     <!-- GSAP Animations -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
-    <script>
-        
-            // Burger menus
-            document.addEventListener('DOMContentLoaded', function () {
-                // open
-                const burger = document.querySelectorAll('.navbar-burger');
-                const menu = document.querySelectorAll('.navbar-menu');
+    <script>// Burger menus
+        document.addEventListener('DOMContentLoaded', function () {
+            // open
+            const burger = document.querySelectorAll('.navbar-burger');
+            const menu = document.querySelectorAll('.navbar-menu');
 
-                if (burger.length && menu.length) {
-                    for (var i = 0; i < burger.length; i++) {
-                        burger[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
+            if (burger.length && menu.length) {
+                for (var i = 0; i < burger.length; i++) {
+                    burger[i].addEventListener('click', function () {
+                        for (var j = 0; j < menu.length; j++) {
+                            menu[j].classList.toggle('hidden');
+                        }
+                    });
                 }
+            }
 
-                // close
-                const close = document.querySelectorAll('.navbar-close');
-                const backdrop = document.querySelectorAll('.navbar-backdrop');
+            // close
+            const close = document.querySelectorAll('.navbar-close');
+            const backdrop = document.querySelectorAll('.navbar-backdrop');
 
-                if (close.length) {
-                    for (var i = 0; i < close.length; i++) {
-                        close[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
+            if (close.length) {
+                for (var i = 0; i < close.length; i++) {
+                    close[i].addEventListener('click', function () {
+                        for (var j = 0; j < menu.length; j++) {
+                            menu[j].classList.toggle('hidden');
+                        }
+                    });
                 }
+            }
 
-                if (backdrop.length) {
-                    for (var i = 0; i < backdrop.length; i++) {
-                        backdrop[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
+            if (backdrop.length) {
+                for (var i = 0; i < backdrop.length; i++) {
+                    backdrop[i].addEventListener('click', function () {
+                        for (var j = 0; j < menu.length; j++) {
+                            menu[j].classList.toggle('hidden');
+                        }
+                    });
                 }
-            });
-        gsap.from('.profile-container', {
+            }
+        });
+        // GSAP Animations
+        gsap.from('.bg-overlay', {
             duration: 1,
             y: 50,
             opacity: 0,
-            ease: 'power3.out'
+            stagger: 0.2
         });
     </script>
 </body>

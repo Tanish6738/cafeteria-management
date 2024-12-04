@@ -224,9 +224,9 @@ app.get('/', async (req, res) => {
         const menuItems = await Menu.find();
         setFlash(req, 'success_msg', 'Welcome to the Cafe');
         if (user && user.role === 'admin') {
-            res.render('home', { menuItems });
+            res.render('home', { menuItems, currentUser: user });
         } else {
-            res.render('home', { menuItems });
+            res.render('home', { menuItems, currentUser: user });
         }
     } catch (err) {
         console.error('Error fetching menu items:', err);
@@ -241,7 +241,8 @@ app.get('/login', (req, res) => {
         messages: {
             error: req.flash('error_msg'),
             success: req.flash('success_msg')
-        }
+        },
+        currentUser: req.session.user
     });
 });
 
@@ -255,7 +256,8 @@ app.get('/register', (req, res) => {
         messages: {
             error: req.flash('error_msg'),
             success: req.flash('success_msg')
-        }
+        },
+        currentUser: req.session.user
     });
 });
 
@@ -393,7 +395,15 @@ app.post('/admin/menu/addMenuItem', ensureAdmin, upload.single('image'), asyncHa
 }));
 
 app.get('/admin/menu/:id/edit', ensureAdmin, asyncHandler(async (req, res) => {
-    const menuItem = await Menu.findById(req.params.id);
+    const { id } = req.params;
+    
+    // Validate ObjectId first
+    if (!Menu.isValidId(id)) {
+        setFlash(req, 'error_msg', 'Invalid menu item ID');
+        return res.redirect('/admin/menu');
+    }
+
+    const menuItem = await Menu.findById(id);
     if (!menuItem) {
         setFlash(req, 'error_msg', 'Menu item not found');
         return res.redirect('/admin/menu');
@@ -408,52 +418,82 @@ app.get('/admin/menu/:id/edit', ensureAdmin, asyncHandler(async (req, res) => {
 
 app.post('/admin/menu/:id/edit', ensureAdmin, upload.single('image'), asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const menuItem = await Menu.findById(id);
-    if (!menuItem) {
-        setFlash(req, 'error_msg', 'Menu item not found');
+    const { name, price, description, category, available, stock } = req.body;
+    let image = req.file ? `/uploads/${req.file.filename}` : undefined;
+
+    // Validate ObjectId first
+    if (!Menu.isValidId(id)) {
+        setFlash(req, 'error_msg', 'Invalid menu item ID');
         return res.redirect('/admin/menu');
     }
-    const { name, price, description, category, available, stock } = req.body;
-    const image = req.file ? req.file.path : menuItem.image;
-    if (req.file && menuItem.image && fs.existsSync(menuItem.image)) {
-        await unlinkAsync(menuItem.image);
+
+    // If no new image is uploaded, keep the existing one
+    if (!image) {
+        const existingMenuItem = await Menu.findById(id);
+        if (!existingMenuItem) {
+            setFlash(req, 'error_msg', 'Menu item not found');
+            return res.redirect('/admin/menu');
+        }
+        image = existingMenuItem.image;
     }
+
     await Menu.findByIdAndUpdate(id, { name, price, description, image, category, available, stock });
     setFlash(req, 'success_msg', 'Menu item updated successfully');
     return res.redirect('/admin/menu');
 }));
 
 app.get('/menu/:id', ensureAuthenticated, asyncHandler(async (req, res) => {
-    const menuItem = await Menu.findById(req.params.id);
+    const { id } = req.params;
+    
+    // Validate ObjectId first
+    if (!Menu.isValidId(id)) {
+        setFlash(req, 'error_msg', 'Invalid menu item ID');
+        return res.redirect('/menu');
+    }
+
+    const menuItem = await Menu.findById(id);
     if (!menuItem) {
         setFlash(req, 'error_msg', 'Menu item not found');
-        return res.redirect('/admin/menu');
+        return res.redirect('/menu');
     }
     res.render('menu/menuItem', { 
         menuItem,
         title: 'Menu Item',
         currentUser: req.session.user,
-        isAdmin: true
+        isAdmin: req.session.user?.role === 'admin'
     });
 }));
 
 app.get('/admin/menu/:id/delete', ensureAdmin, asyncHandler(async (req, res) => {
     const { id } = req.params;
+
+    // Validate ObjectId first
+    if (!Menu.isValidId(id)) {
+        setFlash(req, 'error_msg', 'Invalid menu item ID');
+        return res.redirect('/admin/menu');
+    }
+
     const menuItem = await Menu.findById(id);
     if (!menuItem) {
         setFlash(req, 'error_msg', 'Menu item not found');
         return res.redirect('/admin/menu');
     }
+
+    // Delete the menu item
     await Menu.findByIdAndDelete(id);
-    if (menuItem.image && fs.existsSync(menuItem.image)) {
-        await unlinkAsync(menuItem.image);
-    }
     setFlash(req, 'success_msg', 'Menu item deleted successfully');
-    return res.redirect('/admin/menu');
+    res.redirect('/admin/menu');
 }));
 
 app.post('/admin/menu/:id/toggle-availability', ensureAdmin, asyncHandler(async (req, res) => {
     const { id } = req.params;
+    
+    // Validate ObjectId first
+    if (!Menu.isValidId(id)) {
+        setFlash(req, 'error_msg', 'Invalid menu item ID');
+        return res.redirect('/admin/menu');
+    }
+
     const menuItem = await Menu.findById(id);
     if (!menuItem) {
         setFlash(req, 'error_msg', 'Menu item not found');
@@ -501,7 +541,15 @@ app.get('/admin/orders/history', ensureAdmin, asyncHandler(async (req, res) => {
 
 app.get('/admin/orders/:id/receipt', ensureAdmin, asyncHandler(async (req, res) => {
 
-    const order = await OrderHistory.findById(req.params.id)
+    const { id } = req.params;
+    
+    // Validate ObjectId first
+    if (!OrderHistory.isValidId(id)) {
+        setFlash(req, 'error_msg', 'Invalid order ID');
+        return res.redirect('/admin/orders/history');
+    }
+
+    const order = await OrderHistory.findById(id)
         .populate('items.menuItem')
         .populate('customer')
         .lean();
@@ -534,7 +582,15 @@ app.get('/admin/orders/:id/receipt', ensureAdmin, asyncHandler(async (req, res) 
 
 app.get('/admin/orders/:id', ensureAuthenticated, ensureAdmin, asyncHandler(async (req, res) => {
     try {
-        const order = await OrderHistory.findById(req.params.id)
+        const { id } = req.params;
+        
+        // Validate ObjectId first
+        if (!OrderHistory.isValidId(id)) {
+            setFlash(req, 'error_msg', 'Invalid order ID');
+            return res.redirect('/admin/orders/history');
+        }
+
+        const order = await OrderHistory.findById(id)
             .populate('items.menuItem')
             .populate('customer')
             .lean();
@@ -561,6 +617,12 @@ app.get('/admin/orders/:id', ensureAuthenticated, ensureAdmin, asyncHandler(asyn
 app.post('/orders/:id/update-status', ensureAdmin, asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
+
+    // Validate ObjectId first
+    if (!Orders.isValidId(id)) {
+        setFlash(req, 'error_msg', 'Invalid order ID');
+        return res.redirect('/admin/orders');
+    }
 
     const validStatuses = ['pending', 'preparing', 'ready', 'served', 'completed', 'cancelled'];
     if (!validStatuses.includes(status)) {
@@ -600,6 +662,13 @@ app.post('/orders/:id/update-status', ensureAdmin, asyncHandler(async (req, res)
 
 app.get('/admin/orders/:id/delete', ensureAdmin, asyncHandler(async (req, res) => {
     const { id } = req.params;
+    
+    // Validate ObjectId first
+    if (!Orders.isValidId(id)) {
+        setFlash(req, 'error_msg', 'Invalid order ID');
+        return res.redirect('/orders');
+    }
+
     const order = await Orders.findById(id);
     if (!order) {
         setFlash(req, 'error_msg', 'Order not found');
@@ -612,6 +681,13 @@ app.get('/admin/orders/:id/delete', ensureAdmin, asyncHandler(async (req, res) =
 
 app.post('/admin/orders/:id/mark-as-served', ensureAdmin, asyncHandler(async (req, res) => {
     const { id } = req.params;
+    
+    // Validate ObjectId first
+    if (!Orders.isValidId(id)) {
+        setFlash(req, 'error_msg', 'Invalid order ID');
+        return res.redirect('/admin/orders');
+    }
+
     const order = await Orders.findById(id);
     if (!order) {
         setFlash(req, 'error_msg', 'Order not found');
@@ -625,6 +701,13 @@ app.post('/admin/orders/:id/mark-as-served', ensureAdmin, asyncHandler(async (re
 
 app.post('/admin/orders/:id/approve-payment', ensureAdmin, asyncHandler(async (req, res) => {
     const { id } = req.params;
+    
+    // Validate ObjectId first
+    if (!Orders.isValidId(id)) {
+        setFlash(req, 'error_msg', 'Invalid order ID');
+        return res.redirect('/admin/orders');
+    }
+
     const order = await Orders.findById(id);
 
     if (!order) {
@@ -656,7 +739,15 @@ app.post('/admin/orders/:id/approve-payment', ensureAdmin, asyncHandler(async (r
 
 app.get('/admin/receipt/:id', ensureAdmin, asyncHandler(async (req, res) => {
     try {
-        const receipt = await Receipt.findById(req.params.id)
+        const { id } = req.params;
+        
+        // Validate ObjectId first
+        if (!Receipt.isValidId(id)) {
+            setFlash(req, 'error_msg', 'Invalid receipt ID');
+            return res.redirect('/admin/receipt-records');
+        }
+
+        const receipt = await Receipt.findById(id)
             .populate({
                 path: 'orders',
                 populate: {
@@ -728,12 +819,13 @@ app.get('/admin/users', ensureAdmin, asyncHandler(async (req, res) => {
 
 app.get('/admin/users/:id', ensureAdmin, asyncHandler(async (req, res) => {
     try {
-        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        const { id } = req.params;
+        // Validate ObjectId first
+        if (!Users.isValidId(id)) {
             setFlash(req, 'error_msg', 'Invalid user ID');
             return res.redirect('/admin/users');
         }
-
-        const user = await Users.findById(req.params.id);
+        const user = await Users.findById(id);
 
         if (!user) {
             setFlash(req, 'error_msg', 'User not found');
@@ -790,11 +882,14 @@ app.get('/admin/users/:id', ensureAdmin, asyncHandler(async (req, res) => {
 
 app.delete('/admin/user/:id', ensureAdmin, asyncHandler(async (req, res) => {
     try {
-        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        const { id } = req.params;
+        
+        // Validate ObjectId first
+        if (!Users.isValidId(id)) {
             return res.status(400).json({ message: 'Invalid user ID' });
         }
 
-        const user = await Users.findById(req.params.id);
+        const user = await Users.findById(id);
         
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -829,7 +924,15 @@ app.delete('/admin/user/:id', ensureAdmin, asyncHandler(async (req, res) => {
 }));
 
 app.get('/admin/users/:id/delete', ensureAdmin, asyncHandler(async (req, res) => {
-    await Users.findByIdAndDelete(req.params.id);
+    const { id } = req.params;
+    
+    // Validate ObjectId first
+    if (!Users.isValidId(id)) {
+        setFlash(req, 'error_msg', 'Invalid user ID');
+        return res.redirect('/admin/users');
+    }
+
+    await Users.findByIdAndDelete(id);
     setFlash(req, 'success_msg', 'User deleted successfully');
     return res.redirect('/admin/users');
 }));
@@ -837,20 +940,16 @@ app.get('/admin/users/:id/delete', ensureAdmin, asyncHandler(async (req, res) =>
 // Admin Table Management
 app.get('/admin/tables/tableHistory', ensureAuthenticated, ensureAdmin, asyncHandler(async (req, res) => {
     try {
-        // Fetch table history with populated reservedBy field
-        const tableHistory = await Tables.find({}).populate('reservedBy', 'username'); // Populate only the username field
+        // Fetch order history data
+        const history = await OrderHistory.find({})
+            .populate('order', 'orderNumber') // Assuming 'orderNumber' is a field in Orders
+            .populate('updatedBy', 'username');
 
-        // Render the table history page with the fetched data
-        res.render('tables/tableHistory', { 
-            tableHistory,
-            title: 'Table History',
-            currentUser: req.session.user,
-            isAdmin: true
-        });
+        // Pass the title along with history to the template
+        res.render('tables/tableHistory', { history, title: 'Table History', currentUser: req.session.user });
     } catch (error) {
         console.error('Error fetching table history:', error);
-        req.flash('error_msg', 'Failed to load table history.');
-        res.redirect('/admin');
+        res.status(500).send('Internal Server Error');
     }
 }));
 
@@ -881,7 +980,15 @@ app.post('/tables/new', ensureAdmin, async (req, res) => {
 });
 
 app.get('/tables/:id/edit', ensureAdmin, asyncHandler(async (req, res) => {
-    const table = await Tables.findById(req.params.id);
+    const { id } = req.params;
+    
+    // Validate ObjectId first
+    if (!Tables.isValidId(id)) {
+        setFlash(req, 'error_msg', 'Invalid table ID');
+        return res.redirect('/tables');
+    }
+
+    const table = await Tables.findById(id);
     if (!table) {
         setFlash(req, 'error_msg', 'Table not found');
         return res.redirect('/tables');
@@ -901,6 +1008,12 @@ app.post('/tables/:id/edit', ensureAdmin, asyncHandler(async (req, res) => {
     console.log(`Editing table with ID: ${id}`);
     console.log(`Received data:`, { tableNumber, capacity, status });
 
+    // Validate ObjectId first
+    if (!Tables.isValidId(id)) {
+        setFlash(req, 'error_msg', 'Invalid table ID');
+        return res.redirect(`/tables/${id}/edit`);
+    }
+
     if (!tableNumber || !capacity || !status) {
         console.log('Validation failed: All fields are required');
         setFlash(req, 'error_msg', 'All fields are required');
@@ -915,6 +1028,13 @@ app.post('/tables/:id/edit', ensureAdmin, asyncHandler(async (req, res) => {
 
 app.get('/tables/:id/delete', ensureAdmin, asyncHandler(async (req, res) => {
     const { id } = req.params;
+    
+    // Validate ObjectId first
+    if (!Tables.isValidId(id)) {
+        setFlash(req, 'error_msg', 'Invalid table ID');
+        return res.redirect('/tables');
+    }
+
     const table = await Tables.findById(id);
     if (!table) {
         setFlash(req, 'error_msg', 'Table not found');
@@ -1473,8 +1593,18 @@ app.get('/user/profile', ensureAuthenticated, asyncHandler(async (req, res) => {
             .populate({
                 path: 'paymentHistory',
                 populate: [
-                    { path: 'orders', model: 'Orders' },  // Populate orders in the payment history
-                    { path: 'receipt', model: 'Receipt' }  // Populate receipt in the payment history
+                    {
+                        path: 'orders',
+                        model: 'Orders', // Ensure we populate the orders linked to the payment history
+                        populate: {
+                            path: 'items.menuItem', // Populate the items in each order
+                            model: 'Menu'
+                        }
+                    },
+                    {
+                        path: 'receipt', // Populate the receipt linked to the payment
+                        model: 'Receipt'
+                    }
                 ]
             });
 
@@ -1863,6 +1993,27 @@ app.get('/tables/confirm-reservation/:tableNumber', ensureAuthenticated, async (
     }
 });
 
+app.get('/admin/dashboard', ensureAdmin, asyncHandler(async (req, res) => {
+    try {
+        // Fetch necessary data for the dashboard
+        const orders = await Orders.find().populate('items.menuItem');
+        const users = await Users.find();
+        const tables = await Tables.find();
+
+        // Render the admin dashboard view
+        res.render('admin/dashboard', {
+            title: 'Admin Dashboard',
+            orders,
+            users,
+            tables,
+            currentUser: req.session.user
+        });
+    } catch (error) {
+        console.error('Error loading admin dashboard:', error);
+        req.flash('error_msg', 'An error occurred while loading the dashboard.');
+        return res.redirect('/admin');
+    }
+}));
 app.get('/tables/with-orders', ensureAuthenticated, asyncHandler(async (req, res) => {
     try {
         // Use $in operator to match multiple status values
@@ -1882,8 +2033,19 @@ app.get('/tables/with-orders', ensureAuthenticated, asyncHandler(async (req, res
     }
 }));
 
+app.get('/orderHistory', ensureAuthenticated, asyncHandler(async (req, res) => {
+    try {
+        const orders = await Orders.find({ user: req.session.user._id }).populate('items.menuItem');
+        res.render('orders/adminOrderHistory', { orders, currentUser: req.session.user });
+    } catch (error) {
+        console.error('Error fetching orders:', error);
+        req.flash('error_msg', 'Failed to retrieve orders');
+        res.redirect('/admin');
+    }
+}));
+
 app.get("*", (req, res) => {
-    res.render('404');
+    res.render('404', { currentUser: req.session.user });
 });
 
 // Global error-handling middleware

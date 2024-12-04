@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const { isValidObjectId } = mongoose;
 
 const MenuSchema = new Schema({
     name: { type: String, required: true },
@@ -14,12 +13,9 @@ const MenuSchema = new Schema({
     timestamps: true
 });
 
-// Middleware to validate ObjectId
-MenuSchema.pre('findOne', function(next) {
-    if (!isValidObjectId(this.getQuery()._id)) {
-        return next(new Error('Invalid ObjectId'));
-    }
-    next();
-});
+// Static method to validate ObjectId
+MenuSchema.statics.isValidId = function(id) {
+    return mongoose.Types.ObjectId.isValid(id);
+};
 
 module.exports = mongoose.model('Menu', MenuSchema);

@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Menu Item | Cafeteria</title>
     <%- include('../partials/links') %>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lenis/1.0.0/lenis.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
     <style>
         body {
             font-family: 'Cormorant Garamond', serif;
@@ -17,8 +15,8 @@
             min-height: 100vh;
         }
 
-        .form-container {
-            max-width: 600px;
+        .container {
+            max-width: 800px;
             margin: 2rem auto;
             padding: 2rem;
             background: rgba(26, 26, 26, 0.85);
@@ -27,20 +25,30 @@
             border-radius: 12px;
         }
 
-        .form-header {
-            text-align: center;
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            background: rgba(197, 168, 128, 0.1);
+            border: 1px solid rgba(197, 168, 128, 0.2);
+            color: #C5A880;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: all 0.3s ease;
             margin-bottom: 2rem;
+        }
+
+        .back-btn:hover {
+            background: rgba(197, 168, 128, 0.2);
+            transform: translateX(-5px);
         }
 
         .form-title {
             font-size: 2.5rem;
             color: #C5A880;
-            margin-bottom: 0.5rem;
-        }
-
-        .form-subtitle {
-            color: #ECDFCC;
-            opacity: 0.8;
+            margin-bottom: 2rem;
+            text-align: center;
         }
 
         .form-group {
@@ -54,119 +62,80 @@
             font-size: 1.1rem;
         }
 
-        .form-input {
+        .form-control {
             width: 100%;
-            padding: 0.75rem;
-            background: rgba(26, 26, 26, 0.8);
+            padding: 0.75rem 1rem;
+            background: rgba(26, 26, 26, 0.6);
             border: 1px solid rgba(197, 168, 128, 0.2);
-            border-radius: 6px;
+            border-radius: 8px;
             color: #ECDFCC;
+            font-size: 1rem;
             transition: all 0.3s ease;
         }
 
-        .form-input:focus {
+        .form-control:focus {
             outline: none;
             border-color: rgba(197, 168, 128, 0.4);
             box-shadow: 0 0 0 2px rgba(197, 168, 128, 0.1);
         }
 
-        .form-select {
-            width: 100%;
-            padding: 0.75rem;
-            background: rgba(26, 26, 26, 0.8);
+        .image-preview {
+            width: 200px;
+            height: 200px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin-top: 1rem;
             border: 1px solid rgba(197, 168, 128, 0.2);
-            border-radius: 6px;
-            color: #ECDFCC;
+            display: none;
+        }
+
+        .submit-btn {
+            display: inline-block;
+            padding: 0.75rem 2rem;
+            background: rgba(197, 168, 128, 0.2);
+            border: 1px solid rgba(197, 168, 128, 0.3);
+            color: #C5A880;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
             transition: all 0.3s ease;
+            text-align: center;
+            width: 100%;
+        }
+
+        .submit-btn:hover {
+            background: rgba(197, 168, 128, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .form-select {
             appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23C5A880' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23C5A880' viewBox='0 0 16 16'%3E%3Cpath d='M8 11.5l-5-5h10l-5 5z'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 1rem center;
             padding-right: 2.5rem;
         }
 
-        .form-select:focus {
-            outline: none;
-            border-color: rgba(197, 168, 128, 0.4);
-            box-shadow: 0 0 0 2px rgba(197, 168, 128, 0.1);
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
         }
 
-        .form-textarea {
-            width: 100%;
-            padding: 0.75rem;
-            background: rgba(26, 26, 26, 0.8);
-            border: 1px solid rgba(197, 168, 128, 0.2);
-            border-radius: 6px;
-            color: #ECDFCC;
-            transition: all 0.3s ease;
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        .form-textarea:focus {
-            outline: none;
-            border-color: rgba(197, 168, 128, 0.4);
-            box-shadow: 0 0 0 2px rgba(197, 168, 128, 0.1);
-        }
-
-        .submit-btn {
-            width: 100%;
-            padding: 1rem;
-            background: rgba(197, 168, 128, 0.1);
-            border: 1px solid rgba(197, 168, 128, 0.2);
-            color: #C5A880;
-            border-radius: 6px;
-            transition: all 0.3s ease;
+        .form-checkbox {
+            width: 1.2rem;
+            height: 1.2rem;
+            border-radius: 4px;
+            border: 1px solid rgba(197, 168, 128, 0.3);
+            background: rgba(26, 26, 26, 0.6);
             cursor: pointer;
-            font-size: 1.1rem;
-            margin-top: 1rem;
         }
 
-        .submit-btn:hover {
-            background: rgba(197, 168, 128, 0.2);
-            border-color: rgba(197, 168, 128, 0.4);
-        }
-
-        .flash-message {
-            margin-bottom: 1rem;
-            padding: 1rem;
-            border-radius: 6px;
-            text-align: center;
-        }
-
-        .success-message {
-            background: rgba(34, 197, 94, 0.1);
-            border: 1px solid rgba(34, 197, 94, 0.2);
-            color: #22c55e;
-        }
-
-        .error-message {
-            background: rgba(220, 38, 38, 0.1);
-            border: 1px solid rgba(220, 38, 38, 0.2);
-            color: #ef4444;
-        }
-
-        .back-btn {
-            display: inline-block;
-            padding: 0.75rem 1.5rem;
-            background: rgba(197, 168, 128, 0.1);
-            border: 1px solid rgba(197, 168, 128, 0.2);
-            color: #C5A880;
-            border-radius: 6px;
-            transition: all 0.3s ease;
-            margin-bottom: 1rem;
-            text-decoration: none;
-        }
-
-        .back-btn:hover {
-            background: rgba(197, 168, 128, 0.2);
-            border-color: rgba(197, 168, 128, 0.4);
-        }
-
-        @media (max-width: 640px) {
-            .form-container {
+        @media (max-width: 768px) {
+            .container {
                 margin: 1rem;
-                padding: 1.5rem;
+                padding: 1rem;
             }
 
             .form-title {
@@ -175,107 +144,83 @@
         }
     </style>
 </head>
-
-<body class="min-h-screen bg-[#1a1a1a]">
+<body>
     <%- include('../partials/navbar') %>
 
-    <div class="container mx-auto px-4">
-        <a href="/menu/admin" class="back-btn">
+    <div class="container">
+        <a href="/admin/menu" class="back-btn">
             <i class="fas fa-arrow-left mr-2"></i>Back to Menu
         </a>
 
-        <div class="form-container">
-            <div class="form-header">
-                <h1 class="form-title">Add Menu Item</h1>
-                <p class="form-subtitle">Create a new dish for your menu</p>
+        <h1 class="form-title">Add New Menu Item</h1>
+
+        <form action="/admin/menu/addMenuItem" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label class="form-label" for="name">Item Name</label>
+                <input type="text" class="form-control" id="name" name="name" required>
             </div>
 
-            <% if (messages.success_msg) { %>
-                <div class="flash-message success-message">
-                    <%= messages.success_msg %>
-                </div>
-            <% } %>
-            <% if (messages.error_msg) { %>
-                <div class="flash-message error-message">
-                    <%= messages.error_msg %>
-                </div>
-            <% } %>
+            <div class="form-group">
+                <label class="form-label" for="price">Price</label>
+                <input type="number" class="form-control" id="price" name="price" step="0.01" required>
+            </div>
 
-            <form action="/menu/add" method="POST" enctype="multipart/form-data">
-                <div class="form-group">
-                    <label for="name" class="form-label">Item Name</label>
-                    <input type="text" id="name" name="name" class="form-input" required>
-                </div>
+            <div class="form-group">
+                <label class="form-label" for="description">Description</label>
+                <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+            </div>
 
-                <div class="form-group">
-                    <label for="description" class="form-label">Description</label>
-                    <textarea id="description" name="description" class="form-textarea" required></textarea>
-                </div>
+            <div class="form-group">
+                <label class="form-label" for="category">Category</label>
+                <select class="form-control form-select" id="category" name="category" required>
+                    <option value="">Select a category</option>
+                    <option value="Main Course">Main Course</option>
+                    <option value="Appetizers">Appetizers</option>
+                    <option value="Desserts">Desserts</option>
+                    <option value="Beverages">Beverages</option>
+                </select>
+            </div>
 
-                <div class="form-group">
-                    <label for="category" class="form-label">Category</label>
-                    <select id="category" name="category" class="form-select" required>
-                        <option value="">Select a category</option>
-                        <option value="Appetizers">Appetizers</option>
-                        <option value="Main Course">Main Course</option>
-                        <option value="Desserts">Desserts</option>
-                        <option value="Beverages">Beverages</option>
-                    </select>
-                </div>
+            <div class="form-group">
+                <label class="form-label" for="stock">Initial Stock</label>
+                <input type="number" class="form-control" id="stock" name="stock" value="0" required>
+            </div>
 
-                <div class="form-group">
-                    <label for="price" class="form-label">Price ($)</label>
-                    <input type="number" id="price" name="price" step="0.01" min="0" class="form-input" required>
-                </div>
+            <div class="form-group">
+                <label class="form-label" for="image">Item Image</label>
+                <input type="file" class="form-control" id="image" name="image" accept="image/*" required>
+                <img id="imagePreview" class="image-preview" alt="Image preview">
+            </div>
 
-                <div class="form-group">
-                    <label for="image" class="form-label">Image</label>
-                    <input type="file" id="image" name="image" accept="image/*" class="form-input" required>
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input type="checkbox" class="form-checkbox" id="available" name="available" checked>
+                    <label class="form-label" for="available" style="margin-bottom: 0">Available</label>
                 </div>
+            </div>
 
-                <button type="submit" class="submit-btn">
-                    <i class="fas fa-plus mr-2"></i>Add Item
-                </button>
-            </form>
-        </div>
+            <button type="submit" class="submit-btn">Add Menu Item</button>
+        </form>
     </div>
+    <%- include('../partials/scripts') %>
 
     <script>
-        // Initialize Lenis for smooth scrolling
-        const lenis = new Lenis({
-            duration: 1.2,
-            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-            direction: 'vertical',
-            gestureDirection: 'vertical',
-            smooth: true,
-            mouseMultiplier: 1,
-            smoothTouch: false,
-            touchMultiplier: 2,
-            infinite: false,
-        });
-
-        function raf(time) {
-            lenis.raf(time);
-            requestAnimationFrame(raf);
-        }
-
-        requestAnimationFrame(raf);
-
-        // GSAP Animations
-        gsap.from('.form-container', {
-            opacity: 0,
-            y: 30,
-            duration: 1,
-            ease: 'power3.out'
-        });
-
-        // Auto-hide flash messages
-        const flashMessages = document.querySelectorAll('.flash-message');
-        flashMessages.forEach(message => {
-            setTimeout(() => {
-                message.style.opacity = '0';
-                setTimeout(() => message.remove(), 300);
-            }, 3000);
+        // Preview image before upload
+        document.getElementById('image').addEventListener('change', function(e) {
+            const preview = document.getElementById('imagePreview');
+            const file = e.target.files[0];
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            } else {
+                preview.src = '';
+                preview.style.display = 'none';
+            }
         });
     </script>
 </body>

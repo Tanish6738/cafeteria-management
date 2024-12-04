@@ -1,12 +1,60 @@
+<script src="https://unpkg.com/lenis@1.1.17/dist/lenis.min.js"></script>
 
-  <!-- Vendor JS Files -->
-  <script src="assets/vendor/aos/aos.js"></script>
-  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
-  <script src="assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
-  <script src="assets/vendor/php-email-form/validate.js"></script>
-  <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
+<script>    // Initialize Lenis for smooth scrolling
+    if (typeof lenis === 'undefined') {
+        const lenis = new Lenis({
+            duration: 1.2,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            direction: 'vertical',
+            gestureDirection: 'vertical',
+            smooth: true,
+            mouseMultiplier: 1,
+            smoothTouch: false,
+            touchMultiplier: 2,
+            infinite: false,
+        });
 
-  <!-- Template Main JS File -->
-  <script src="assets/js/main.js"></script>
-  <script src="assets/js/index.js"></script>
+        function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+        }
+
+        requestAnimationFrame(raf);
+    }
+
+    // Define toggleProfileMenu globally
+    function toggleProfileMenu() {
+        const profileMenu = document.querySelector('#profile-menu');
+        if (profileMenu) {
+            profileMenu.classList.toggle('hidden');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const burger = document.querySelector('.navbar-burger');
+        const menu = document.querySelector('#mobile-menu');
+
+        // Toggle mobile menu and apply blur effect
+        if (burger && menu) {
+            burger.addEventListener('click', function () {
+                menu.classList.toggle('hidden');
+                menu.classList.toggle('blurred'); // Add or remove blur effect
+            });
+        }
+
+        const profileMenuButton = document.querySelector('#user-menu-button');
+
+        // Bind toggleProfileMenu to profileMenuButton click
+        if (profileMenuButton) {
+            profileMenuButton.addEventListener('click', toggleProfileMenu);
+        }
+    });
+
+    // Delete table function
+    function deleteTable(tableId) {
+        if (confirm('Are you sure you want to delete this table?')) {
+            window.location.href = `/tables/${tableId}/delete`;
+        }
+    }
+
+</script>

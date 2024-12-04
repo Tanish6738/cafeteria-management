@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Cafeteria</title>
+    <%- include('../partials/links') %>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Cormorant Garamond', serif;
+            background: linear-gradient(rgba(26, 26, 26, 0.9), rgba(26, 26, 26, 0.9)),
+                url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2070&auto=format&fit=crop') no-repeat center center fixed;
+            background-size: cover;
+            color: #ECDFCC;
+            min-height: 100vh;
+        }
+
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: rgba(26, 26, 26, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(197, 168, 128, 0.1);
+            border-radius: 12px;
+        }
+
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .dashboard-title {
+            font-size: 3rem;
+            color: #C5A880;
+            margin-bottom: 0.5rem;
+        }
+
+        .dashboard-subtitle {
+            color: #ECDFCC;
+            opacity: 0.8;
+            font-size: 1.2rem;
+        }
+
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: rgba(26, 26, 26, 0.6);
+            border: 1px solid rgba(197, 168, 128, 0.1);
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(197, 168, 128, 0.3);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            color: #C5A880;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            color: #ECDFCC;
+            opacity: 0.8;
+        }
+
+        .dashboard-sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .section-card {
+            background: rgba(26, 26, 26, 0.6);
+            border: 1px solid rgba(197, 168, 128, 0.1);
+            padding: 1.5rem;
+            border-radius: 8px;
+            height: 400px;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+
+        .section-card:hover {
+            border-color: rgba(197, 168, 128, 0.3);
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            color: #C5A880;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(197, 168, 128, 0.2);
+            padding-bottom: 0.5rem;
+        }
+
+        .section-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .section-item {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(197, 168, 128, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .section-item:hover {
+            background: rgba(197, 168, 128, 0.1);
+        }
+
+        .item-details {
+            flex-grow: 1;
+        }
+
+        .item-status {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background: rgba(197, 168, 128, 0.1);
+            color: #C5A880;
+        }
+
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .chart-card {
+            background: rgba(26, 26, 26, 0.6);
+            border: 1px solid rgba(197, 168, 128, 0.1);
+            padding: 1.5rem;
+            border-radius: 8px;
+            height: 300px;
+            transition: all 0.3s ease;
+        }
+
+        .chart-card:hover {
+            border-color: rgba(197, 168, 128, 0.3);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(197, 168, 128, 0.1);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(197, 168, 128, 0.2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(197, 168, 128, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                margin: 1rem;
+                padding: 1rem;
+            }
+
+            .dashboard-title {
+                font-size: 2.5rem;
+            }
+
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <%- include('../partials/navbar') %>
+
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">Admin Dashboard</h1>
+            <p class="dashboard-subtitle">Monitor and manage your restaurant operations</p>
+        </div>
+
+        <div class="dashboard-stats">
+            <div class="stat-card">
+                <div class="stat-number"><%= orders.length %></div>
+                <div class="stat-label">Total Orders</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number"><%= users.length %></div>
+                <div class="stat-label">Active Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number"><%= tables.length %></div>
+                <div class="stat-label">Available Tables</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">$<%= orders.reduce((sum, order) => sum + (order.total || 0), 0).toFixed(2) %></div>
+                <div class="stat-label">Total Revenue</div>
+            </div>
+        </div>
+
+        <div class="dashboard-sections">
+            <div class="section-card">
+                <h2 class="section-title">Recent Orders</h2>
+                <ul class="section-list">
+                    <% orders.slice(0, 10).forEach(order => { %>
+                        <li class="section-item">
+                            <div class="item-details">
+                                <strong>Order #<%= order._id ? (typeof order._id === 'string' ? order._id.slice(-6) : order._id.toString().slice(-6)) : 'N/A' %></strong><br>
+                                Total: $<%= order.total || '0.00' %>
+                            </div>
+                            <span class="item-status"><%= order.status || 'Pending' %></span>
+                        </li>
+                    <% }) %>
+                </ul>
+            </div>
+
+            <div class="section-card">
+                <h2 class="section-title">Active Users</h2>
+                <ul class="section-list">
+                    <% users.slice(0, 10).forEach(user => { %>
+                        <li class="section-item">
+                            <div class="item-details">
+                                <strong><%= user.name %></strong><br>
+                                ID: <%= user._id ? (typeof user._id === 'string' ? user._id.slice(-6) : user._id.toString().slice(-6)) : 'N/A' %>
+                            </div>
+                            <span class="item-status"><%= user.role || 'Customer' %></span>
+                        </li>
+                    <% }) %>
+                </ul>
+            </div>
+
+            <div class="section-card">
+                <h2 class="section-title">Table Status</h2>
+                <ul class="section-list">
+                    <% tables.forEach(table => { %>
+                        <li class="section-item">
+                            <div class="item-details">
+                                <strong>Table #<%= table.tableNumber %></strong>
+                            </div>
+                            <span class="item-status"><%= table.status %></span>
+                        </li>
+                    <% }) %>
+                </ul>
+            </div>
+        </div>
+
+        <div class="charts-container">
+            <div class="chart-card">
+                <canvas id="ordersChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <%- include('../partials/scripts') %>
+
+    <script>
+        const ordersCtx = document.getElementById('ordersChart').getContext('2d');
+        new Chart(ordersCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Orders per Month',
+                    data: [65, 59, 80, 81, 56, 55],
+                    borderColor: '#C5A880',
+                    backgroundColor: 'rgba(197, 168, 128, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#ECDFCC'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        ticks: {
+                            color: '#ECDFCC'
+                        },
+                        grid: {
+                            color: 'rgba(197, 168, 128, 0.1)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#ECDFCC'
+                        },
+                        grid: {
+                            color: 'rgba(197, 168, 128, 0.1)'
+                        }
+                    }
+                }
+            }
+        });
+
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(revenueCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Monthly Revenue',
+                    data: [4500, 5900, 8000, 8100, 5600, 5500],
+                    backgroundColor: 'rgba(197, 168, 128, 0.5)',
+                    borderColor: '#C5A880',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#ECDFCC'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        ticks: {
+                            color: '#ECDFCC',
+                            callback: function(value) {
+                                return '$' + value;
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(197, 168, 128, 0.1)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#ECDFCC'
+                        },
+                        grid: {
+                            color: 'rgba(197, 168, 128, 0.1)'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

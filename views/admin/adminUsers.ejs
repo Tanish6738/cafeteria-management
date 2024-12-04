@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %></title>
+    <title>User Management | Cafeteria</title>
     <%- include('../partials/links') %>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lenis/1.0.0/lenis.min.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
@@ -14,7 +13,7 @@
         body {
             font-family: 'Cormorant Garamond', serif;
             background: linear-gradient(rgba(26, 26, 26, 0.9), rgba(26, 26, 26, 0.9)),
-                url('https://images.unsplash.com/photo-1526234362653-3b75a0c07438?q=80&w=1932&auto=format&fit=crop') no-repeat center center fixed;
+                url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2070&auto=format&fit=crop') no-repeat center center fixed;
             background-size: cover;
             color: #ECDFCC;
             min-height: 100vh;
@@ -23,6 +22,13 @@
         }
 
         .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: rgba(26, 26, 26, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(197, 168, 128, 0.1);
+            border-radius: 12px;
             position: relative;
             z-index: 1;
         }
@@ -35,8 +41,7 @@
         }
 
         .admin-header h1 {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 2.5rem;
+            font-size: 3rem;
             color: #C5A880;
             margin-bottom: 0.5rem;
         }
@@ -61,6 +66,13 @@
             border: 1px solid rgba(197, 168, 128, 0.2);
             border-radius: 8px;
             color: #ECDFCC;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: rgba(197, 168, 128, 0.4);
+            box-shadow: 0 0 0 2px rgba(197, 168, 128, 0.1);
         }
 
         .search-input::placeholder {
@@ -71,25 +83,23 @@
             position: relative;
             z-index: 2;
             display: grid;
-            gap: 1.5rem;
+            gap: 2rem;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         }
 
         .user-card {
-            background: rgba(26, 26, 26, 0.95);
-            border: 1px solid rgba(197, 168, 128, 0.2);
-            border-radius: 12px;
+            background: rgba(26, 26, 26, 0.6);
+            border: 1px solid rgba(197, 168, 128, 0.1);
+            border-radius: 8px;
             padding: 1.5rem;
-            backdrop-filter: blur(10px);
             transition: all 0.3s ease;
             position: relative;
             z-index: 2;
         }
 
         .user-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(197, 168, 128, 0.15);
-            border-color: rgba(197, 168, 128, 0.4);
+            transform: translateY(-5px);
+            border-color: rgba(197, 168, 128, 0.3);
         }
 
         .user-header {
@@ -109,11 +119,10 @@
 
         .user-role {
             font-size: 0.875rem;
-            color: rgba(236, 223, 204, 0.7);
-            padding: 0.25rem 0.75rem;
-            border: 1px solid rgba(197, 168, 128, 0.3);
-            border-radius: 999px;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
             background: rgba(197, 168, 128, 0.1);
+            color: #C5A880;
         }
 
         .user-info {
@@ -162,7 +171,7 @@
         .action-button:hover {
             background: rgba(197, 168, 128, 0.2);
             border-color: rgba(197, 168, 128, 0.4);
-            transform: translateY(-1px);
+            transform: translateY(-2px);
         }
 
         .delete-button {
@@ -176,7 +185,30 @@
             border-color: rgba(220, 38, 38, 0.4);
         }
 
-        @media (max-width: 640px) {
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(197, 168, 128, 0.1);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(197, 168, 128, 0.2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(197, 168, 128, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 1rem;
+                padding: 1rem;
+            }
+
             .user-header {
                 flex-direction: column;
                 align-items: flex-start;
@@ -196,7 +228,7 @@
     </style>
 </head>
 
-<body class="min-h-screen bg-[#1a1a1a]" data-scroll-container>
+<body class="min-h-screen" data-scroll-container>
     <%- include('../partials/navbar') %>
 
     <main class="container mx-auto px-4 py-8 relative" data-scroll-section>
@@ -238,6 +270,8 @@
             <% }) %>
         </div>
     </main>
+
+    <%- include('../partials/scripts') %>
 
     <script>
         // Initialize Lenis for smooth scrolling
@@ -320,5 +354,4 @@
         }
     </script>
 </body>
-
 </html>

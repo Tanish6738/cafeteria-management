@@ -5,42 +5,76 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Order History</title>
-    
-    <!-- Tailwind CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
-
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
-
+    <%- include('../partials/links') %>
     <style>
         body {
-            font-family: 'Playfair Display', serif;
-            background: url('https://images.unsplash.com/photo-1526234362653-3b75a0c07438?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center fixed;
+            font-family: 'Cormorant Garamond', serif;
+            background: linear-gradient(rgba(26, 26, 26, 0.9), rgba(26, 26, 26, 0.9)),
+                url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2070&auto=format&fit=crop') no-repeat center center fixed;
             background-size: cover;
             color: #ECDFCC;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: rgba(26, 26, 26, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(197, 168, 128, 0.1);
+            border-radius: 12px;
         }
 
         .table-container {
-            background-color: rgba(60, 61, 55, 0.85);
-            border-radius: 15px;
-            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
-            padding: 50px 20px;
-            margin-bottom: 20px;
+            margin-bottom: 2rem;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(197, 168, 128, 0.2);
+        }
+
+        th {
+            background: rgba(197, 168, 128, 0.1);
+            color: #C5A880;
+        }
+
+        tr:hover {
+            background: rgba(197, 168, 128, 0.1);
         }
 
         .btn-primary {
-            background-color: #697565;
-            border-color: #697565;
-            color: #fff;
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: rgba(197, 168, 128, 0.2);
+            border: 1px solid rgba(197, 168, 128, 0.3);
+            color: #C5A880;
+            border-radius: 8px;
+            text-decoration: none;
             transition: all 0.3s ease;
         }
 
         .btn-primary:hover {
-            background-color: #3C3D37;
-            border-color: #3C3D37;
+            background: rgba(197, 168, 128, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .success-message {
+            background-color: rgba(144, 238, 144, 0.1);
+            border: 1px solid green;
+            color: green;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 8px;
         }
 
         .hover-scale {
@@ -51,36 +85,26 @@
             transform: scale(1.05);
         }
 
-        .success-message {
-            background-color: rgba(144, 238, 144, 0.8);
-            border: 1px solid green;
-            color: green;
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-        }
+        @media (max-width: 768px) {
+            .container {
+                margin: 1rem;
+                padding: 1rem;
+            }
 
-        .error-message {
-            background-color: rgba(255, 99, 71, 0.8);
-            border: 1px solid red;
-            color: rgb(255, 255, 255);
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 8px;
+            th, td {
+                padding: 0.5rem;
+            }
         }
     </style>
 </head>
 
 <body>
-    <!-- Navbar -->
     <%- include('../partials/navbar') %>
-    <div class="container mx-auto mt-10 fade-in">
-        <h2 class="text-5xl font-bold mb-10 text-center text-[#4b3a36]">Order History</h2>
-    
-        <!-- Flash Messages -->
+    <div class="container">
+        <h1 class="text-3xl font-bold mb-6 text-center text-[#C5A880]">Order History</h1>
         <% if (flashMessages && flashMessages.success_msg) { %>
             <div class="success-message">
-                <strong>Success!</strong> <%= flashMessages.success_msg %>
+                <%= flashMessages.success_msg %>
             </div>
         <% } %>
         <% if (flashMessages && flashMessages.error_msg) { %>
@@ -88,125 +112,78 @@
                 <strong>Error!</strong> <%= flashMessages.error_msg %>
             </div>
         <% } %>
-    
-        <!-- Order History Table -->
         <div class="table-container">
-            <div class="overflow-x-auto">
-                <table class="min-w-full bg-transparent text-light">
-                    <thead>
-                        <tr class="bg-gray-700">
-                            <th class="py-4 px-6 border-b text-left">Order ID</th>
-                            <th class="py-4 px-6 border-b text-left">Customer</th>
-                            <th class="py-4 px-6 border-b text-left">Placed At</th>
-                            <th class="py-4 px-6 border-b text-left">Updated At</th>
-                            <th class="py-4 px-6 border-b text-left">Completed At</th>
-                            <th class="py-4 px-6 border-b text-left">Status</th>
-                            <th class="py-4 px-6 border-b text-left">Total Price</th>
-                            <th class="py-4 px-6 border-b text-left">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% if (orders && orders.length > 0) { %>
-                            <% orders.forEach(order => { %>
-                                <tr class="border-t">
-                                    <td class="py-2 px-6 border-b"><%= order._id %></td>
-                                    <td class="py-2 px-6 border-b"><%= order.customer.username %></td>
-                                    <td class="py-2 px-6 border-b">
-                                        <% if (order.placedAt && !isNaN(new Date(order.placedAt))) { %>
-                                            <%= new Date(order.placedAt).toLocaleString() %>
-                                        <% } else { %>
-                                            N/A
-                                        <% } %>
-                                    </td>
-                                    <td class="py-2 px-6 border-b">
-                                        <% if (order.updatedAt && !isNaN(new Date(order.updatedAt))) { %>
-                                            <%= new Date(order.updatedAt).toLocaleString() %>
-                                        <% } else { %>
-                                            N/A
-                                        <% } %>
-                                    </td>
-                                    <td class="py-2 px-6 border-b">
-                                        <% if (order.completedAt && !isNaN(new Date(order.completedAt))) { %>
-                                            <%= new Date(order.completedAt).toLocaleString() %>
-                                        <% } else { %>
-                                            N/A
-                                        <% } %>
-                                    </td>
-                                    <td class="py-2 px-6 border-b">
-                                        <% if (order.status === 'completed') { %>
-                                            <span class="text-green-600 font-semibold">Completed</span>
-                                        <% } else { %>
-                                            <span class="text-gray-600 font-semibold capitalize"><%= order.status %></span>
-                                        <% } %>
-                                    </td>
-                                    <td class="py-2 px-6 border-b">₹<%= order.total.toFixed(2) %></td>
-                                    <td class="py-2 px-6 border-b">
-                                        <a href="/admin/orders/<%= order._id %>" class="btn-primary hover-scale py-2 px-4 rounded" aria-label="View Order Details">View</a>
-                                        <a href="/customer/orders/<%= order._id %>/receipt" class="btn-primary hover-scale py-2 px-4 rounded" aria-label="View Receipt">Receipt</a>
-                                    </td>
-                                </tr>
-                            <% }) %>
-                        <% } else { %>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Placed At</th>
+                        <th>Updated At</th>
+                        <th>Completed At</th>
+                        <th>Status</th>
+                        <th>Total Price</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (orders && orders.length > 0) { %>
+                        <% orders.forEach(order => { %>
                             <tr>
-                                <td colspan="8" class="py-4 px-6 text-center text-gray-600">No orders found.</td>
+                                <td><%= order._id %></td>
+                                <td><%= order.customer.username %></td>
+                                <td>
+                                    <% if (order.placedAt && !isNaN(new Date(order.placedAt))) { %>
+                                        <%= new Date(order.placedAt).toLocaleString() %>
+                                    <% } else { %>
+                                        N/A
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <% if (order.updatedAt && !isNaN(new Date(order.updatedAt))) { %>
+                                        <%= new Date(order.updatedAt).toLocaleString() %>
+                                    <% } else { %>
+                                        N/A
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <% if (order.completedAt && !isNaN(new Date(order.completedAt))) { %>
+                                        <%= new Date(order.completedAt).toLocaleString() %>
+                                    <% } else { %>
+                                        N/A
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <% if (order.status === 'completed') { %>
+                                        <span class="text-green-600 font-semibold">Completed</span>
+                                    <% } else { %>
+                                        <span class="text-gray-600 font-semibold capitalize"><%= order.status %></span>
+                                    <% } %>
+                                </td>
+                                <td>₹<%= order.total.toFixed(2) %></td>
+                                <td>
+                                    <a href="/admin/orders/<%= order._id %>" class="btn-primary hover-scale">View</a>
+                                    <a href="/customer/orders/<%= order._id %>/receipt" class="btn-primary hover-scale">Receipt</a>
+                                </td>
                             </tr>
-                        <% } %>
-                    </tbody>
-                </table>
-            </div>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="8" class="py-4 px-6 text-center text-gray-600">No orders found.</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
         </div>
-        
-        <!-- Pagination -->
         <div class="mt-4 flex justify-center">
             <button class="btn-primary hover-scale py-2 px-4 rounded-l" onclick="prevPage()" aria-label="Previous Page">Previous</button>
             <button class="btn-primary hover-scale py-2 px-4 rounded-r" onclick="nextPage()" aria-label="Next Page">Next</button>
         </div>
     </div>
-    
-    <!-- JavaScript Libraries -->
+    <%- include('../partials/scripts') %>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
     <script>
-        // Burger menus
-        document.addEventListener('DOMContentLoaded', function () {
-            // Open
-            const burger = document.querySelectorAll('.navbar-burger');
-            const menu = document.querySelectorAll('.navbar-menu');
-    
-            if (burger.length && menu.length) {
-                for (let i = 0; i < burger.length; i++) {
-                    burger[i].addEventListener('click', function () {
-                        for (let j = 0; j < menu.length; j++) {
-                            menu[j].classList.toggle('hidden');
-                        }
-                    });
-                }
-            }
-    
-            // Close
-            const close = document.querySelectorAll('.navbar-close');
-            const backdrop = document.querySelectorAll('.navbar-backdrop');
-    
-            if (close.length) {
-                for (let i = 0; i < close.length; i++) {
-                    close[i].addEventListener('click', function () {
-                        for (let j = 0; j < menu.length; j++) {
-                            menu[j].classList.toggle('hidden');
-                        }
-                    });
-                }
-            }
-    
-            if (backdrop.length) {
-                for (let i = 0; i < backdrop.length; i++) {
-                    backdrop[i].addEventListener('click', function () {
-                        for (let j = 0; j < menu.length; j++) {
-                            menu[j].classList.toggle('hidden');
-                        }
-                    });
-                }
-            }
-        });
-    
         // GSAP Animations
         gsap.from('.table-container', {
             duration: 1,
@@ -231,7 +208,6 @@
             window.location.href = `/admin/orders?page=${currentPage}`;
         }
     </script>
-    
 </body>
 
 </html>
