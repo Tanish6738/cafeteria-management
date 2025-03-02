@@ -22,9 +22,12 @@
   ],
   "env": {
     "NODE_ENV": "production",
-    "MONGODB_URI": "@mongodb_uri",
-    "SESSION_SECRET": "@session_secret",
-    "STRIPE_PUBLISHABLE_KEY": "@stripe_publishable_key",
-    "STRIPE_SECRET_KEY": "@stripe_secret_key"
+    "PORT": "3000",
+    "MONGODB_URI": "mongodb+srv://Tanishq:Tanishq_2004@cluster0.lmyq3.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
+    "SESSION_SECRET": "your-super-secret-session-key-here",
+    "PUBLISHABLE_KEY": "pk_test_51Q3z7BC43VQjRgwcUBGg4jE6p8fIgV2bPm3UaIcToGtD0iv63X1E8C6DWdopnBreXLzYRyOgGA2OmuPK3TD5kDKq00OnPi8IFb",
+    "SECRET_KEY": "sk_test_51Q3z7BC43VQjRgwcAs49iBHc2K9TjsknC1c82sHQrIcuDBiSlsrqX1hVhrJxrKwpSwwkqt9RzqX15xRnrPlbMMA100lrBmFDXs",
+    "MAX_FILE_SIZE": "50mb",
+    "UPLOAD_PATH": "public/uploads"
   }
 }
