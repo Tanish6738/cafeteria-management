@@ -15,6 +15,7 @@
             background-size: cover;
             color: #ECDFCC;
             min-height: 100vh;
+            
         }
 
         .menu-container {
@@ -25,6 +26,7 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(197, 168, 128, 0.1);
             border-radius: 12px;
+            padding-top: 100px ;
         }
 
         .menu-header {
@@ -225,6 +227,54 @@
             font-size: 0.8rem;
         }
 
+        /* Modal styles for all screen sizes */
+        .quantity-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(26, 26, 26, 0.95);
+            padding: 2rem;
+            border-radius: 8px;
+            width: 400px;
+            max-width: 90%;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            border: 1px solid rgba(197, 168, 128, 0.2);
+        }
+
+        .quantity-modal .modal-content {
+            margin-bottom: 1.5rem;
+        }
+
+        .quantity-modal .modal-content h2 {
+            color: #C5A880;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .quantity-modal .quantity-input {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(26, 26, 26, 0.8);
+            border: 1px solid rgba(197, 168, 128, 0.2);
+            border-radius: 6px;
+            color: #ECDFCC;
+            font-size: 1.1rem;
+        }
+
+        .quantity-modal .modal-footer {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .quantity-modal .modal-footer .btn {
+            flex: 1;
+            text-align: center;
+            justify-content: center;
+        }
+
         @media (max-width: 768px) {
             .menu-container {
                 margin: 1rem;
@@ -255,7 +305,7 @@
 <body class="min-h-screen bg-[#1a1a1a]">
     <%- include('../partials/navbar') %>
 
-    <div class="menu-container">
+    <div class="menu-container ">
         <div class="menu-header">
             <h1 class="menu-title">Our Menu</h1>
             <p class="menu-subtitle">Discover our delicious offerings</p>
@@ -275,36 +325,37 @@
         </div>
 
         <div class="menu-grid">
-            <% menuItems.forEach(item => { %>
-                <div class="menu-item" data-category="<%= item.category %>">
-                    <% if (item.image) { %>
-                        <img src="<%= item.image %>" alt="<%= item.name %>" class="item-image">
-                    <% } %>
+            <% menuItems.filter(item => item.available).forEach(item => { %>
+                <div class="menu-item">
+                    <img src="<%= item.image %>" alt="<%= item.name %>" class="item-image">
                     <div class="item-content">
                         <h3 class="item-title"><%= item.name %></h3>
                         <p class="item-category"><%= item.category %></p>
-                        <p class="item-price">$<%= item.price.toFixed(2) %></p>
+                        <p class="item-price">₹<%= item.price.toFixed(2) %></p>
                         <p class="item-description"><%= item.description %></p>
-                        <div class="item-actions">
-                            <% if (item.available) { %>
+                        <button type="button" class="btn btn-primary add-to-cart" onclick="openQuantityModal('<%= item._id %>')">
+                            <i class="fas fa-shopping-cart"></i>
+                            Add to Cart
+                        </button>
+                        <!-- Modal Structure -->
+                        <div id="quantityModal-<%= item._id %>" class="quantity-modal" style="display:none;">
+                            <div class="modal-content">
+                                <span class="close" onclick="closeQuantityModal('<%= item._id %>')">&times;</span>
+                                <h2>Select Quantity</h2>
                                 <form action="/cart/new" method="POST">
-                                    <input type="hidden" name="itemId" value="<%= item._id %>">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-cart-plus"></i>
-                                        Add to Cart
-                                    </button>
+                                    <input type="hidden" name="menuItemId" value="<%= item._id %>">
+                                    <input type="number" name="quantity" value="1" min="1" class="quantity-input">
+                                    <button type="submit" class="btn btn-primary">Add to Cart</button>
                                 </form>
-                            <% } else { %>
-                                <span class="text-red-500">Not Available</span>
-                            <% } %>
+                            </div>
                         </div>
                     </div>
                 </div>
-            <% }); %>
+            <% }) %>
         </div>
     </div>
 
-    <a href="/cart" class="cart-badge">
+    <a href="/cart/view" class="cart-badge">
         <i class="fas fa-shopping-cart"></i>
         <% if (cartCount > 0) { %>
             <span class="cart-count"><%= cartCount %></span>
@@ -333,39 +384,6 @@
 
         requestAnimationFrame(raf);
 
-        // GSAP Animations
-        gsap.from('.menu-header', {
-            opacity: 0,
-            y: 30,
-            duration: 1,
-            ease: 'power3.out'
-        });
-
-        gsap.from('.menu-actions', {
-            opacity: 0,
-            y: 20,
-            duration: 0.8,
-            delay: 0.3,
-            ease: 'power3.out'
-        });
-
-        gsap.from('.menu-item', {
-            opacity: 0,
-            y: 30,
-            duration: 0.8,
-            stagger: 0.1,
-            delay: 0.5,
-            ease: 'power3.out'
-        });
-
-        gsap.from('.cart-badge', {
-            opacity: 0,
-            scale: 0.5,
-            duration: 0.8,
-            delay: 1,
-            ease: 'back.out(1.7)'
-        });
-
         // Search and Filter Functionality
         const searchInput = document.querySelector('.search-input');
         const filterBtns = document.querySelectorAll('.filter-btn');
@@ -373,6 +391,26 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             filterItems();
+
+            // Modal Functionality
+            const addToCartButtons = document.querySelectorAll('.add-to-cart');
+            const closeModalButtons = document.querySelectorAll('.close');
+
+            addToCartButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const modalId = `quantityModal-${this.getAttribute('data-menu-item-id')}`;
+                    const modal = document.getElementById(modalId);
+                    modal.style.display = 'block';
+                });
+            });
+
+            closeModalButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const modalId = `quantityModal-${this.parentNode.parentNode.id.split('-')[1]}`;
+                    const modal = document.getElementById(modalId);
+                    modal.style.display = 'none';
+                });
+            });
         });
 
         function filterItems() {
@@ -414,6 +452,18 @@
                 filterItems();
             });
         });
+
+        function openQuantityModal(menuItemId) {
+            const modalId = `quantityModal-${menuItemId}`;
+            const modal = document.getElementById(modalId);
+            modal.style.display = 'block';
+        }
+
+        function closeQuantityModal(menuItemId) {
+            const modalId = `quantityModal-${menuItemId}`;
+            const modal = document.getElementById(modalId);
+            modal.style.display = 'none';
+        }
     </script>
 </body>
 </html>

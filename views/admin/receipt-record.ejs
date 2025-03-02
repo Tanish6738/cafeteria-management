@@ -138,6 +138,10 @@
             border-color: rgba(197, 168, 128, 0.4);
         }
 
+        .navbar {
+            z-index: 10;
+        }
+
         @media (max-width: 640px) {
             .receipt-header {
                 flex-direction: column;
@@ -174,7 +178,7 @@
 
         <div class="receipts-container" data-scroll data-scroll-speed="1">
             <% receipts.forEach(receipt => { %>
-                <div class="receipt-card fade-in" data-status="<%= receipt.paymentStatus.toLowerCase() %>">
+                <div class="receipt-card fade-in" data-status="<%= receipt.paymentStatus ? receipt.paymentStatus.toLowerCase() : 'unknown' %>">
                     <div class="receipt-header">
                         <span class="receipt-id">Receipt #<%= receipt._id %></span>
                         <span class="receipt-date"><%= new Date(receipt.createdAt).toLocaleDateString() %></span>
@@ -182,23 +186,14 @@
                     <div class="receipt-details">
                         <div class="detail-item">
                             <span class="detail-label">Customer</span>
-                            <span class="detail-value"><%= receipt.customer.firstName %> <%= receipt.customer.lastName %></span>
+                            <span class="detail-value">
+                                <%= receipt.customer ? `${receipt.customer.firstName} ${receipt.customer.lastName}` : 'Unknown' %>
+                            </span>
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">Payment Status</span>
-                            <span class="detail-value"><%= receipt.paymentStatus %></span>
+                            <span class="detail-value"><%= receipt.paymentStatus || 'Unknown' %></span>
                         </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Payment Method</span>
-                            <span class="detail-value"><%= receipt.paymentMethod %></span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Transaction ID</span>
-                            <span class="detail-value"><%= receipt.transactionId || 'N/A' %></span>
-                        </div>
-                    </div>
-                    <div class="receipt-total">
-                        Total: $<%= receipt.totalAmount.toFixed(2) %>
                     </div>
                 </div>
             <% }) %>

@@ -4,186 +4,292 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Details</title>
-    
-    <!-- Tailwind CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
-
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
-
+    <title><%= title %></title>
+    <%- include('../partials/links') %>
     <style>
         body {
-            font-family: 'Playfair Display', serif;
-            background: url('https://images.unsplash.com/photo-1526234362653-3b75a0c07438?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center fixed;
+            font-family: 'Cormorant Garamond', serif;
+            background: linear-gradient(rgba(26, 26, 26, 0.9), rgba(26, 26, 26, 0.9)),
+                url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2070&auto=format&fit=crop') no-repeat center center fixed;
             background-size: cover;
             color: #ECDFCC;
+            min-height: 100vh;
         }
 
-        .order-details-container {
-            background-color: rgba(60, 61, 55, 0.85);
-            border-radius: 15px;
-            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
-            padding: 50px 20px;
-            margin-bottom: 20px;
-            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: rgba(26, 26, 26, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(197, 168, 128, 0.1);
+            border-radius: 12px;
         }
 
-        .order-details-container:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        .order-details {
+            background: rgba(26, 26, 26, 0.5);
+            border: 1px solid rgba(197, 168, 128, 0.2);
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            color: #C5A880;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid rgba(197, 168, 128, 0.2);
+            padding-bottom: 0.5rem;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        .items-table th,
+        .items-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(197, 168, 128, 0.1);
+        }
+
+        .items-table th {
+            color: #C5A880;
+            font-weight: bold;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+
+        .status-badge.pending { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
+        .status-badge.preparing { background: rgba(0, 123, 255, 0.2); color: #007bff; }
+        .status-badge.ready { background: rgba(40, 167, 69, 0.2); color: #28a745; }
+        .status-badge.served { background: rgba(23, 162, 184, 0.2); color: #17a2b8; }
+        .status-badge.completed { background: rgba(40, 167, 69, 0.2); color: #28a745; }
+        .status-badge.cancelled { background: rgba(220, 53, 69, 0.2); color: #dc3545; }
+
+        .totals-section {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(197, 168, 128, 0.2);
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .total-row.final {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #C5A880;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(197, 168, 128, 0.2);
+        }
+
+        .history-section {
+            margin-top: 2rem;
+        }
+
+        .history-item {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(197, 168, 128, 0.1);
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-status {
+            font-weight: bold;
+            color: #C5A880;
+        }
+
+        .history-time {
+            font-size: 0.875rem;
+            color: rgba(236, 223, 204, 0.7);
+        }
+
+        .history-notes {
+            margin-top: 0.5rem;
+            font-style: italic;
+            color: rgba(236, 223, 204, 0.8);
+        }
+
+        .action-buttons {
+            margin-top: 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
         }
 
         .btn-primary {
-            background-color: #697565;
-            border-color: #697565;
-            color: #fff;
-            transition: all 0.3s ease;
+            background: rgba(197, 168, 128, 0.2);
+            color: #C5A880;
+            border: 1px solid #C5A880;
         }
 
-        .btn-primary:hover {
-            background-color: #3C3D37;
-            border-color: #3C3D37;
+        .btn-danger {
+            background: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+            border: 1px solid #dc3545;
         }
 
-        .hover-scale {
-            transition: transform 0.3s ease-in-out;
-        }
-
-        .hover-scale:hover {
-            transform: scale(1.05);
-        }
-
-        .success-message {
-            background-color: rgba(144, 238, 144, 0.8);
-            border: 1px solid green;
-            color: green;
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            animation: fadeIn 1s ease-in-out;
-        }
-
-        .error-message {
-            background-color: rgba(255, 99, 71, 0.8);
-            border: 1px solid red;
-            color: rgb(255, 255, 255);
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            animation: fadeIn 1s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
     </style>
 </head>
 
 <body>
-    <!-- Navbar -->
     <%- include('../partials/navbar') %>
 
-    <div class="container mx-auto mt-10 fade-in">
-        <h2 class="text-5xl font-bold mb-10 text-center text-[#4b3a36]">Order Details</h2>
+    <div class="container">
+        <h1 class="text-3xl font-bold mb-6 text-center text-[#C5A880]">Order Details</h1>
 
-        <!-- Flash Messages -->
         <% if (flashMessages.success_msg) { %>
-            <div class="success-message">
-                <strong>Success!</strong> <%= flashMessages.success_msg %>
-            </div>
-        <% } %>
-        <% if (flashMessages.error_msg) { %>
-            <div class="error-message">
-                <strong>Error!</strong> <%= flashMessages.error_msg %>
+            <div class="alert alert-success mb-4">
+                <%= flashMessages.success_msg %>
             </div>
         <% } %>
 
-        <div class="order-details-container w-full max-w-4xl mx-auto p-8">
-            <h3 class="text-3xl font-bold mb-6">Order ID: <%= order._id %></h3>
-            <p class="mb-4"><strong>Customer:</strong> <%= order.customer.username %></p>
-            <p class="mb-4"><strong>Status:</strong> <%= order.status %></p>
-            <p class="mb-4"><strong>Items:</strong></p>
-            <ul class="list-disc list-inside mb-4">
-                <% order.items.forEach(item => { %>
-                    <li><%= item.menuItem.name %> - Quantity: <%= item.quantity %></li>
-                <% }) %>
-            </ul>
-            <p class="mt-4"><strong>Total Price:</strong> ₹<%= order.total %></p>
-            <div class="mt-6">
+        <% if (flashMessages.error_msg) { %>
+            <div class="alert alert-danger mb-4">
+                <%= flashMessages.error_msg %>
+            </div>
+        <% } %>
+
+        <div class="order-details">
+            <div class="section-title">Order Information</div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <p><strong>Order ID:</strong> <%= order._id %></p>
+                    <p><strong>Customer:</strong> <%= order.customer ? `${order.customer.firstName} ${order.customer.lastName}` : 'N/A' %></p>
+                    <p><strong>Table Number:</strong> <%= order.tableNumber || 'N/A' %></p>
+                    <p><strong>Status:</strong> 
+                        <span class="status-badge <%= order.status.toLowerCase() %>">
+                            <%= order.status %>
+                        </span>
+                    </p>
+                </div>
+                <div>
+                    <p><strong>Created At:</strong> <%= new Date(order.createdAt).toLocaleString() %></p>
+                    <p><strong>Updated At:</strong> <%= new Date(order.updatedAt).toLocaleString() %></p>
+                    <% if (typeof table !== 'undefined' && table) { %>
+                        <p><strong>Table Status:</strong> <%= table.status %></p>
+                    <% } %>
+                </div>
+            </div>
+
+            <div class="section-title mt-6">Order Items</div>
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% order.items.forEach(item => { %>
+                        <tr>
+                            <td><%= item.menuItem.name %></td>
+                            <td>₹<%= item.menuItem.price.toFixed(2) %></td>
+                            <td><%= item.quantity %></td>
+                            <td>₹<%= (item.menuItem.price * item.quantity).toFixed(2) %></td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+
+            <div class="totals-section">
+                <div class="total-row">
+                    <span>Subtotal:</span>
+                    <span>₹<%= financials.subtotal.toFixed(2) %></span>
+                </div>
+                <div class="total-row">
+                    <span>Tax (10%):</span>
+                    <span>₹<%= financials.tax.toFixed(2) %></span>
+                </div>
+                <div class="total-row">
+                    <span>Service Charge (5%):</span>
+                    <span>₹<%= financials.serviceCharge.toFixed(2) %></span>
+                </div>
+                <div class="total-row final">
+                    <span>Total:</span>
+                    <span>₹<%= financials.total.toFixed(2) %></span>
+                </div>
+            </div>
+
+            <% if (orderHistory && orderHistory.length > 0) { %>
+                <div class="history-section">
+                    <div class="section-title">Order History</div>
+                    <% orderHistory.forEach(history => { %>
+                        <div class="history-item">
+                            <div class="history-status"><%= history.status %></div>
+                            <div class="history-time">
+                                <%= new Date(history.timestamp).toLocaleString() %>
+                            </div>
+                            <% if (history.notes) { %>
+                                <div class="history-notes">
+                                    Note: <%= history.notes %>
+                                </div>
+                            <% } %>
+                            <% if (history.updatedBy) { %>
+                                <div class="history-user">
+                                    Updated by: <%= history.updatedBy.firstName %> <%= history.updatedBy.lastName %>
+                                </div>
+                            <% } %>
+                        </div>
+                    <% }) %>
+                </div>
+            <% } %>
+
+            <div class="action-buttons">
                 <% if (isAdmin) { %>
-                    <a href="/admin/orders" class="btn-primary hover-scale py-2 px-4 rounded">Back to Orders</a>
-                    <a href="/admin/orders/<%=  %>/receipt" class="btn-primary hover-scale py-2 px-4 rounded ml-4">View Receipt</a>
+                    <a href="/admin/orders" class="btn btn-primary">Back to Orders</a>
+                    <% if (order.status === 'completed' || order.status === 'cancelled') { %>
+                        <a href="/admin/orders/<%= order._id %>/archive" class="btn btn-primary">Archive Order</a>
+                    <% } %>
                 <% } else { %>
-                    <a href="/customer/orders" class="btn-primary hover-scale py-2 px-4 rounded">Back to Orders</a>
-                    <a href="/customer/orders/<%= order.tableNumber %>/receipt" class="btn-primary hover-scale py-2 px-4 rounded ml-4">View Receipt</a>
+                    <a href="/customer/orders" class="btn btn-primary">Back to My Orders</a>
+                    <% if (order.status === 'pending') { %>
+                        <form action="/orders/cancel/<%= order._id %>" method="POST" style="display: inline;">
+                            <button type="submit" class="btn btn-danger">Cancel Order</button>
+                        </form>
+                    <% } %>
                 <% } %>
             </div>
         </div>
-        
-        <%- include('../partials/scripts') %>
+    </div>
 
-    <!-- JavaScript Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
+    <%- include('../partials/scripts') %>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script>
-        // Burger menus
-        document.addEventListener('DOMContentLoaded', function () {
-            // open
-            const burger = document.querySelectorAll('.navbar-burger');
-            const menu = document.querySelectorAll('.navbar-menu');
-
-            if (burger.length && menu.length) {
-                for (var i = 0; i < burger.length; i++) {
-                    burger[i].addEventListener('click', function () {
-                        for (var j = 0; j < menu.length; j++) {
-                            menu[j].classList.toggle('hidden');
-                        }
-                    });
-                }
-            }
-
-            // close
-            const close = document.querySelectorAll('.navbar-close');
-            const backdrop = document.querySelectorAll('.navbar-backdrop');
-
-            if (close.length) {
-                for (var i = 0; i < close.length; i++) {
-                    close[i].addEventListener('click', function () {
-                        for (var j = 0; j < menu.length; j++) {
-                            menu[j].classList.toggle('hidden');
-                        }
-                    });
-                }
-            }
-
-            if (backdrop.length) {
-                for (var i = 0; i < backdrop.length; i++) {
-                    backdrop[i].addEventListener('click', function () {
-                        for (var j = 0; j < menu.length; j++) {
-                            menu[j].classList.toggle('hidden');
-                        }
-                    });
-                }
-            }
-        });
-
         // GSAP Animations
-        gsap.from('.order-details-container', {
+        gsap.from('.order-details', {
             duration: 1,
             y: 50,
             opacity: 0,
-            stagger: 0.2
+            ease: 'power3.out'
         });
     </script>
 </body>

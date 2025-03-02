@@ -43,13 +43,16 @@
             color: var(--error-color);
             transform: scale(1.1);
         }
+        .navbar {
+            z-index: 10;
+        }
     </style>
 </head>
 
 <body class="min-h-screen bg-gray-900">
     <%- include('../partials/navbar') %>
 
-    <main class="container mx-auto px-4 py-8">
+    <main class="container mx-auto px-4 py-8 pt-20">
         <% if (messages.success_msg || messages.error_msg) { %>
             <div class="alert <%= messages.success_msg ? 'alert-success' : 'alert-danger' %> mb-6">
                 <%= messages.success_msg || messages.error_msg %>
@@ -122,8 +125,10 @@
                                 </div>
                             </div>
                             <% if (tableNumber) { %>
-                                <form action="/cart/checkout" method="POST">
+                                <form action="/orders/place" method="POST">
                                     <input type="hidden" name="tableNumber" value="<%= tableNumber %>">
+                                    <input type="hidden" name="total" value="<%= (cart.total * 1.1).toFixed(2) %>">
+                                    <input type="hidden" name="orderType" value="dine-in">
                                     <button type="submit" class="luxury-button w-full py-3 text-center">
                                         Proceed to Checkout
                                     </button>

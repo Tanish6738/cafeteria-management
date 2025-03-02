@@ -1,4 +1,4 @@
-<nav class="bg-[#1a1a1a] border-b border-[#C5A880]/20 backdrop-blur-lg fixed w-full z-50">
+<nav class="bg-[#1a1a1a] border-b border-[#C5A880]/20 backdrop-blur-lg fixed w-full z-10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
             <div class="flex items-center">
@@ -15,14 +15,16 @@
                             <a href="/admin/menu" class="<%= locals.title === 'Admin Menu' ? 'border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] hover:border-[#C5A880] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Menu</a>
                             <a href="/admin/orders" class="<%= locals.title === 'Admin Orders' ? 'border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] hover:border-[#C5A880] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Orders</a>
                             <a href="/orderHistory" class="<%= locals.title === 'Admin Order History' ? 'border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] hover:border-[#C5A880] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Order History</a>
-                            <a href="/tables" class="<%= locals.title === 'Admin Tables' ? 'border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] hover:border-[#C5A880] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Tables</a>
+                            <a href="/admin/tables" class="<%= locals.title === 'Admin Tables' ? 'border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] hover:border-[#C5A880] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Tables</a>
                             <a href="/admin/tables/tableHistory" class="<%= locals.title === 'Admin Table History' ? 'border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] hover:border-[#C5A880] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Table History</a>
+                            <a href="/admin/receipt-records" class="<%= locals.title === 'Admin Receipt Records' ? 'border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] hover:border-[#C5A880] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Receipt Records</a>
                         <% } else { %>
                             <!-- Customer Navigation -->
                             <a href="/customer/menu" class="<%= locals.title === 'Menu' ? 'border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] hover:border-[#C5A880] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Menu</a>
                             <a href="/cart/view" class="<%= locals.title === 'Cart' ? 'border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] hover:border-[#C5A880] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Cart</a>
                             <a href="/customer/orders" class="<%= locals.title === 'My Orders' ? 'border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] hover:border-[#C5A880] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">My Orders</a>
-                            <a href="/orderHistory" class="<%= locals.title === 'Order History' ? 'border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] hover:border-[#C5A880] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Order History</a>
+                            <a href="/customer/orders/history" class="<%= locals.title === 'Customer Order History' ? 'border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] hover:border-[#C5A880] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Order History</a>
+                            <!-- <a href="/" class="<%= locals.title === 'Order History' ? 'border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] hover:border-[#C5A880] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Order History</a> -->
                             <a href="/tables" class="<%= locals.title === 'Tables' ? 'border-[#C5A880]' : 'border-transparent' %> text-[#ECDFCC] hover:border-[#C5A880] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Tables</a>
                         <% } %>
                     <% } else { %>
@@ -87,15 +89,19 @@
                     <a href="/admin/menu" class="text-[#ECDFCC] block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Menu</a>
                     <a href="/admin/orders" class="text-[#ECDFCC] block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Orders</a>
                     <a href="/orderHistory" class="text-[#ECDFCC] block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Order History</a>
-                    <a href="/tables" class="text-[#ECDFCC] block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Tables</a>
+                    <a href="/admin/tables" class="text-[#ECDFCC] block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Tables</a>
                     <a href="/admin/tables/tableHistory" class="text-[#ECDFCC] block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Table History</a>
+                    <a href="/admin/receipt-records" class="text-[#ECDFCC] block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Receipt Records</a>
+                    <a href="/user/profile" class="text-[#ECDFCC] block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Profile</a>
                 <% } else { %>
                     <!-- Customer Mobile Navigation -->
                     <a href="/customer/menu" class="text-[#ECDFCC] block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Menu</a>
                     <a href="/cart/view" class="text-[#ECDFCC] block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Cart</a>
                     <a href="/customer/orders" class="text-[#ECDFCC] block pl-3 pr-4 py-2 border-l-4 text-base font-medium">My Orders</a>
+                    <a href="/customer/orders/history" class="text-[#ECDFCC] block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Order History</a>
                     <a href="/orderHistory" class="text-[#ECDFCC] block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Order History</a>
                     <a href="/tables" class="text-[#ECDFCC] block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Tables</a>
+                    <a href="/user/profile" class="text-[#ECDFCC] block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Profile</a>
                 <% } %>
             <% } else { %>
                 <!-- Guest Mobile Navigation -->

@@ -11,6 +11,7 @@ const TableSchema = new Schema({
     reservedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Users' }, 
     capacity: { type: Number, required: true },
     order: { type: mongoose.Schema.Types.ObjectId, ref: 'Orders' }, 
+    currentOrders: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Orders' }],
     reservationStartTime: { type: Date, default: Date.now }, 
     reservationEndTime: { type: Date }   
 }, {

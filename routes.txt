@@ -1,0 +1,54 @@
+AUTHENTICATION ROUTES
+GET /login - Display login page
+POST /login - Process user login
+GET /register - Display registration page
+POST /register - Process user registration
+GET /logout - Log out user and clear session
+
+MENU ROUTES
+GET /customer/menu - Display menu for customers
+GET /admin/menu - Display menu management for admin
+POST /admin/menu/add - Add new menu item (admin)
+GET /admin/menu/:id/edit - Edit menu item form (admin)
+POST /admin/menu/:id/edit - Update menu item (admin)
+GET /admin/menu/:id/delete - Delete menu item (admin)
+
+ORDER ROUTES
+GET /customer/orders - View customer's orders
+POST /orders/place - Place a new order
+GET /orders/:id - View specific order details
+POST /orders/cancel/:id - Cancel an order
+GET /admin/orders - View all orders (admin)
+POST /admin/orders/:id/status - Update order status (admin)
+
+CART ROUTES
+GET /cart/view - View shopping cart
+POST /cart/add - Add item to cart
+POST /cart/update - Update cart item quantity
+POST /cart/remove - Remove item from cart
+POST /cart/clear - Clear entire cart
+
+TABLE ROUTES
+GET /tables - View available tables
+POST /tables/reserve - Reserve a table
+GET /tables/confirm-reservation/:tableNumber - Confirm table reservation
+GET /admin/tables - View all tables (admin)
+POST /admin/tables/add - Add new table (admin)
+POST /admin/tables/:id/status - Update table status (admin)
+
+USER MANAGEMENT ROUTES
+GET /user/profile - View user profile
+POST /user/profile/update - Update user profile
+GET /admin/users - View all users (admin)
+DELETE /admin/user/:id - Delete user (admin)
+POST /admin/user/:id/toggle-status - Toggle user active status (admin)
+
+PAYMENT ROUTES
+POST /payment/process - Process payment for order
+GET /payment/success - Payment success callback
+GET /payment/cancel - Payment cancellation callback
+
+API ROUTES
+GET /api/menu - Get menu items
+GET /api/tables/status - Get real-time table status
+GET /api/orders/status - Get real-time order status

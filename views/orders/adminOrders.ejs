@@ -19,7 +19,7 @@
         .container {
             max-width: 1200px;
             margin: 2rem auto;
-            padding: 2rem;
+            padding: 6rem;
             background: rgba(26, 26, 26, 0.85);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(197, 168, 128, 0.1);
@@ -91,6 +91,34 @@
             color: #ef4444;
         }
 
+        .status-select {
+            min-width: 120px;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+
+        .status-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(197, 168, 128, 0.2);
+        }
+
+        .update-status-btn:hover {
+            background-color: rgba(197, 168, 128, 0.9);
+        }
+
+        .inline-flex {
+            display: inline-flex;
+        }
+
+        .gap-2 {
+            gap: 0.5rem;
+        }
+
         @media (max-width: 768px) {
             .container {
                 margin: 1rem;
@@ -101,23 +129,90 @@
                 padding: 0.5rem;
             }
         }
+
+        .status-select {
+            background: rgba(26, 26, 26, 0.8);
+            color: #ECDFCC;
+            border: 1px solid #C5A880;
+            padding: 0.5rem;
+            border-radius: 4px;
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+
+        .notes-input {
+            background: rgba(26, 26, 26, 0.8);
+            color: #ECDFCC;
+            border: 1px solid #C5A880;
+            padding: 0.5rem;
+            border-radius: 4px;
+            width: 100%;
+            height: 60px;
+            margin-top: 0.5rem;
+            resize: vertical;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .view-btn, .archive-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .view-btn {
+            background: rgba(197, 168, 128, 0.2);
+            color: #C5A880;
+            border: 1px solid #C5A880;
+        }
+
+        .archive-btn {
+            background: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+            border: 1px solid #dc3545;
+        }
+
+        .view-btn:hover {
+            background: rgba(197, 168, 128, 0.3);
+        }
+
+        .archive-btn:hover {
+            background: rgba(220, 53, 69, 0.3);
+        }
     </style>
 </head>
 
 <body>
     <%- include('../partials/navbar') %>
 
-    <div class="container">
+    <div class="container mt-40">
         <h1 class="text-3xl font-bold mb-6 text-center text-[#C5A880]">Admin Orders Management</h1>
+        
+        <% if (typeof messages !== 'undefined' && messages.success_msg) { %>
+            <div class="alert alert-success mb-4">
+                <%= messages.success_msg %>
+            </div>
+        <% } %>
+
+        <% if (typeof messages !== 'undefined' && messages.error_msg) { %>
+            <div class="alert alert-danger mb-4">
+                <%= messages.error_msg %>
+            </div>
+        <% } %>
+
         <div class="table-section">
             <table>
                 <thead>
                     <tr>
                         <th>Order ID</th>
                         <th>Customer</th>
-                        <th>Date</th>
                         <th>Status</th>
-                        <th>Total</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -125,19 +220,23 @@
                     <% orders.forEach(order => { %>
                         <tr>
                             <td><%= order._id %></td>
-                            <td><%= order.customer.name %></td>
-                            <td><%= new Date(order.createdAt).toLocaleDateString() %></td>
+                            <td><%= order.customer ? order.customer.firstName + ' ' + order.customer.lastName : 'Customer Not Available' %></td>
                             <td>
-                                <span class="status-badge 
-                                    <%= order.status === 'pending' ? 'status-pending' : '' %>
-                                    <%= order.status === 'completed' ? 'status-completed' : '' %>
-                                    <%= order.status === 'cancelled' ? 'status-cancelled' : '' %>">
-                                    <%= order.status %>
-                                </span>
+                                <form action="/orders/<%= order._id %>/update-status" method="POST" class="inline-flex gap-2">
+                                    <select name="status" class="status-select">
+                                        <option value="pending" <%= order.status === 'pending' ? 'selected' : '' %>>Pending</option>
+                                        <option value="preparing" <%= order.status === 'preparing' ? 'selected' : '' %>>Preparing</option>
+                                        <option value="ready" <%= order.status === 'ready' ? 'selected' : '' %>>Ready</option>
+                                        <option value="served" <%= order.status === 'served' ? 'selected' : '' %>>Served</option>
+                                        <option value="completed" <%= order.status === 'completed' ? 'selected' : '' %>>Completed</option>
+                                        <option value="cancelled" <%= order.status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
+                                    </select>
+                                    <button type="submit" class="btn-primary update-status-btn">Update</button>
+                                </form>
                             </td>
-                            <td>$<%= order.total.toFixed(2) %></td>
-                            <td>
-                                <a href="/admin/orders/<%= order._id %>" class="btn-primary">View</a>
+                            <td class="action-buttons">
+                                <a href="/admin/orders/<%= order._id %>" class="view-btn">View</a>
+                                <a href="/admin/orders/<%= order._id %>/archive" class="archive-btn">Archive</a>
                             </td>
                         </tr>
                     <% }) %>
@@ -146,6 +245,21 @@
         </div>
     </div>
     <%- include('../partials/scripts') %>
+
+    <script>
+        // Socket.IO connection for real-time updates
+        const socket = io();
+        
+        socket.on('orderStatusUpdate', (data) => {
+            const row = document.querySelector(`tr[data-order-id="${data.orderId}"]`);
+            if (row) {
+                const statusSelect = row.querySelector('.status-select');
+                if (statusSelect) {
+                    statusSelect.value = data.status;
+                }
+            }
+        });
+    </script>
 
 </body>
 

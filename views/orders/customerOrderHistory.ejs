@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order History</title>
+    <%- include('../partials/links') %>
+    <style>
+        body {
+            font-family: 'Cormorant Garamond', serif;
+            background: linear-gradient(rgba(26, 26, 26, 0.9), rgba(26, 26, 26, 0.9)),
+                url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2070&auto=format&fit=crop') no-repeat center center fixed;
+            background-size: cover;
+            color: #ECDFCC;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: rgba(26, 26, 26, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(197, 168, 128, 0.1);
+            border-radius: 12px;
+        }
+
+        .table-section {
+            margin-bottom: 2rem;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(197, 168, 128, 0.2);
+        }
+
+        th {
+            background: rgba(197, 168, 128, 0.1);
+            color: #C5A880;
+        }
+
+        tr:hover {
+            background: rgba(197, 168, 128, 0.05);
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-completed {
+            background: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+            border: 1px solid #28a745;
+        }
+
+        .status-cancelled {
+            background: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+            border: 1px solid #dc3545;
+        }
+
+        .status-paid {
+            background: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+            border: 1px solid #28a745;
+        }
+
+        .view-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            text-decoration: none;
+            background: rgba(197, 168, 128, 0.2);
+            color: #C5A880;
+            border: 1px solid #C5A880;
+            transition: all 0.3s ease;
+        }
+
+        .view-btn:hover {
+            background: rgba(197, 168, 128, 0.3);
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 2rem;
+            color: #C5A880;
+            font-style: italic;
+        }
+
+        .date-column {
+            white-space: nowrap;
+        }
+    </style>
+</head>
+
+<body>
+    <%- include('../partials/navbar') %>
+
+    <div class="container">
+        <h1 class="text-3xl font-bold mb-6 text-center text-[#C5A880]">Order History</h1>
+
+        <% if (messages.success_msg) { %>
+            <div class="alert alert-success mb-4">
+                <%= messages.success_msg %>
+            </div>
+        <% } %>
+
+        <% if (messages.error_msg) { %>
+            <div class="alert alert-danger mb-4">
+                <%= messages.error_msg %>
+            </div>
+        <% } %>
+
+        <div class="table-section">
+            <% if (orders && orders.length > 0) { %>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Date</th>
+                            <th>Items</th>
+                            <th>Total Amount</th>
+                            <th>Table</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% orders.forEach(order => { %>
+                            <tr>
+                                <td><%= order._id %></td>
+                                <td class="date-column"><%= new Date(order.createdAt).toLocaleString() %></td>
+                                <td>
+                                    <% order.items.forEach(item => { %>
+                                        <%= item.menuItem.name %> x <%= item.quantity %><br>
+                                    <% }) %>
+                                </td>
+                                <td>₹<%= order.totalAmount.toFixed(2) %></td>
+                                <td><%= order.tableNumber || 'N/A' %></td>
+                                <td>
+                                    <span class="status-badge status-<%= order.status.toLowerCase() %>">
+                                        <%= order.status %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="/customer/orders/<%= order._id %>" class="view-btn">View Details</a>
+                                    <% if (order.status === 'completed' && !order.paid) { %>
+                                        <a href="/customer/orders/<%= order._id %>/pay" class="view-btn">Pay Bill</a>
+                                    <% } else if (order.status === 'paid') { %>
+                                        <span class="status-badge status-paid">Paid</span>
+                                    <% } %>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            <% } else { %>
+                <div class="empty-message">
+                    <p>No completed or cancelled orders found in your history.</p>
+                </div>
+            <% } %>
+        </div>
+    </div>
+
+    <%- include('../partials/scripts') %>
+</body>
+
+</html>

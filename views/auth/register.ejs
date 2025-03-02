@@ -1,144 +1,119 @@
-<%- include('../partials/header') %>
+<!DOCTYPE html>
+<html lang="en">
 
-<div class="auth-container">
-    <div class="auth-box luxury-container">
-        <h2 class="heading-primary text-center mb-8">Create Your Account</h2>
-        
-        <% if (messages.error && messages.error.length > 0) { %>
-            <div class="alert alert-danger luxury-alert">
-                <%= messages.error %>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Playfair Display', serif;
+            background: url('https://images.unsplash.com/photo-1526234362653-3b75a0c07438?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center fixed;
+            background-size: cover;
+            color: #ECDFCC;
+        }
+
+        .form-container {
+            background-color: rgba(60, 61, 55, 0.85);
+            border-radius: 15px;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+            padding: 50px 20px;
+        }
+
+        .btn-primary {
+            background-color: #697565;
+            border-color: #697565;
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #3C3D37;
+            border-color: #3C3D37;
+        }
+
+        .navbar {
+            z-index: 10;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-white dark:bg-gray-900">
+        <div class="flex justify-center h-screen">
+            <!-- Left Info Section -->
+            <div class="hidden bg-cover lg:block lg:w-2/3" style="background-image: url('https://images.unsplash.com/photo-1526234362653-3b75a0c07438?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')">
+                <div class="flex items-center h-full px-20 bg-gray-900 bg-opacity-40">
+                    <div class="border-2 px-6 py-4 rounded-lg" style="background-color: rgba(255, 255, 255, 0.601);">
+                        <h2 class="text-4xl font-extrabold text-black underline">Café Luxe</h2>
+                        <p class="max-w-xl text-2xl mt-3 text-black">
+                            Join Cafe Luxe and enjoy exclusive deals and a luxurious coffee experience. Register to get started with your personalized account.
+                        </p>
+                    </div>
+                </div>
             </div>
-        <% } %>
 
-        <form action="/register" method="POST" class="luxury-form">
-            <div class="form-group mb-6">
-                <label for="firstName" class="form-label">First Name</label>
-                <input type="text" id="firstName" name="firstName" required class="form-control">
+            <!-- Registration Form -->
+            <div class="flex items-center w-full max-w-md px-6 mx-auto lg:w-2/6">
+                <div class="flex-1">
+                    <div class="text-center">
+                        <h2 class="text-4xl font-bold text-center text-gray-700 dark:text-white">Café Luxe</h2>
+                        <p class="mt-3 text-gray-500 dark:text-gray-300">Create your account and get started</p>
+                    </div>
+
+                    <div class="mt-8">
+                        <% if (messages.error && messages.error.length > 0) { %>
+                            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                                <strong class="font-bold">Error!</strong>
+                                <span class="block sm:inline"><%= messages.error %></span>
+                            </div>
+                        <% } %>
+
+                        <form action="/register" method="POST">
+                            <div>
+                                <label for="firstName" class="block mb-2 text-sm text-gray-600 dark:text-gray-200">First Name</label>
+                                <input type="text" id="firstName" name="firstName" placeholder="John" class="block w-full px-4 py-2 mt-2 text-gray-700 placeholder-gray-400 bg-white border border-gray-200 rounded-md dark:placeholder-gray-600 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-700 focus:border-blue-400 dark:focus:border-blue-400 focus:ring-blue-400 focus:outline-none focus:ring focus:ring-opacity-40" required>
+                            </div>
+
+                            <div class="mt-6">
+                                <label for="lastName" class="block mb-2 text-sm text-gray-600 dark:text-gray-200">Last Name</label>
+                                <input type="text" id="lastName" name="lastName" placeholder="Doe" class="block w-full px-4 py-2 mt-2 text-gray-700 placeholder-gray-400 bg-white border border-gray-200 rounded-md dark:placeholder-gray-600 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-700 focus:border-blue-400 dark:focus:border-blue-400 focus:ring-blue-400 focus:outline-none focus:ring focus:ring-opacity-40" required>
+                            </div>
+
+                            <div class="mt-6">
+                                <label for="email" class="block mb-2 text-sm text-gray-600 dark:text-gray-200">Email Address</label>
+                                <input type="email" id="email" name="email" placeholder="example@example.com" class="block w-full px-4 py-2 mt-2 text-gray-700 placeholder-gray-400 bg-white border border-gray-200 rounded-md dark:placeholder-gray-600 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-700 focus:border-blue-400 dark:focus:border-blue-400 focus:ring-blue-400 focus:outline-none focus:ring focus:ring-opacity-40" required>
+                            </div>
+
+                            <div class="mt-6">
+                                <label for="password" class="block mb-2 text-sm text-gray-600 dark:text-gray-200">Password</label>
+                                <input type="password" id="password" name="password" placeholder="Your Password" class="block w-full px-4 py-2 mt-2 text-gray-700 placeholder-gray-400 bg-white border border-gray-200 rounded-md dark:placeholder-gray-600 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-700 focus:border-blue-400 dark:focus:border-blue-400 focus:ring-blue-400 focus:outline-none focus:ring focus:ring-opacity-40" required>
+                            </div>
+
+                            <div class="mt-6">
+                                <label for="confirmPassword" class="block mb-2 text-sm text-gray-600 dark:text-gray-200">Confirm Password</label>
+                                <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm Your Password" class="block w-full px-4 py-2 mt-2 text-gray-700 placeholder-gray-400 bg-white border border-gray-200 rounded-md dark:placeholder-gray-600 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-700 focus:border-blue-400 dark:focus:border-blue-400 focus:ring-blue-400 focus:outline-none focus:ring focus:ring-opacity-40" required>
+                            </div>
+
+                            <div class="mt-6">
+                                <label for="mobile" class="block mb-2 text-sm text-gray-600 dark:text-gray-200">Mobile Number</label>
+                                <input type="text" id="mobile" name="mobile" placeholder="123-456-7890" class="block w-full px-4 py-2 mt-2 text-gray-700 placeholder-gray-400 bg-white border border-gray-200 rounded-md dark:placeholder-gray-600 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-700 focus:border-blue-400 dark:focus:border-blue-400 focus:ring-blue-400 focus:outline-none focus:ring focus:ring-opacity-40">
+                            </div>
+
+                            <div class="mt-6">
+                                <button type="submit" class="btn-primary w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform rounded-md hover:bg-blue-400 focus:outline-none focus:bg-blue-400 focus:ring focus:ring-blue-300 focus:ring-opacity-50">Register</button>
+                            </div>
+                        </form>
+
+                        <p class="mt-6 text-sm text-center text-gray-400">Already have an account? <a href="/auth/login" class="text-blue-500 focus:outline-none focus:underline hover:underline">Sign in</a>.</p>
+                    </div>
+                </div>
             </div>
-
-            <div class="form-group mb-6">
-                <label for="lastName" class="form-label">Last Name</label>
-                <input type="text" id="lastName" name="lastName" required class="form-control">
-            </div>
-
-            <div class="form-group mb-6">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" id="password" name="password" required class="form-control">
-            </div>
-
-            <div class="form-group mb-6">
-                <label for="confirmPassword" class="form-label">Confirm Password</label>
-                <input type="password" id="confirmPassword" name="confirmPassword" required class="form-control">
-            </div>
-
-            <div class="form-group mb-6">
-                <label for="email" class="form-label">Email Address</label>
-                <input type="email" id="email" name="email" required class="form-control">
-            </div>
-
-            <div class="form-group mb-6">
-                <label for="mobile" class="form-label">Mobile Number</label>
-                <input type="text" id="mobile" name="mobile" class="form-control">
-            </div>
-
-            <button type="submit" class="luxury-button w-full">Register</button>
-        </form>
-
-        <div class="auth-footer text-center mt-8">
-            <p class="text-muted">Already have an account? <a href="/auth/login" class="luxury-link">Sign In</a></p>
         </div>
     </div>
-</div>
+</body>
 
-<%- include('../partials/footer') %>
-
-<style>
-    .auth-container {
-        min-height: 100vh;
-        background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('/assets/img/auth-bg.jpg') center/cover;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 2rem;
-    }
-
-    .luxury-container {
-        background: rgba(26, 26, 26, 0.85);
-        backdrop-filter: blur(10px);
-        border-radius: 15px;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
-        border: 1px solid rgba(197, 168, 128, 0.1);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        padding: 3rem;
-        width: 100%;
-        max-width: 500px;
-    }
-
-    .luxury-container:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-    }
-
-    .heading-primary {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 2.5rem;
-        color: var(--primary-color);
-    }
-
-    .form-control {
-        width: 100%;
-        padding: 0.8rem;
-        background: rgba(255,255,255,0.1);
-        border: 1px solid rgba(197,168,128,0.3);
-        border-radius: 5px;
-        color: white;
-        font-family: 'Montserrat', sans-serif;
-    }
-
-    .form-label {
-        display: block;
-        color: #999;
-        margin-bottom: 0.5rem;
-        font-family: 'Montserrat', sans-serif;
-    }
-
-    .luxury-button {
-        background: var(--primary-color);
-        color: var(--secondary-color);
-        padding: 0.8rem 2rem;
-        border-radius: 5px;
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 500;
-        letter-spacing: 0.5px;
-        transition: all 0.3s ease;
-        border: 2px solid var(--primary-color);
-    }
-
-    .luxury-button:hover {
-        background: transparent;
-        color: var(--primary-color);
-    }
-
-    .luxury-link {
-        color: var(--primary-color);
-        text-decoration: none;
-        transition: color 0.3s ease;
-    }
-
-    .luxury-link:hover {
-        color: #fff;
-    }
-
-    .luxury-alert {
-        background: rgba(220,53,69,0.1);
-        color: #dc3545;
-        padding: 1rem;
-        border-radius: 5px;
-        margin-bottom: 1rem;
-    }
-
-    .text-muted {
-        color: #999;
-        font-family: 'Montserrat', sans-serif;
-    }
-</style>
+</html>

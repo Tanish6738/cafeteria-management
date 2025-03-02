@@ -34,6 +34,7 @@
             width: 100%;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
             margin-bottom: 2rem;
+            margin-top: 6rem;
         }
 
         .profile-header {
@@ -144,7 +145,7 @@
     <% } %>
 
     <!-- Current Orders Section -->
-    <div class="container mt-10">
+    <div class="container ">
         <h3 class="text-2xl font-bold mb-4">Current Orders</h3>
         <% if (currentOrders && currentOrders.length > 0) { %>
             <% currentOrders.forEach(order => { %>
@@ -193,27 +194,38 @@
         <% } %>
     </div>
 
+     <!-- Receipts Section -->
+     <div class="container mt-10">
+        <h3 class="text-2xl font-bold mb-4">Receipts</h3>
+        <% if (receipts && receipts.length > 0) { %>
+            <% receipts.forEach(receipt => { %>
+                <div class="receipt-item mb-4 p-4 bg-gray-800 rounded">
+                    <h4 class="text-xl font-bold mb-2">Receipt ID: <%= receipt.receiptNumber %></h4>
+                    <p class="mb-2"><strong>Date:</strong> <%= new Date(receipt.generatedAt).toLocaleString() %></p>
+                    <p class="mb-2"><strong>Total:</strong> ₹<%= receipt.total.toFixed(2) %></p>
+                    <p class="mb-2"><strong>Payment Method:</strong> <%= receipt.paymentMethod %></p>
+                    <a href="/customer/orders/receipt/<%= receipt._id %>" class="btn-primary mt-2 inline-block text-center rounded">View Receipt</a>
+                </div>
+            <% }) %>
+        <% } else { %>
+            <p>No receipts available.</p>
+        <% } %>
+    </div>
+
     <!-- Payment History Section -->
     <div class="container mt-10">
         <h3 class="text-2xl font-bold mb-4">Payment History</h3>
         <% if (payments && payments.length > 0) { %>
             <% payments.forEach(payment => { %>
                 <div class="payment-item mb-4 p-4 bg-gray-800 rounded">
-                    <h4 class="text-xl font-bold mb-2">Payment ID: <%= payment._id %></h4>
-                    <p class="mb-2"><strong>Order IDs:</strong>
-                        <% payment.orders.forEach(order => { %>
-                            <%= order._id %>
-                        <% }) %>
-                    </p>
-                    <p class="mb-2"><strong>Amount:</strong> ₹<%= payment.totalAmount %></p>
-                    <p class="mb-2"><strong>Date:</strong> <%= new Date(payment.paymentDate).toDateString() %></p>
-                    <% if (payment.receipt) { %>
-                        <a href="/customer/receipt/<%= payment.receipt._id %>" class="btn-view-receipt mt-2 inline-block bg-green-500 hover:bg-green-700 text-white p-2 rounded">View Receipt</a>
-                    <% } %>
+                    <p><strong>Receipt ID:</strong> <%= payment._id %></p>
+                    <p><strong>Total Amount:</strong> ₹<%= payment.totalAmount %></p>
+                    <p><strong>Status:</strong> <%= payment.paymentStatus %></p>
+                    <p><strong>Date:</strong> <%= payment.paymentDate.toDateString() %></p>
                 </div>
             <% }) %>
         <% } else { %>
-            <p>No payment history found.</p>
+            <p>No payment history available.</p>
         <% } %>
     </div>
     <%- include('../partials/scripts') %>

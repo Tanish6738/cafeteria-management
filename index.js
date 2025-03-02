@@ -9,8 +9,6 @@ const io = require('socket.io')();
 const multer = require('multer');
 const fs = require('fs');
 const { promisify } = require('util');
-const unlinkAsync = promisify(fs.unlink);
-const jwt = require('jsonwebtoken');
 const moment = require('moment'); // Import moment.js
 
 const publishableKey = "pk_test_51Q3z7BC43VQjRgwcUBGg4jE6p8fIgV2bPm3UaIcToGtD0iv63X1E8C6DWdopnBreXLzYRyOgGA2OmuPK3TD5kDKq00OnPi8IFb"
@@ -173,44 +171,43 @@ io.on('connection', socket => {
     });
 });
 
-async function consolidateOrdersForReservation(tableNumber) {
+async function consolidateOrdersForReservation(req, tableNumber) {
     try {
+        console.log(`Fetching orders for tableNumber: ${tableNumber}`);
+        console.log('Session User:', req.session.user);
+
         // Find all pending, preparing, or served orders for the table
         const orders = await Orders.find({
             tableNumber,
-            status: { $in: ['pending', 'preparing', 'served'] } // Ensuring we only fetch relevant orders
-        }).populate('items.menuItem'); // Ensure we populate the menu items
+            status: { $in: ['pending', 'preparing', 'served'] }
+        }).populate('items.menuItem');
+
+        console.log(`Orders fetched for table ${tableNumber}:`, orders);
 
         if (!orders.length) {
             console.error(`No orders found for table number: ${tableNumber}`);
+            req.flash('error_msg', 'No active orders found for this table.');
             return null; // Or handle this case as needed
         }
 
+        // Ensure all necessary fields are populated
         const consolidatedOrder = {
-            items: [],
-            total: 0,
-            tableNumber: tableNumber,
-            customer: orders[0].customer, // Assuming all orders are from the same customer
+            items: orders.flatMap(order => order.items.map(item => ({
+                menuItem: item.menuItem,
+                quantity: item.quantity,
+                price: item.menuItem.price // Ensure price is populated
+            }))),
+            totalAmount: orders.reduce((sum, order) => sum + order.totalAmount, 0),
+            orderType: 'dine-in', // Set order type
+            customer: req.session.user._id, // Set customer ID
+            tableNumber: tableNumber
         };
 
-        // Combine all items from each order and sum up the total cost
-        orders.forEach(order => {
-            order.items.forEach(item => {
-                consolidatedOrder.items.push({
-                    menuItem: item.menuItem, // Ensure the item has a valid menuItem reference
-                    quantity: item.quantity,
-                });
+        // Save the consolidated order
+        let savedConsolidatedOrder = new Orders(consolidatedOrder);
+        await savedConsolidatedOrder.save();
 
-                // Calculate total for each item
-                if (item.menuItem && item.menuItem.price) {
-                    consolidatedOrder.total += item.menuItem.price * item.quantity;
-                } else {
-                    console.error(`Invalid menu item or price for order item: ${item._id}`);
-                }
-            });
-        });
-
-        return consolidatedOrder;
+        return savedConsolidatedOrder;
     } catch (error) {
         console.error(`Error consolidating orders for table ${tableNumber}:`, error);
         throw error; // Optionally, rethrow the error to handle it in the calling function
@@ -398,7 +395,7 @@ app.get('/admin/menu/:id/edit', ensureAdmin, asyncHandler(async (req, res) => {
     const { id } = req.params;
     
     // Validate ObjectId first
-    if (!Menu.isValidId(id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
         setFlash(req, 'error_msg', 'Invalid menu item ID');
         return res.redirect('/admin/menu');
     }
@@ -422,7 +419,7 @@ app.post('/admin/menu/:id/edit', ensureAdmin, upload.single('image'), asyncHandl
     let image = req.file ? `/uploads/${req.file.filename}` : undefined;
 
     // Validate ObjectId first
-    if (!Menu.isValidId(id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
         setFlash(req, 'error_msg', 'Invalid menu item ID');
         return res.redirect('/admin/menu');
     }
@@ -446,7 +443,7 @@ app.get('/menu/:id', ensureAuthenticated, asyncHandler(async (req, res) => {
     const { id } = req.params;
     
     // Validate ObjectId first
-    if (!Menu.isValidId(id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
         setFlash(req, 'error_msg', 'Invalid menu item ID');
         return res.redirect('/menu');
     }
@@ -466,9 +463,9 @@ app.get('/menu/:id', ensureAuthenticated, asyncHandler(async (req, res) => {
 
 app.get('/admin/menu/:id/delete', ensureAdmin, asyncHandler(async (req, res) => {
     const { id } = req.params;
-
+    
     // Validate ObjectId first
-    if (!Menu.isValidId(id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
         setFlash(req, 'error_msg', 'Invalid menu item ID');
         return res.redirect('/admin/menu');
     }
@@ -489,7 +486,7 @@ app.post('/admin/menu/:id/toggle-availability', ensureAdmin, asyncHandler(async 
     const { id } = req.params;
     
     // Validate ObjectId first
-    if (!Menu.isValidId(id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
         setFlash(req, 'error_msg', 'Invalid menu item ID');
         return res.redirect('/admin/menu');
     }
@@ -507,13 +504,28 @@ app.post('/admin/menu/:id/toggle-availability', ensureAdmin, asyncHandler(async 
 
 // Admin Orders Management
 app.get("/admin/orders", ensureAdmin, asyncHandler(async (req, res) => {
-    const orders = await Orders.find().populate('items.menuItem').populate('customer');
-    res.render('orders/adminOrders', { 
-        orders,
-        title: 'Admin Orders',
-        currentUser: req.session.user,
-        isAdmin: true
-    });
+    try {
+        // Fetch all orders and populate customer details
+        const orders = await Orders.find({})
+            .populate({
+                path: 'customer',
+                select: 'firstName lastName email'  // Select the fields we need
+            })
+            .lean();
+
+        console.log('Admin Orders:', orders);  // Debug log
+
+        res.render('orders/adminOrders', {
+            orders,
+            title: 'Admin Orders',
+            currentUser: req.session.user,
+            isAdmin: true
+        });
+    } catch (error) {
+        console.error('Error fetching admin orders:', error);
+        req.flash('error_msg', 'Error fetching orders');
+        res.redirect('/admin');
+    }
 }));
 
 app.get('/admin/orders/history', ensureAdmin, asyncHandler(async (req, res) => {
@@ -544,7 +556,7 @@ app.get('/admin/orders/:id/receipt', ensureAdmin, asyncHandler(async (req, res) 
     const { id } = req.params;
     
     // Validate ObjectId first
-    if (!OrderHistory.isValidId(id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
         setFlash(req, 'error_msg', 'Invalid order ID');
         return res.redirect('/admin/orders/history');
     }
@@ -580,91 +592,123 @@ app.get('/admin/orders/:id/receipt', ensureAdmin, asyncHandler(async (req, res) 
     });
 }));
 
-app.get('/admin/orders/:id', ensureAuthenticated, ensureAdmin, asyncHandler(async (req, res) => {
+app.get('/admin/orders/:id', ensureAdmin, asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
     try {
-        const { id } = req.params;
-        
-        // Validate ObjectId first
-        if (!OrderHistory.isValidId(id)) {
+        // Validate ObjectId
+        if (!mongoose.Types.ObjectId.isValid(id)) {
             setFlash(req, 'error_msg', 'Invalid order ID');
-            return res.redirect('/admin/orders/history');
+            return res.redirect('/admin/orders');
         }
 
-        const order = await OrderHistory.findById(id)
-            .populate('items.menuItem')
+        // Fetch the order with populated data
+        const order = await Orders.findById(id)
             .populate('customer')
+            .populate('items.menuItem')
             .lean();
 
         if (!order) {
             setFlash(req, 'error_msg', 'Order not found');
-            return res.redirect('/admin/orders/history');
+            return res.redirect('/admin/orders');
         }
 
-        res.render('orders/orderDetails', { 
-            order,
+        // Fetch table data if table number exists
+        let table = null;
+        if (order.tableNumber) {
+            table = await Tables.findOne({ tableNumber: order.tableNumber }).lean();
+        }
+
+        // Fetch order history
+        const orderHistory = await OrderHistory.find({ order: id })
+            .sort({ timestamp: -1 })
+            .populate('updatedBy', 'firstName lastName')
+            .lean();
+
+        // Calculate financial details
+        const subtotal = order.items.reduce((sum, item) => sum + (item.menuItem.price * item.quantity), 0);
+        const tax = subtotal * 0.10; // 10% tax
+        const serviceCharge = subtotal * 0.05; // 5% service charge
+        const total = subtotal + tax + serviceCharge;
+
+        res.render('orders/orderDetails', {
             title: 'Order Details',
-            currentUser: req.session.user,
+            order,
+            orderHistory,
+            table, // Pass table data to the template
+            financials: {
+                subtotal,
+                tax,
+                serviceCharge,
+                total
+            },
             isAdmin: true
         });
     } catch (error) {
-        // Catch any potential errors and handle them
-        console.error('Error fetching order:', error);
+        console.error('Error fetching order details:', error);
         setFlash(req, 'error_msg', 'Error fetching order details');
-        return res.redirect('/admin/orders/history');
+        res.redirect('/admin/orders');
     }
 }));
 
 app.post('/orders/:id/update-status', ensureAdmin, asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { status } = req.body;
+    const { status, notes } = req.body;
 
-    // Validate ObjectId first
-    if (!Orders.isValidId(id)) {
-        setFlash(req, 'error_msg', 'Invalid order ID');
-        return res.redirect('/admin/orders');
-    }
+    try {
+        // Validate ObjectId
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            setFlash(req, 'error_msg', 'Invalid order ID');
+            return res.redirect('/admin/orders');
+        }
 
-    const validStatuses = ['pending', 'preparing', 'ready', 'served', 'completed', 'cancelled'];
-    if (!validStatuses.includes(status)) {
-        setFlash(req, 'error_msg', 'Invalid order status');
-        return res.redirect('/admin/orders');
-    }
+        const validStatuses = ['pending', 'preparing', 'ready', 'served', 'completed', 'cancelled'];
+        if (!validStatuses.includes(status)) {
+            setFlash(req, 'error_msg', 'Invalid order status');
+            return res.redirect('/admin/orders');
+        }
 
-    const order = await Orders.findById(id);
-    if (!order) {
-        setFlash(req, 'error_msg', 'Order not found');
-        return res.redirect('/admin/orders');
-    }
+        const order = await Orders.findById(id);
+        if (!order) {
+            setFlash(req, 'error_msg', 'Order not found');
+            return res.redirect('/admin/orders');
+        }
 
-    if (status === 'completed') {
-        // Move the order to order history
-        const orderHistory = new OrderHistory({
-            items: order.items,
-            tableNumber: order.tableNumber,
-            total: order.total,
-            customer: order.customer,
-            status: 'completed'
+        // Create order history entry
+        await OrderHistory.create({
+            order: order._id,
+            status: status,
+            previousStatus: order.status,
+            updatedBy: req.session.user._id,
+            notes: notes || `Status changed from ${order.status} to ${status}`,
+            timestamp: new Date()
         });
 
-        await orderHistory.save(); // Save to the order history collection
-        await Orders.findByIdAndDelete(id); // Remove from current orders
+        // Update order status
+        order.status = status;
+        await order.save();
 
-        setFlash(req, 'success_msg', 'Order marked as completed and moved to history');
-        return res.redirect('/admin/orders'); // Redirect to the orders page
+        // Emit socket event for real-time update
+        io.emit('orderStatusUpdate', {
+            orderId: order._id,
+            status: status,
+            updatedAt: new Date()
+        });
+
+        setFlash(req, 'success_msg', 'Order status updated successfully');
+        return res.redirect('/admin/orders');
+    } catch (error) {
+        console.error('Error updating order status:', error);
+        setFlash(req, 'error_msg', 'An error occurred while updating the order status');
+        return res.redirect('/admin/orders');
     }
-
-    order.status = status; // Update other statuses
-    await order.save();
-
-    setFlash(req, 'success_msg', 'Order status updated successfully');
-    return res.redirect('/admin/orders');
 }));
 
 app.get('/admin/orders/:id/delete', ensureAdmin, asyncHandler(async (req, res) => {
     const { id } = req.params;
     
     // Validate ObjectId first
-    if (!Orders.isValidId(id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
         setFlash(req, 'error_msg', 'Invalid order ID');
         return res.redirect('/orders');
     }
@@ -683,7 +727,7 @@ app.post('/admin/orders/:id/mark-as-served', ensureAdmin, asyncHandler(async (re
     const { id } = req.params;
     
     // Validate ObjectId first
-    if (!Orders.isValidId(id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
         setFlash(req, 'error_msg', 'Invalid order ID');
         return res.redirect('/admin/orders');
     }
@@ -703,7 +747,7 @@ app.post('/admin/orders/:id/approve-payment', ensureAdmin, asyncHandler(async (r
     const { id } = req.params;
     
     // Validate ObjectId first
-    if (!Orders.isValidId(id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
         setFlash(req, 'error_msg', 'Invalid order ID');
         return res.redirect('/admin/orders');
     }
@@ -742,7 +786,7 @@ app.get('/admin/receipt/:id', ensureAdmin, asyncHandler(async (req, res) => {
         const { id } = req.params;
         
         // Validate ObjectId first
-        if (!Receipt.isValidId(id)) {
+        if (!mongoose.Types.ObjectId.isValid(id)) {
             setFlash(req, 'error_msg', 'Invalid receipt ID');
             return res.redirect('/admin/receipt-records');
         }
@@ -779,7 +823,7 @@ app.get('/admin/receipt/:id', ensureAdmin, asyncHandler(async (req, res) => {
 app.get('/admin/receipt-records', ensureAdmin, asyncHandler(async (req, res) => {
     try {
         const receipts = await Receipt.find()
-            .populate('orders')
+            .populate('order') // Change 'orders' to 'order' to match the schema
             .populate('customer')
             .lean();
 
@@ -794,7 +838,7 @@ app.get('/admin/receipt-records', ensureAdmin, asyncHandler(async (req, res) => 
         setFlash(req, 'error_msg', 'Failed to load receipt records.');
         return res.redirect('/admin');
     }
-}))
+}));
 
 // Admin User Management
 app.get('/admin/users', ensureAdmin, asyncHandler(async (req, res) => {
@@ -821,7 +865,7 @@ app.get('/admin/users/:id', ensureAdmin, asyncHandler(async (req, res) => {
     try {
         const { id } = req.params;
         // Validate ObjectId first
-        if (!Users.isValidId(id)) {
+        if (!mongoose.Types.ObjectId.isValid(id)) {
             setFlash(req, 'error_msg', 'Invalid user ID');
             return res.redirect('/admin/users');
         }
@@ -885,7 +929,7 @@ app.delete('/admin/user/:id', ensureAdmin, asyncHandler(async (req, res) => {
         const { id } = req.params;
         
         // Validate ObjectId first
-        if (!Users.isValidId(id)) {
+        if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({ message: 'Invalid user ID' });
         }
 
@@ -927,7 +971,7 @@ app.get('/admin/users/:id/delete', ensureAdmin, asyncHandler(async (req, res) =>
     const { id } = req.params;
     
     // Validate ObjectId first
-    if (!Users.isValidId(id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
         setFlash(req, 'error_msg', 'Invalid user ID');
         return res.redirect('/admin/users');
     }
@@ -976,14 +1020,14 @@ app.post('/tables/new', ensureAdmin, async (req, res) => {
     const newTable = new Tables({ tableNumber, capacity, status });
     await newTable.save();
     setFlash(req, 'success_msg', 'Table added successfully');
-    res.redirect('/tables');
+    res.redirect('/admin/tables');
 });
 
 app.get('/tables/:id/edit', ensureAdmin, asyncHandler(async (req, res) => {
     const { id } = req.params;
     
     // Validate ObjectId first
-    if (!Tables.isValidId(id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
         setFlash(req, 'error_msg', 'Invalid table ID');
         return res.redirect('/tables');
     }
@@ -1009,7 +1053,7 @@ app.post('/tables/:id/edit', ensureAdmin, asyncHandler(async (req, res) => {
     console.log(`Received data:`, { tableNumber, capacity, status });
 
     // Validate ObjectId first
-    if (!Tables.isValidId(id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
         setFlash(req, 'error_msg', 'Invalid table ID');
         return res.redirect(`/tables/${id}/edit`);
     }
@@ -1023,14 +1067,14 @@ app.post('/tables/:id/edit', ensureAdmin, asyncHandler(async (req, res) => {
     await Tables.findByIdAndUpdate(id, { tableNumber, capacity, status });
     console.log(`Table with ID: ${id} updated successfully`);
     setFlash(req, 'success_msg', 'Table updated successfully');
-    return res.redirect('/tables');
+    return res.redirect('/admin/tables');
 }));
 
 app.get('/tables/:id/delete', ensureAdmin, asyncHandler(async (req, res) => {
     const { id } = req.params;
     
     // Validate ObjectId first
-    if (!Tables.isValidId(id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
         setFlash(req, 'error_msg', 'Invalid table ID');
         return res.redirect('/tables');
     }
@@ -1042,7 +1086,133 @@ app.get('/tables/:id/delete', ensureAdmin, asyncHandler(async (req, res) => {
     }
     await Tables.findByIdAndDelete(id);
     setFlash(req, 'success_msg', 'Table deleted successfully');
-    return res.redirect('/tables');
+    return res.redirect('/admin/tables');
+}));
+
+// Admin tables management route
+app.get('/admin/tables', ensureAdmin, asyncHandler(async (req, res) => {
+    try {
+        // Fetch all tables with their current status and any active reservations
+        const tables = await Tables.find({})
+            .populate({
+                path: 'reservedBy',
+                select: 'firstName lastName email'
+            })
+            .populate({
+                path: 'currentOrders',
+                populate: [
+                    {
+                        path: 'customer',
+                        model: 'Users',
+                        select: 'firstName lastName email'
+                    },
+                    {
+                        path: 'items.menuItem',
+                        select: 'name price'
+                    }
+                ]
+            })
+            .sort({ tableNumber: 1 })
+            .lean();
+
+        // Get active orders for each table
+        const tablesWithOrders = await Promise.all(tables.map(async (table) => {
+            const activeOrders = await Orders.find({
+                tableNumber: table.tableNumber,
+                status: { $in: ['pending', 'preparing', 'ready', 'served'] }
+            })
+            .populate('customer', 'firstName lastName')
+            .populate('items.menuItem', 'name price')
+            .lean();
+
+            return {
+                ...table,
+                activeOrders
+            };
+        }));
+
+        res.render('tables/adminTables', {
+            title: 'Table Management',
+            tables: tablesWithOrders,
+            messages: {
+                success_msg: req.flash('success_msg'),
+                error_msg: req.flash('error_msg')
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching tables:', error);
+        setFlash(req, 'error_msg', 'Error fetching tables');
+        res.redirect('/admin/dashboard');
+    }
+}));
+
+// Admin update table status
+app.post('/admin/tables/:tableNumber/update', ensureAdmin, asyncHandler(async (req, res) => {
+    const { tableNumber } = req.params;
+    const { status, capacity } = req.body;
+
+    try {
+        const table = await Tables.findOneAndUpdate(
+            { tableNumber },
+            { 
+                status,
+                capacity: parseInt(capacity),
+                lastUpdated: new Date()
+            },
+            { new: true }
+        );
+
+        if (!table) {
+            setFlash(req, 'error_msg', 'Table not found');
+            return res.redirect('/admin/tables');
+        }
+
+        setFlash(req, 'success_msg', 'Table updated successfully');
+        res.redirect('/admin/tables');
+    } catch (error) {
+        console.error('Error updating table:', error);
+        setFlash(req, 'error_msg', 'Error updating table');
+        res.redirect('/admin/tables');
+    }
+}));
+
+// Admin clear table
+app.post('/admin/tables/:tableNumber/clear', ensureAdmin, asyncHandler(async (req, res) => {
+    const { tableNumber } = req.params;
+
+    try {
+        const table = await Tables.findOne({ tableNumber });
+        if (!table) {
+            setFlash(req, 'error_msg', 'Table not found');
+            return res.redirect('/admin/tables');
+        }
+
+        // Update all active orders for this table to completed
+        await Orders.updateMany(
+            { 
+                tableNumber,
+                status: { $in: ['pending', 'preparing', 'ready', 'served'] }
+            },
+            { 
+                status: 'completed',
+                completedAt: new Date()
+            }
+        );
+
+        // Clear the table
+        table.status = 'vacant';
+        table.reservedBy = null;
+        table.currentOrders = [];
+        table.lastUpdated = new Date();
+        await table.save();
+
+        setFlash(req, 'success_msg', 'Table cleared successfully');
+        res.redirect('/admin/tables');
+    } catch (error) {
+        console.error('Error clearing table:', error);
+        setFlash(req, 'error_msg', 'Error clearing table');
+        res.redirect('/admin/tables');
+    }
 }));
 
 // Customer Routes and Features
@@ -1098,12 +1268,18 @@ app.post('/cart/update', ensureAuthenticated, asyncHandler(async (req, res) => {
 
     if (!menuItemId || quantity === undefined) {
         console.log('Validation failed: Menu item and quantity are required');
-        setFlash(req, 'error_msg', 'Menu item and quantity are required');
-        return res.redirect('/cart/view');
+        return res.json({ success: false, message: 'Menu item and quantity are required' });
     }
 
     const cart = req.session.cart || [];
     const itemIndex = cart.findIndex(item => item.menuItemId === menuItemId);
+
+    // Fetch the price of the menu item from the database
+    const menuItem = await Menu.findById(menuItemId);
+    if (!menuItem) {
+        console.log('Menu item not found');
+        return res.json({ success: false, message: 'Menu item not found' });
+    }
 
     if (itemIndex > -1) {
         if (quantity > 0) {
@@ -1114,13 +1290,15 @@ app.post('/cart/update', ensureAuthenticated, asyncHandler(async (req, res) => {
             cart.splice(itemIndex, 1);
         }
     } else {
-        console.log(`Item ${menuItemId} not found in cart`);
+        if (quantity > 0) {
+            console.log(`Adding new item ${menuItemId} to cart with quantity ${quantity}`);
+            cart.push({ menuItemId, quantity, price: menuItem.price });
+        }
     }
 
     req.session.cart = cart;
     console.log('Cart updated:', cart);
-    setFlash(req, 'success_msg', 'Cart updated');
-    return res.redirect('/cart/view');
+    return res.json({ success: true, message: 'Cart updated' });
 }));
 
 app.get('/cart/view', ensureAuthenticated, asyncHandler(async (req, res) => {
@@ -1210,86 +1388,65 @@ app.get('/cart/clear', ensureAuthenticated, asyncHandler(async (req, res) => {
 // Customer Order Placement and Management
 
 app.post('/orders/place', ensureAuthenticated, ensureTableReserved, asyncHandler(async (req, res) => {
-    const { tableNumber, total } = req.body;
+    const { tableNumber, total, orderType } = req.body;
     const cart = req.session.cart || [];
 
-    console.log('Placing order:', { tableNumber, total, cart });
+    console.log('Placing order:', { tableNumber, total, orderType, cart });
 
-    // Validate fields
-    if (!cart.length || !tableNumber || !total) {
-        console.log('Validation failed: All fields are required');
-        req.flash('error_msg', 'All fields are required');
+    if (!cart.length) {
+        req.flash('error_msg', 'Your cart is empty. Please add items before placing an order.');
         return res.redirect('/cart/view');
     }
 
-    const items = cart.map(item => ({
-        menuItem: item.menuItemId,
-        quantity: item.quantity
-    }));
-
-    console.log('Order items:', items);
-
     try {
-        const newOrder = new Orders({ items, tableNumber, total, customer: req.session.user._id });
-        await newOrder.save();
-        console.log('New Order ID:', newOrder._id); // Log the order ID after saving
+        // Fetch menu items to ensure price is correct
+        const menuItems = await Menu.find({ _id: { $in: cart.map(item => item.menuItemId) } });
 
+        const orderItems = cart.map(item => {
+            const menuItem = menuItems.find(menuItem => menuItem._id.toString() === item.menuItemId);
+            const price = menuItem ? parseFloat(menuItem.price) : 0;
 
-        // Update user with the new order
-        await Users.findByIdAndUpdate(req.session.user._id, { $push: { orders: newOrder._id } });
+            return {
+                menuItem: new mongoose.Types.ObjectId(item.menuItemId),
+                quantity: parseInt(item.quantity),
+                price: price
+            };
+        });
 
+        const userId = new mongoose.Types.ObjectId(req.session.user._id);
+        
+        // Create new order with customer field
+        const newOrder = await Orders.create({
+            customer: userId,  // Explicitly set customer field
+            tableNumber: parseInt(tableNumber),
+            items: orderItems,
+            status: 'pending',
+            totalAmount: parseFloat(total),
+            orderType
+        });
+
+        console.log('New Order Data:', newOrder.toObject());
+        
+        // Verify the order was saved correctly
+        const savedOrder = await Orders.findById(newOrder._id);
+        console.log('Saved Order:', savedOrder);
+        
         // Clear the cart after placing the order
         req.session.cart = [];
-        console.log('Order placed successfully:', newOrder);
-
-        req.flash('success_msg', 'Order placed successfully');
-        return res.redirect('/customer/orders/' + newOrder._id);
-    } catch (err) {
-        console.error('Error saving new order:', err);
-        req.flash('error_msg', 'Failed to place the order');
+        req.flash('success_msg', 'Order placed successfully!');
+        return res.redirect('/customer/orders');
+    } catch (error) {
+        console.error('Error placing order:', error);
+        req.flash('error_msg', 'An error occurred while placing your order. Please try again.');
         return res.redirect('/cart/view');
     }
 }));
 
-// Route to cancel an order
-app.post('/orders/cancel/:id', ensureAuthenticated, ensureTableReserved, asyncHandler(async (req, res) => {
-    const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        req.flash('error_msg', 'Invalid order ID.');
-        return res.redirect('/customer/orders');
-    }
-
-    try {
-        const order = await Orders.findById(id);
-
-        if (!order) {
-            req.flash('error_msg', 'Order not found');
-            return res.redirect('/customer/orders');
-        }
-
-        if (['ready', 'served'].includes(order.status)) {
-            req.flash('error_msg', 'Orders that are ready or served cannot be cancelled');
-            return res.redirect('/customer/orders');
-        }
-
-        order.status = 'cancelled';
-        await order.save();
-        req.flash('success_msg', 'Order cancelled successfully');
-        return res.redirect('/customer/orders');
-    } catch (err) {
-        console.error('Error cancelling order:', err);
-        req.flash('error_msg', 'Failed to cancel the order');
-        return res.redirect('/customer/orders');
-    }
-}));
-
-// Route to get customer orders
 app.get('/customer/orders', ensureAuthenticated, asyncHandler(async (req, res) => {
     try {
-        const userId = req.session.user._id;
+        const userId = new mongoose.Types.ObjectId(req.session.user._id);
 
-        // Find the reserved table for the customer
+        // Fetch the reserved table for the current user
         const reservedTable = await Tables.findOne({ reservedBy: userId, status: 'reserved' });
 
         if (!reservedTable) {
@@ -1297,29 +1454,55 @@ app.get('/customer/orders', ensureAuthenticated, asyncHandler(async (req, res) =
             return res.redirect('/tables');
         }
 
-        console.log('Reserved Table:', reservedTable);
+        // console.log('Reserved Table:', reservedTable);
 
-        // Fetch orders placed for this reserved table by the customer
-        const orders = await Orders.find({
-                customer: userId,
-                tableNumber: reservedTable.tableNumber,  // Match table number of the reserved table
-                status: { $nin: ['completed', 'cancelled'] },  // Fetch only orders that are not completed
-                placedAt: { $gte: reservedTable.reservationStartTime }  // Orders placed after the table was reserved
-            })
-            .populate('items.menuItem')  // Populate menu item details
-            .populate('customer');  // Populate customer details
+        // Log query conditions for debugging
+        const queryConditions = {
+            customer: userId,
+            tableNumber: parseInt(reservedTable.tableNumber),
+            status: { $nin: ['completed', 'cancelled'] }
+        };
+        // console.log('Query Conditions:', queryConditions);
 
-        console.log('Orders:', orders);
+        // First, try to find all orders regardless of conditions
+        const allOrders = await Orders.find({}).lean();
+        // console.log('All Orders in DB:', allOrders);
 
-        // if (!orders || orders.length === 0) {
-        //     req.flash('info_msg', 'You have no active orders at the moment.');
-        //     return res.redirect('/customer/menu');
-        // }
+        // Then try each condition separately
+        const ordersByCustomer = await Orders.find({ customer: userId }).lean();
+        // console.log('Orders by Customer:', ordersByCustomer);
 
-        // Render the customer's orders
+        const ordersByTable = await Orders.find({ tableNumber: parseInt(reservedTable.tableNumber) }).lean();
+        // console.log('Orders by Table:', ordersByTable);
+
+        const ordersByStatus = await Orders.find({ status: { $nin: ['completed', 'cancelled'] } }).lean();
+        // console.log('Orders by Status:', ordersByStatus);
+
+        // Now try the combined query with lean() and proper population
+        const orders = await Orders.find(queryConditions)
+            .populate('items.menuItem')
+            .populate('customer')
+            .lean();
+
+        console.log('Raw Orders from DB:', orders);
+
+        // Handle empty results
+        if (!orders || orders.length === 0) {
+            console.log('No orders found for this customer.');
+            return res.render('orders/customerOrders', {
+                orders: [],
+                tableNumber: reservedTable.tableNumber,
+                title: 'Customer Orders',
+                currentUser: req.session.user,
+                isAdmin: false
+            });
+        }
+
+        // console.log('Fetched Orders:', orders);
+
         res.render('orders/customerOrders', {
             orders,
-            tableNumber: reservedTable.tableNumber,  // Pass table number for display purposes
+            tableNumber: reservedTable.tableNumber,
             title: 'Customer Orders',
             currentUser: req.session.user,
             isAdmin: false
@@ -1331,61 +1514,65 @@ app.get('/customer/orders', ensureAuthenticated, asyncHandler(async (req, res) =
     }
 }));
 
-// Route to get the receipt details
-app.get('/customer/receipt/:id', ensureAuthenticated, asyncHandler(async (req, res) => {
-    const { id } = req.params;
+// Route to display the receipt
+app.get('/customer/orders/receipt/:receiptId', ensureAuthenticated, asyncHandler(async (req, res) => {
+    const { receiptId } = req.params;
 
     try {
-        // Find the receipt by ID and populate the related fields
-        const receipt = await Receipt.findById(id)
-            .populate({
-                path: 'orders',
-                populate: {
-                    path: 'items.menuItem', // Correctly populate the nested menuItem within items
-                    model: 'Menu'
-                }
-            })
-            .populate('customer')
-            .lean();
-
-        // Check if receipt was found
-        if (!receipt) {
-            setFlash(req, 'error_msg', 'Receipt not found');
+        if (!mongoose.Types.ObjectId.isValid(receiptId)) {
+            req.flash('error_msg', 'Invalid receipt ID');
             return res.redirect('/customer/orders');
         }
 
-        // Log receipt for debugging
-        console.log('Receipt found:', receipt);
+        const receipt = await Receipt.findById(receiptId)
+            .populate('order', '_id')  // Ensure the order ID is populated
+            .populate('payment', '_id')  // Ensure the payment ID is populated
+            .populate('customer', 'username email')  // Populate customer details
+            .lean();
 
-        // Render the receipt view with the retrieved data
-        res.render('orders/receipt', { 
-            receipt,
-            title: 'Receipt',
-            currentUser: req.session.user,
-            isAdmin: false
-        });
+        console.log('Fetched Receipt:', receipt); // Debugging
+
+        if (!receipt) {
+            req.flash('error_msg', 'Receipt not found');
+            return res.redirect('/customer/orders');
+        }
+
+        // Check for missing fields and add default fallbacks
+        if (!receipt.order) {
+            receipt.order = { _id: 'Not available' }; // Fallback for missing order
+        }
+
+        if (!receipt.payment) {
+            receipt.payment = { _id: 'Not available' }; // Fallback for missing payment
+        }
+
+        res.render('orders/receipt', { receipt });
     } catch (error) {
         console.error('Error fetching receipt:', error);
-        setFlash(req, 'error_msg', 'An error occurred while fetching the receipt. Please try again.');
+        req.flash('error_msg', 'An error occurred while fetching the receipt. Please try again.');
         return res.redirect('/customer/orders');
     }
 }));
 
-// Route to handle payment
 app.post('/customer/orders/:tableNumber/pay', ensureAuthenticated, asyncHandler(async (req, res) => {
     try {
         const { tableNumber } = req.params;
 
+        console.log(`Processing payment for table number: ${tableNumber}`);
+
         const orders = await Orders.find({ tableNumber, customer: req.session.user._id, status: { $ne: 'completed' } });
+        console.log(`Orders fetched for table number ${tableNumber}:`, orders);
 
         const allServed = orders.every(order => order.status === 'served');
+        console.log(`All orders served: ${allServed}`);
         if (!allServed) {
             req.flash('error_msg', 'All orders must be served before payment.');
             return res.redirect('/customer/orders');
         }
 
         // Process payment if all orders are served
-        const consolidatedOrder = await consolidateOrdersForReservation(tableNumber);
+        const consolidatedOrder = await consolidateOrdersForReservation(req, tableNumber);
+        console.log(`Consolidated order:`, consolidatedOrder);
         if (!consolidatedOrder || !consolidatedOrder.items || consolidatedOrder.items.length === 0) {
             req.flash('error_msg', 'No valid orders found for this reservation.');
             return res.redirect('/customer/orders');
@@ -1395,6 +1582,7 @@ app.post('/customer/orders/:tableNumber/pay', ensureAuthenticated, asyncHandler(
         consolidatedOrder.total = consolidatedOrder.items.reduce((total, item) => {
             return total + (item.menuItem.price * item.quantity);
         }, 0);
+        console.log(`Total amount for consolidated order: ${consolidatedOrder.total}`);
 
         // Create a new payment session
         const session = await stripe.checkout.sessions.create({
@@ -1413,6 +1601,7 @@ app.post('/customer/orders/:tableNumber/pay', ensureAuthenticated, asyncHandler(
             success_url: `${req.protocol}://${req.get('host')}/customer/orders/succeed?session_id={CHECKOUT_SESSION_ID}&tableNumber=${tableNumber}`,
             cancel_url: `${req.protocol}://${req.get('host')}/customer/orders?tableNumber=${tableNumber}`,
         });
+        console.log(`Stripe session created:`, session);
 
         // Redirect to Stripe checkout
         return res.redirect(303, session.url);
@@ -1442,11 +1631,20 @@ app.get('/customer/orders/succeed', ensureAuthenticated, asyncHandler(async (req
             console.log("Orders found:", orders);
 
             // Consolidate orders for the table
-            const consolidatedOrder = await consolidateOrdersForReservation(tableNumber);
+            const consolidatedOrder = await consolidateOrdersForReservation(req, tableNumber);
 
             if (!consolidatedOrder || !consolidatedOrder.items || consolidatedOrder.items.length === 0) {
                 req.flash('error_msg', 'No valid orders found for this reservation.');
                 return res.redirect('/customer/orders');
+            }
+
+            // Save the consolidated order if not already saved
+            let savedConsolidatedOrder;
+            if (!consolidatedOrder._id) {
+                savedConsolidatedOrder = new Orders(consolidatedOrder);
+                await savedConsolidatedOrder.save();
+            } else {
+                savedConsolidatedOrder = consolidatedOrder;
             }
 
             // Calculate the total amount
@@ -1465,66 +1663,40 @@ app.get('/customer/orders/succeed', ensureAuthenticated, asyncHandler(async (req
                 }
             );
 
-            // Create a new payment entry in PaymentHistory
-            const paymentHistory = new Payment({
-                customer: req.session.user._id,
-                tableNumber,
-                orders: orders.map(order => order._id),
-                totalAmount,
-                paymentStatus: 'paid',
-                paymentMethod: 'card',
-            });
-
-            await paymentHistory.save();
-            console.log("Payment history saved:", paymentHistory);
-
-            // Save order history
-            const completedOrders = await Orders.find({ tableNumber, customer: req.session.user._id });
-            const orderHistory = new OrderHistory({
-                items: completedOrders.map(order => order.items).flat(),
-                tableNumber,
-                total: totalAmount,
-                customer: req.session.user._id,
-                status: 'completed'
-            });
-
-            await orderHistory.save();
-            console.log("Order history saved:", orderHistory);
-
-            // Mark the table as vacant
-            const table = await Tables.findOne({ tableNumber, status: 'reserved' });
-
+            // Find the table and update its status to 'vacant'
+            const table = await Tables.findOne({ tableNumber: tableNumber, status: 'reserved' });
             if (table) {
                 table.status = 'vacant';  // Mark the table as unreserved
                 table.reservedBy = null;  // Clear the reservation
                 await table.save();
             }
-            console.log("Table marked as vacant.");
 
-            // Generate and save a receipt
+            // Calculate subtotal, tax, and total
+            const subtotal = orders.reduce((sum, order) => sum + order.totalAmount, 0);
+            const tax = subtotal * 0.1; // Assuming 10% tax rate
+            const total = subtotal + tax;
+
+            // Generate a unique receipt number
+            const receiptNumber = `REC-${Date.now()}`;
+
+            // Generate a receipt
+            const paymentId = new mongoose.Types.ObjectId(); // Replace with actual payment ID if available
             const receipt = new Receipt({
                 customer: req.session.user._id,
-                paymentId: paymentHistory._id,  // Link the payment ID
-                tableNumber,
-                orders: orders.map(order => order._id),  // Link related orders
-                totalAmount,
-                taxAmount: totalAmount * 0.1,  // 10% tax
-                serviceCharge: totalAmount * 0.05,  // 5% service charge
-                paymentMethod: 'card',
+                orders: orders.map(order => order._id),
+                total,
+                subtotal,
+                tax,
+                receiptNumber,
+                payment: paymentId, // Use actual payment ID
+                order: savedConsolidatedOrder._id, // Use the saved order's ID
+                paymentStatus: 'paid',
+                paymentDate: new Date()
             });
-
             await receipt.save();
-            console.log("Receipt saved:", receipt);
 
-            // Update orders to link the receipt after it's saved
-            await Orders.updateMany(
-                { tableNumber, customer: req.session.user._id },
-                { receipt: receipt._id }  // Link the receipt ID to the orders
-            );
-            console.log("Orders updated with receipt link.");
-
-            req.flash('success_msg', 'Payment successful and receipt generated.');
-            return res.redirect('/customer/orders');
+            // Redirect to the receipt page
+            return res.redirect(`/customer/orders/receipt/${receipt._id}`);
         } else {
             req.flash('error_msg', 'Payment was not successful.');
             return res.redirect('/customer/orders');
@@ -1578,63 +1750,91 @@ app.get('/customer/orders/:id', ensureAuthenticated, asyncHandler(async (req, re
     }
 }));
 
+// Route for customer to cancel their order
+app.post('/orders/cancel/:id', ensureAuthenticated, asyncHandler(async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        // Validate ObjectId
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            setFlash(req, 'error_msg', 'Invalid order ID');
+            return res.redirect('/customer/orders');
+        }
+
+        // Find the order and verify ownership
+        const order = await Orders.findOne({
+            _id: id,
+            customer: req.session.user._id,
+            status: { $nin: ['served', 'completed', 'cancelled'] }
+        });
+
+        if (!order) {
+            setFlash(req, 'error_msg', 'Order not found or cannot be cancelled');
+            return res.redirect('/customer/orders');
+        }
+
+        // Update order status to cancelled
+        order.status = 'cancelled';
+        await order.save();
+
+        // Emit socket event for real-time update
+        io.emit('orderStatusUpdate', {
+            orderId: order._id,
+            status: 'cancelled',
+            updatedAt: new Date()
+        });
+
+        setFlash(req, 'success_msg', 'Order cancelled successfully');
+        return res.redirect('/customer/orders');
+    } catch (error) {
+        console.error('Error cancelling order:', error);
+        setFlash(req, 'error_msg', 'An error occurred while cancelling the order');
+        return res.redirect('/customer/orders');
+    }
+}));
+
 // Profile Management
 app.get('/user/profile', ensureAuthenticated, asyncHandler(async (req, res) => {
     try {
-        // Fetch the user, along with orders and payment history
+        // Fetch the user with populated orders and payment history
         const user = await Users.findById(req.session.user._id)
             .populate({
                 path: 'orders',
-                populate: [
-                    { path: 'items.menuItem' },  // Populate menu items in the orders
-                    { path: 'receipt', model: 'Receipt' }  // Populate receipts linked to the orders
-                ]
+                populate: {
+                    path: 'items.menuItem',
+                    select: 'name price'
+                }
             })
-            .populate({
-                path: 'paymentHistory',
-                populate: [
-                    {
-                        path: 'orders',
-                        model: 'Orders', // Ensure we populate the orders linked to the payment history
-                        populate: {
-                            path: 'items.menuItem', // Populate the items in each order
-                            model: 'Menu'
-                        }
-                    },
-                    {
-                        path: 'receipt', // Populate the receipt linked to the payment
-                        model: 'Receipt'
-                    }
-                ]
-            });
+            .populate('paymentHistory');
 
         // Separate current and previous orders
         const currentOrders = await Orders.find({
             customer: req.session.user._id,
             status: { $in: ['pending', 'preparing', 'served'] }
         }).populate('items.menuItem');
-        
+
         const previousOrders = await Orders.find({
             customer: req.session.user._id,
-            status: { $in: ['completed', 'cancelled'] }  // Fixed spelling of 'cancelled'
+            status: { $in: ['completed', 'cancelled'] }
         }).populate('items.menuItem');
 
-        // Fetch receipts related to this user
+        // Fetch receipts and payments
         const receipts = await Receipt.find({ customer: req.session.user._id })
-            .populate('orders')
-            .populate('paymentId');
+            .populate('order')
+            .populate('payment');
 
-        // Fetch payments made by this user
         const payments = await Payment.find({ customer: req.session.user._id })
-            .populate('orders')
-            .populate('receipt');
+            .populate({
+                path: 'receipt',
+                populate: { path: 'order', model: 'Orders' }
+            });
 
-        // Debugging logs for current orders and payments
+        // Debugging logs
         console.log('Current orders:', currentOrders);
         console.log('Payments:', payments);
 
-        // Render the profile page with the user data, orders, receipts, and payments
-        res.render('users/profile', { 
+        // Render the profile page
+        res.render('users/profile', {
             user,
             currentOrders,
             previousOrders,
@@ -1651,6 +1851,7 @@ app.get('/user/profile', ensureAuthenticated, asyncHandler(async (req, res) => {
     }
 }));
 
+
 app.get('/user/profile/edit', ensureAuthenticated, asyncHandler(async (req, res) => {
     const user = await Users.findById(req.session.user._id);
     res.render('users/editProfile', { 
@@ -1661,12 +1862,6 @@ app.get('/user/profile/edit', ensureAuthenticated, asyncHandler(async (req, res)
     });
 }));
 
-app.post('/user/profile', ensureAuthenticated, asyncHandler(async (req, res) => {
-    const { firstName, lastName, email, mobile } = req.body;
-    await Users.findByIdAndUpdate(req.session.user._id, { firstName, lastName, email, mobile });
-    setFlash(req, 'success_msg', 'Profile updated successfully');
-    return res.redirect('/user/profile');
-}));
 
 app.get('/user/profile/delete', ensureAuthenticated, asyncHandler(async (req, res) => {
     await Users.findByIdAndDelete(req.session.user._id);
@@ -1723,45 +1918,33 @@ app.get('/tables', ensureAuthenticated, asyncHandler(async (req, res) => {
     try {
         const userId = req.session.user._id;
 
+        // Fetch the reserved table for the current user
+        const userReservedTable = await Tables.findOne({ reservedBy: userId, status: 'reserved' });
+
         // Fetch reserved and vacant tables
         const reservedTables = await Tables.find({ status: 'reserved' }).populate('reservedBy');
         const vacantTables = await Tables.find({ status: 'vacant' });
 
-        // Fetch the reserved table for the current user
-        const reservedTable = await Tables.findOne({ reservedBy: userId, status: 'reserved' });
-
         // If the user has a reserved table, fetch the orders placed for that table
-        const userOrders = reservedTable ? await Orders.find({
+        const userOrders = userReservedTable ? await Orders.find({
             customer: userId,
-            tableNumber: reservedTable.tableNumber,  // Match the table number of the reserved table
+            tableNumber: userReservedTable.tableNumber,  // Match the table number of the reserved table
             status: { $nin: ['completed', 'cancelled'] },  // Fetch only non-completed orders
-            placedAt: { $gte: reservedTable.reservationStartTime }  // Only fetch orders placed after the reservation start time
+            placedAt: { $gte: userReservedTable.reservationStartTime }  // Only fetch orders placed after the reservation start time
         }) : [];
 
-        console.log('Reserved tables:', reservedTables);
-
-        // Ensure reservedBy is not null before accessing its properties
-        const reservedTablesWithUsers = reservedTables.map(table => {
-            const hasOrders = userOrders.some(order => order.tableNumber === table.tableNumber);
-            return {
-                ...table.toObject(),
-                reservedBy: table.reservedBy || { name: 'Unknown', _id: 'Unknown' },
-                hasOrders // Add a flag indicating whether the current user has placed orders for this table
-            };
-        });
-
-        // Pass reserved tables, vacant tables, and user orders to the view
-        res.render(res.locals.isAdmin ? 'tables/adminTables' : 'tables/customerTables', {
-            reservedTables: reservedTablesWithUsers,
+        res.render('tables/customerTables', {
+            reservedTables,
             vacantTables,
-            orders: userOrders, // Pass user's orders for order cancellation logic
+            userReservedTable, // Pass userReservedTable to the template
+            userOrders,
             title: 'Tables',
             currentUser: req.session.user,
             isAdmin: false
         });
-    } catch (error) {
-        console.error('Error fetching tables:', error);
-        req.flash('error_msg', 'An error occurred while fetching tables');
+    } catch (err) {
+        console.error('Error fetching tables:', err);
+        setFlash(req, 'error_msg', 'An error occurred while retrieving tables.');
         res.redirect('/');
     }
 }));
@@ -2014,6 +2197,7 @@ app.get('/admin/dashboard', ensureAdmin, asyncHandler(async (req, res) => {
         return res.redirect('/admin');
     }
 }));
+
 app.get('/tables/with-orders', ensureAuthenticated, asyncHandler(async (req, res) => {
     try {
         // Use $in operator to match multiple status values
@@ -2033,14 +2217,31 @@ app.get('/tables/with-orders', ensureAuthenticated, asyncHandler(async (req, res
     }
 }));
 
-app.get('/orderHistory', ensureAuthenticated, asyncHandler(async (req, res) => {
+// Customer order history route
+app.get('/customer/orders/history', ensureAuthenticated, asyncHandler(async (req, res) => {
     try {
-        const orders = await Orders.find({ user: req.session.user._id }).populate('items.menuItem');
-        res.render('orders/adminOrderHistory', { orders, currentUser: req.session.user });
+        // Fetch completed, cancelled, and paid orders for the current user
+        const orders = await Orders.find({
+            customer: req.session.user._id,
+            status: { $in: ['completed', 'cancelled', 'paid'] }
+        })
+        .populate('items.menuItem')
+        .populate('customer')
+        .sort({ createdAt: -1 }) // Most recent orders first
+        .lean();
+
+        res.render('orders/customerOrderHistory', {
+            title: 'Order History',
+            orders,
+            messages: {
+                success_msg: req.flash('success_msg'),
+                error_msg: req.flash('error_msg')
+            }
+        });
     } catch (error) {
-        console.error('Error fetching orders:', error);
-        req.flash('error_msg', 'Failed to retrieve orders');
-        res.redirect('/admin');
+        console.error('Error fetching order history:', error);
+        setFlash(req, 'error_msg', 'Error fetching order history');
+        res.redirect('/customer/orders');
     }
 }));
 
@@ -2058,6 +2259,7 @@ app.use((err, req, res, next) => {
         res.status(500).redirect('/');
     }
 });
+
 
 // Starting the server
 server.listen(3000, () => console.log('Server is running on port 3000'));

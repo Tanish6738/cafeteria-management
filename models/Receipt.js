@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const ReceiptSchema = new Schema({
+    customer: { type: mongoose.Schema.Types.ObjectId, ref: 'Users' }, // Add this field
     order: { type: mongoose.Schema.Types.ObjectId, ref: 'Orders', required: true },
     payment: { type: mongoose.Schema.Types.ObjectId, ref: 'Payment', required: true },
     receiptNumber: { type: String, required: true, unique: true },

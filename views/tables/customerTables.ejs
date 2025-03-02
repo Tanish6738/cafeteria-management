@@ -167,9 +167,12 @@
                                 <p><strong>Status:</strong> <%= table.status.charAt(0).toUpperCase() + table.status.slice(1) %></p>
                             </div>
                             <div class="table-actions">
-                                <a href="/reserve/<%= table._id %>" class="action-button">
-                                    <i class="fas fa-bookmark mr-2"></i>Reserve
-                                </a>
+                                <form action="/reserve/pay" method="POST" class="inline">
+                                    <input type="hidden" name="tableNumber" value="<%= table.tableNumber %>">
+                                    <button type="submit" class="action-button">
+                                        <i class="fas fa-chair mr-2"></i>Reserve Table
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     <% }) %>

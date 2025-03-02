@@ -95,6 +95,76 @@
                 padding: 0.5rem;
             }
         }
+
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+
+        .status-badge.pending { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
+        .status-badge.preparing { background: rgba(0, 123, 255, 0.2); color: #007bff; }
+        .status-badge.ready { background: rgba(40, 167, 69, 0.2); color: #28a745; }
+        .status-badge.served { background: rgba(23, 162, 184, 0.2); color: #17a2b8; }
+        .status-badge.completed { background: rgba(40, 167, 69, 0.2); color: #28a745; }
+        .status-badge.cancelled { background: rgba(220, 53, 69, 0.2); color: #dc3545; }
+
+        .view-history-btn {
+            background: rgba(197, 168, 128, 0.2);
+            color: #C5A880;
+            border: 1px solid #C5A880;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .view-history-btn:hover {
+            background: rgba(197, 168, 128, 0.3);
+        }
+
+        .history-details {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(26, 26, 26, 0.5);
+            border: 1px solid rgba(197, 168, 128, 0.2);
+            border-radius: 4px;
+        }
+
+        .history-item {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(197, 168, 128, 0.1);
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-status {
+            font-weight: bold;
+            color: #C5A880;
+        }
+
+        .history-time {
+            display: block;
+            font-size: 0.875rem;
+            color: rgba(236, 223, 204, 0.7);
+        }
+
+        .history-notes {
+            margin-top: 0.25rem;
+            font-style: italic;
+            color: rgba(236, 223, 204, 0.8);
+        }
+
+        .history-user {
+            font-size: 0.875rem;
+            color: rgba(236, 223, 204, 0.7);
+        }
+
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 
@@ -102,111 +172,100 @@
     <%- include('../partials/navbar') %>
     <div class="container">
         <h1 class="text-3xl font-bold mb-6 text-center text-[#C5A880]">Order History</h1>
+        
         <% if (flashMessages && flashMessages.success_msg) { %>
-            <div class="success-message">
+            <div class="alert alert-success mb-4">
                 <%= flashMessages.success_msg %>
             </div>
         <% } %>
+
         <% if (flashMessages && flashMessages.error_msg) { %>
-            <div class="error-message">
-                <strong>Error!</strong> <%= flashMessages.error_msg %>
+            <div class="alert alert-danger mb-4">
+                <%= flashMessages.error_msg %>
             </div>
         <% } %>
+
         <div class="table-container">
             <table>
                 <thead>
                     <tr>
                         <th>Order ID</th>
                         <th>Customer</th>
-                        <th>Placed At</th>
-                        <th>Updated At</th>
-                        <th>Completed At</th>
-                        <th>Status</th>
-                        <th>Total Price</th>
-                        <th>Actions</th>
+                        <th>Items</th>
+                        <th>Total Amount</th>
+                        <th>Final Status</th>
+                        <th>Created At</th>
+                        <th>Status History</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <% if (orders && orders.length > 0) { %>
-                        <% orders.forEach(order => { %>
-                            <tr>
-                                <td><%= order._id %></td>
-                                <td><%= order.customer.username %></td>
-                                <td>
-                                    <% if (order.placedAt && !isNaN(new Date(order.placedAt))) { %>
-                                        <%= new Date(order.placedAt).toLocaleString() %>
-                                    <% } else { %>
-                                        N/A
-                                    <% } %>
-                                </td>
-                                <td>
-                                    <% if (order.updatedAt && !isNaN(new Date(order.updatedAt))) { %>
-                                        <%= new Date(order.updatedAt).toLocaleString() %>
-                                    <% } else { %>
-                                        N/A
-                                    <% } %>
-                                </td>
-                                <td>
-                                    <% if (order.completedAt && !isNaN(new Date(order.completedAt))) { %>
-                                        <%= new Date(order.completedAt).toLocaleString() %>
-                                    <% } else { %>
-                                        N/A
-                                    <% } %>
-                                </td>
-                                <td>
-                                    <% if (order.status === 'completed') { %>
-                                        <span class="text-green-600 font-semibold">Completed</span>
-                                    <% } else { %>
-                                        <span class="text-gray-600 font-semibold capitalize"><%= order.status %></span>
-                                    <% } %>
-                                </td>
-                                <td>₹<%= order.total.toFixed(2) %></td>
-                                <td>
-                                    <a href="/admin/orders/<%= order._id %>" class="btn-primary hover-scale">View</a>
-                                    <a href="/customer/orders/<%= order._id %>/receipt" class="btn-primary hover-scale">Receipt</a>
-                                </td>
-                            </tr>
-                        <% }) %>
-                    <% } else { %>
+                    <% orders.forEach(order => { %>
                         <tr>
-                            <td colspan="8" class="py-4 px-6 text-center text-gray-600">No orders found.</td>
+                            <td><%= order._id %></td>
+                            <td><%= order.customer ? `${order.customer.firstName} ${order.customer.lastName}` : 'N/A' %></td>
+                            <td>
+                                <% order.items.forEach(item => { %>
+                                    <%= item.menuItem.name %> x <%= item.quantity %><br>
+                                <% }) %>
+                            </td>
+                            <td>₹<%= order.totalAmount.toFixed(2) %></td>
+                            <td>
+                                <span class="status-badge <%= order.status.toLowerCase() %>">
+                                    <%= order.status %>
+                                </span>
+                            </td>
+                            <td><%= new Date(order.createdAt).toLocaleString() %></td>
+                            <td>
+                                <button onclick="toggleHistory('<%= order._id %>')" class="view-history-btn">
+                                    View History
+                                </button>
+                                <div id="history-<%= order._id %>" class="history-details hidden">
+                                    <% if (order.statusHistory && order.statusHistory.length > 0) { %>
+                                        <% order.statusHistory.forEach(history => { %>
+                                            <div class="history-item">
+                                                <span class="history-status"><%= history.status %></span>
+                                                <span class="history-time">
+                                                    <%= new Date(history.timestamp).toLocaleString() %>
+                                                </span>
+                                                <% if (history.notes) { %>
+                                                    <div class="history-notes">
+                                                        Note: <%= history.notes %>
+                                                    </div>
+                                                <% } %>
+                                                <% if (history.updatedBy) { %>
+                                                    <div class="history-user">
+                                                        By: <%= history.updatedBy.firstName %> <%= history.updatedBy.lastName %>
+                                                    </div>
+                                                <% } %>
+                                            </div>
+                                        <% }) %>
+                                    <% } else { %>
+                                        <p>No status history available</p>
+                                    <% } %>
+                                </div>
+                            </td>
                         </tr>
-                    <% } %>
+                    <% }) %>
                 </tbody>
             </table>
-        </div>
-        <div class="mt-4 flex justify-center">
-            <button class="btn-primary hover-scale py-2 px-4 rounded-l" onclick="prevPage()" aria-label="Previous Page">Previous</button>
-            <button class="btn-primary hover-scale py-2 px-4 rounded-r" onclick="nextPage()" aria-label="Next Page">Next</button>
         </div>
     </div>
     <%- include('../partials/scripts') %>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
     <script>
+        function toggleHistory(orderId) {
+            const historyDiv = document.getElementById(`history-${orderId}`);
+            historyDiv.classList.toggle('hidden');
+        }
+
         // GSAP Animations
         gsap.from('.table-container', {
             duration: 1,
             y: 50,
             opacity: 0,
-            stagger: 0.2
+            ease: 'power3.out'
         });
-
-        // Pagination logic (basic example)
-        let currentPage = 1;
-        const ordersPerPage = 10;
-
-        function prevPage() {
-            if (currentPage > 1) {
-                currentPage--;
-                window.location.href = `/admin/orders?page=${currentPage}`;
-            }
-        }
-
-        function nextPage() {
-            currentPage++;
-            window.location.href = `/admin/orders?page=${currentPage}`;
-        }
     </script>
 </body>
 

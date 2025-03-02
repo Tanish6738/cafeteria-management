@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Receipt - Order <%= receipt._id %></title>
-    
+    <title>Receipt - <%= receipt.receiptNumber %></title>
+
     <!-- Tailwind CSS -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    
+
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
 
@@ -25,9 +25,11 @@
         .receipt-container {
             background-color: rgba(60, 61, 55, 0.85);
             border-radius: 15px;
+            padding: 30px;
+            margin: 20px auto;
+            width: 90%;
+            max-width: 700px;
             box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
-            padding: 50px 20px;
-            margin-bottom: 20px;
             transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
         }
 
@@ -47,181 +49,79 @@
             background-color: #3C3D37;
             border-color: #3C3D37;
         }
-
-        .success-message, .error-message {
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            animation: fadeIn 1s ease-in-out;
-        }
-
-        .success-message {
-            background-color: rgba(144, 238, 144, 0.8);
-            border: 1px solid green;
-            color: green;
-        }
-
-        .error-message {
-            background-color: rgba(255, 99, 71, 0.8);
-            border: 1px solid red;
-            color: rgb(255, 255, 255);
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
     </style>
 </head>
-
 <body>
-    <!-- Navbar -->
-    <%- include('../partials/navbar') %>
-
     <div class="container mx-auto mt-10">
-        <h1 class="text-5xl font-bold text-center text-[#4b3a36] mb-10">Order Receipt</h1>
+        <h1 class="text-4xl font-bold text-center text-[#ECDFCC] mb-10">Receipt</h1>
 
-        <!-- Flash Messages -->
-        <% if (flashMessages && flashMessages.success_msg) { %>
-            <div class="success-message">
-                <strong>Success!</strong> <%= flashMessages.success_msg %>
-            </div>
-        <% } %>
-        <% if (flashMessages && flashMessages.error_msg) { %>
-            <div class="error-message">
-                <strong>Error!</strong> <%= flashMessages.error_msg %>
-            </div>
-        <% } %>
-
-        <!-- Order Summary Section -->
         <div class="receipt-container">
-            <h2 class="text-3xl font-bold mb-6">Order Summary</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <p class="text-xl"><strong>Receipt ID:</strong> <%= receipt._id %></p>
-                    <p class="text-xl"><strong>Customer:</strong> <%= receipt.customer.username %></p>
-                    <p class="text-xl"><strong>Table Number:</strong> <%= receipt.tableNumber %></p>
-                    <p class="text-xl"><strong>Receipt Date:</strong> <%= new Date(receipt.receiptDate).toLocaleDateString() %></p>
-                </div>
-                <div>
-                    <p class="text-xl"><strong>Payment Method:</strong> <%= receipt.paymentMethod %></p>
-                    <p class="text-xl"><strong>Total Amount:</strong> ₹<%= receipt.totalAmount.toFixed(2) %></p>
-                </div>
-            </div>
+            <h2 class="text-2xl font-bold mb-4">Order Summary</h2>
+            <% if (receipt.order && receipt.order._id) { %>
+                <p><strong>Order ID:</strong> <%= receipt.order._id %></p>
+            <% } else { %>
+                <p><strong>Order ID:</strong> Not available</p>
+            <% } %>
+            
+            <% if (receipt.payment && receipt.payment._id) { %>
+                <p><strong>Payment ID:</strong> <%= receipt.payment._id %></p>
+            <% } else { %>
+                <p><strong>Payment ID:</strong> Not available</p>
+            <% } %>
         </div>
-
-        <!-- Items Table -->
-        <div class="receipt-container">
-            <h2 class="text-3xl font-bold mb-6">Ordered Items</h2>
-            <div class="overflow-x-auto">
-                <table class="min-w-full bg-transparent text-light">
-                    <thead>
-                        <tr class="bg-gray-700">
-                            <th class="py-4 px-6 border-b text-left">Item</th>
-                            <th class="py-4 px-6 border-b text-left">Quantity</th>
-                            <th class="py-4 px-6 border-b text-left">Price</th>
-                            <th class="py-4 px-6 border-b text-left">Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% receipt.orders.forEach(order => { %>
-                            <% order.items.forEach(item => { %>
-                                <tr class="border-t">
-                                    <td class="py-2 px-6 border-b"><%= item.menuItem.name %></td>
-                                    <td class="py-2 px-6 border-b"><%= item.quantity %></td>
-                                    <td class="py-2 px-6 border-b">₹<%= item.menuItem.price.toFixed(2) %></td>
-                                    <td class="py-2 px-6 border-b">₹<%= (item.menuItem.price * item.quantity).toFixed(2) %></td>
-                                </tr>
-                            <% }) %>
-                        <% }) %>
-                    </tbody>                    
-                </table>
-            </div>
-        </div>
-
-        <!-- Order Breakdown -->
-        <div class="receipt-container">
-            <h2 class="text-3xl font-bold mb-6">Order Breakdown</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">  
-                <div>       
-                    <p class="text-xl"><strong>Subtotal:</strong> ₹<%= (receipt.totalAmount - receipt.taxAmount - receipt.serviceCharge).toFixed(2) %></p>
-                    <p class="text-xl"><strong>Tax:</strong> ₹<%= receipt.taxAmount.toFixed(2) %></p>
-                    <p class="text-xl"><strong>Service Charge:</strong> ₹<%= receipt.serviceCharge.toFixed(2) %></p>
-                    <p class="text-xl font-bold"><strong>Total:</strong> ₹<%= receipt.totalAmount.toFixed(2) %></p>
-                </div>
-            </div>            
-        </div>
-
-        <% if (isAdmin) { %>
-            <div class="flex justify-between items-center mt-6">
-                <form action="/admin/orders/<%= receipt._id %>/approve-payment" method="POST">
-                    <button type="submit" class="btn-primary hover:scale-105 py-2 px-4 rounded">
-                        Approve Payment
-                    </button>
-                </form>
-            </div>
-        <% } %>
-    </div>
-    <%- include('../partials/scripts') %>
-
-    <!-- JavaScript Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
-    <script>
         
-            // Burger menus
-            document.addEventListener('DOMContentLoaded', function () {
-                // open
-                const burger = document.querySelectorAll('.navbar-burger');
-                const menu = document.querySelectorAll('.navbar-menu');
 
-                if (burger.length && menu.length) {
-                    for (var i = 0; i < burger.length; i++) {
-                        burger[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
-                }
+        <!-- Customer Information -->
+        <div class="receipt-container">
+            <h2 class="text-2xl font-bold mb-4">Customer Information</h2>
+            <p><strong>Customer Name:</strong> <%= receipt.customer.username %></p>
+            <p><strong>Email:</strong> <%= receipt.customer.email %></p>
+        </div>
 
-                // close
-                const close = document.querySelectorAll('.navbar-close');
-                const backdrop = document.querySelectorAll('.navbar-backdrop');
+        <!-- Items Summary -->
+        <div class="receipt-container">
+            <h2 class="text-2xl font-bold mb-4">Items</h2>
+            <table class="min-w-full bg-transparent text-light">
+                <thead>
+                    <tr class="bg-gray-700">
+                        <th class="py-2 px-4 border-b">Item</th>
+                        <th class="py-2 px-4 border-b">Quantity</th>
+                        <th class="py-2 px-4 border-b">Price</th>
+                        <th class="py-2 px-4 border-b">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% receipt.items.forEach(item => { %>
+                        <tr>
+                            <td class="py-2 px-4 border-b"><%= item.name %></td>
+                            <td class="py-2 px-4 border-b"><%= item.quantity %></td>
+                            <td class="py-2 px-4 border-b">₹<%= item.price.toFixed(2) %></td>
+                            <td class="py-2 px-4 border-b">₹<%= item.subtotal.toFixed(2) %></td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
 
-                if (close.length) {
-                    for (var i = 0; i < close.length; i++) {
-                        close[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
-                }
+        <!-- Payment Summary -->
+        <div class="receipt-container">
+            <h2 class="text-2xl font-bold mb-4">Payment Summary</h2>
+            <p><strong>Subtotal:</strong> ₹<%= receipt.subtotal.toFixed(2) %></p>
+            <p><strong>Tax:</strong> ₹<%= receipt.tax.toFixed(2) %></p>
+            <p class="text-xl font-bold"><strong>Total:</strong> ₹<%= receipt.total.toFixed(2) %></p>
+        </div>
 
-                if (backdrop.length) {
-                    for (var i = 0; i < backdrop.length; i++) {
-                        backdrop[i].addEventListener('click', function () {
-                            for (var j = 0; j < menu.length; j++) {
-                                menu[j].classList.toggle('hidden');
-                            }
-                        });
-                    }
-                }
-            });
-        // GSAP Animations
-        gsap.from('.receipt-container', {
-            duration: 1,
-            y: 50,
-            opacity: 0,
-            stagger: 0.2
-        });
-    </script>
+        <!-- Order Summary -->
+        <div class="receipt-container">
+            <h2 class="text-2xl font-bold mb-4">Order Summary</h2>
+            <p><strong>Order ID:</strong> <%= receipt.order._id %></p>
+            <p><strong>Payment ID:</strong> <%= receipt.payment._id %></p>
+        </div>
+
+        <!-- Back Button -->
+        <div class="text-center mt-6">
+            <a href="/customer/orders" class="btn-primary hover:scale-105 py-2 px-4 rounded">Back to Orders</a>
+        </div>
+    </div>
 </body>
 </html>
