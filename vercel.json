@@ -24,6 +24,7 @@
     "NODE_ENV": "production",
     "MONGODB_URI": "@mongodb_uri",
     "SESSION_SECRET": "@session_secret",
-    "SECRET_KEY": "@stripe_secret_key"
+    "STRIPE_PUBLISHABLE_KEY": "@stripe_publishable_key",
+    "STRIPE_SECRET_KEY": "@stripe_secret_key"
   }
 }
