@@ -10,9 +10,10 @@ const multer = require('multer');
 const fs = require('fs');
 const { promisify } = require('util');
 const moment = require('moment'); // Import moment.js
-
-const publishableKey = "pk_test_51Q3z7BC43VQjRgwcUBGg4jE6p8fIgV2bPm3UaIcToGtD0iv63X1E8C6DWdopnBreXLzYRyOgGA2OmuPK3TD5kDKq00OnPi8IFb"
-const SceretKey = "sk_test_51Q3z7BC43VQjRgwcAs49iBHc2K9TjsknC1c82sHQrIcuDBiSlsrqX1hVhrJxrKwpSwwkqt9RzqX15xRnrPlbMMA100lrBmFDXs"
+const dotenv = require('dotenv');
+dotenv.config();
+const publishableKey = process.env.PUBLISHABLE_KEY;
+const SceretKey = process.env.SECRET_KEY;
 const stripe = require('stripe')(SceretKey);
 
 // Models
