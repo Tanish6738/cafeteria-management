@@ -70,9 +70,6 @@ app.use((req, res, next) => {
 
 // Set view engine
 app.set('view engine', 'ejs');
-app.use(express.static(path.join(__dirname, 'public')));
-
-
 
 // Flash messages middleware
 app.use((req, res, next) => {
@@ -222,9 +219,9 @@ app.get('/', async (req, res) => {
         const menuItems = await Menu.find();
         setFlash(req, 'success_msg', 'Welcome to the Cafe');
         if (user && user.role === 'admin') {
-            res.render('home', { menuItems, currentUser: user });
+            res.render('/home', { menuItems, currentUser: user });
         } else {
-            res.render('home', { menuItems, currentUser: user });
+            res.render('/home', { menuItems, currentUser: user });
         }
     } catch (err) {
         console.error('Error fetching menu items:', err);
