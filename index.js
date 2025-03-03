@@ -219,9 +219,9 @@ app.get('/', async (req, res) => {
         const menuItems = await Menu.find();
         setFlash(req, 'success_msg', 'Welcome to the Cafe');
         if (user && user.role === 'admin') {
-            res.render('/home', { menuItems, currentUser: user });
+            res.render('home', { menuItems, currentUser: user });
         } else {
-            res.render('/home', { menuItems, currentUser: user });
+            res.render('home', { menuItems, currentUser: user });
         }
     } catch (err) {
         console.error('Error fetching menu items:', err);
